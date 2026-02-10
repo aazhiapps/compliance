@@ -292,7 +292,7 @@ export default function ServiceDetail() {
           <p className="text-lg mb-8 opacity-90">
             Join thousands of satisfied customers. Start your {service.title.toLowerCase()} today.
           </p>
-          <Link to="/signup">
+          <Link to={`/checkout/${service.id}`}>
             <Button size="lg" variant="secondary">
               Begin Application <ArrowRight className="ml-2 w-5 h-5" />
             </Button>

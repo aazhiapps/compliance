@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, User, Phone, Globe, CheckCircle, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, Phone, Globe, CheckCircle, ArrowRight, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
   const [step, setStep] = useState(1);
+  const { signup, isLoading, error } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -16,19 +19,37 @@ export default function Signup() {
     language: "en",
     businessType: "individual",
   });
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setLocalError(null);
   };
 
   const handleNext = () => {
+    if (step === 2 && formData.password !== formData.confirmPassword) {
+      setLocalError("Passwords do not match");
+      return;
+    }
     if (step < 3) setStep(step + 1);
   };
 
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log("Form submitted:", formData);
+  const handleSubmit = async () => {
+    try {
+      await signup(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName,
+        formData.phone,
+        formData.businessType,
+        formData.language
+      );
+      navigate("/dashboard");
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Signup failed");
+    }
   };
 
   return (
@@ -60,6 +81,14 @@ export default function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Error Display */}
+            {(error || localError) && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800">{error || localError}</p>
+              </div>
+            )}
+
             {/* Step 1: Personal Info */}
             {step === 1 && (
               <>
@@ -73,6 +102,7 @@ export default function Signup() {
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleChange}
+                      required
                       className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
@@ -88,6 +118,7 @@ export default function Signup() {
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleChange}
+                      required
                       className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
@@ -103,6 +134,7 @@ export default function Signup() {
                       placeholder="your@email.com"
                       value={formData.email}
                       onChange={handleChange}
+                      required
                       className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
@@ -209,6 +241,7 @@ export default function Signup() {
                   variant="outline"
                   className="flex-1"
                   onClick={() => setStep(step - 1)}
+                  disabled={isLoading}
                 >
                   Back
                 </Button>
@@ -217,6 +250,7 @@ export default function Signup() {
                 <Button
                   className="flex-1 bg-primary hover:bg-primary/90"
                   onClick={handleNext}
+                  disabled={isLoading}
                 >
                   Next <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -224,8 +258,18 @@ export default function Signup() {
                 <Button
                   className="flex-1 bg-primary hover:bg-primary/90"
                   onClick={handleSubmit}
+                  disabled={isLoading}
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" /> Create Account
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" /> Create Account
+                    </>
+                  )}
                 </Button>
               )}
             </div>

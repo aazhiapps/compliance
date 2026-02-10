@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<"en" | "hi">("en");
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const navItems = [
     { label: language === "en" ? "Services" : "सेवाएं", href: "/#services" },
@@ -56,17 +64,40 @@ export default function Header() {
             </button>
 
             {/* Auth Buttons - Desktop */}
-            <div className="hidden md:flex gap-2">
-              <Link to="/login">
-                <Button variant="ghost" size="sm">
-                  {language === "en" ? "Sign In" : "साइन इन करें"}
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
-                  {language === "en" ? "Get Started" : "शुरुआत करें"}
-                </Button>
-              </Link>
+            <div className="hidden md:flex gap-2 items-center">
+              {isAuthenticated && user ? (
+                <>
+                  <Link to="/dashboard">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4" />
+                      {language === "en" ? "Dashboard" : "डैशबोर्ड"}
+                    </Button>
+                  </Link>
+                  <div className="h-6 w-px bg-border"></div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {language === "en" ? "Logout" : "लॉग आउट"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="ghost" size="sm">
+                      {language === "en" ? "Sign In" : "साइन इन करें"}
+                    </Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button size="sm" className="bg-primary hover:bg-primary/90">
+                      {language === "en" ? "Get Started" : "शुरुआत करें"}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -98,16 +129,41 @@ export default function Header() {
                 </a>
               ))}
               <div className="px-4 py-2 border-t border-border flex flex-col gap-2 pt-4">
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    {language === "en" ? "Sign In" : "साइन इन करें"}
-                  </Button>
-                </Link>
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
-                    {language === "en" ? "Get Started" : "शुरुआत करें"}
-                  </Button>
-                </Link>
+                {isAuthenticated && user ? (
+                  <>
+                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" />
+                        {language === "en" ? "Dashboard" : "डैशबोर्ड"}
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full flex items-center justify-center gap-2"
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {language === "en" ? "Logout" : "लॉग आउट"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        {language === "en" ? "Sign In" : "साइन इन करें"}
+                      </Button>
+                    </Link>
+                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                      <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
+                        {language === "en" ? "Get Started" : "शुरुआत करें"}
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </nav>
