@@ -5,6 +5,128 @@ import { SignupRequest, LoginRequest, AuthResponse, User } from "@shared/auth";
 const users: Map<string, User & { password: string }> = new Map();
 const applications: Map<string, any> = new Map();
 
+// Seed demo data
+const seedDemoUsers = () => {
+  const demoUsers: Array<User & { password: string }> = [
+    {
+      id: "user_demo_1",
+      email: "demo@example.com",
+      firstName: "Demo",
+      lastName: "User",
+      phone: "+91 98765 43210",
+      role: "user",
+      businessType: "individual",
+      language: "en",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: "Demo@1234", // Plain text for demo (NEVER do this in production)
+    },
+    {
+      id: "user_demo_2",
+      email: "rajesh@example.com",
+      firstName: "Rajesh",
+      lastName: "Kumar",
+      phone: "+91 98765 43211",
+      role: "user",
+      businessType: "startup",
+      language: "en",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: "Rajesh@1234",
+    },
+    {
+      id: "user_demo_3",
+      email: "priya@example.com",
+      firstName: "Priya",
+      lastName: "Singh",
+      phone: "+91 98765 43212",
+      role: "user",
+      businessType: "company",
+      language: "hi",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: "Priya@1234",
+    },
+    {
+      id: "admin_demo_1",
+      email: "admin@example.com",
+      firstName: "Admin",
+      lastName: "User",
+      phone: "+91 98765 50000",
+      role: "admin",
+      businessType: "company",
+      language: "en",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: "Admin@1234",
+    },
+  ];
+
+  demoUsers.forEach((user) => {
+    users.set(user.email, user);
+  });
+
+  console.log("✓ Demo users seeded successfully");
+};
+
+// Seed demo data on startup
+seedDemoUsers();
+
+// Seed demo applications
+const seedDemoApplications = () => {
+  const demoApplications = [
+    {
+      id: "app_demo_1",
+      userId: "user_demo_1",
+      serviceId: 1,
+      serviceName: "GST Registration",
+      status: "approved",
+      documents: [],
+      createdAt: "2024-02-01T10:00:00Z",
+      updatedAt: "2024-02-03T14:30:00Z",
+      assignedExecutive: "Rajesh Kumar",
+      paymentStatus: "paid",
+      paymentAmount: 499,
+      eta: "2024-02-05T00:00:00Z",
+    },
+    {
+      id: "app_demo_2",
+      userId: "user_demo_1",
+      serviceId: 2,
+      serviceName: "Company Registration",
+      status: "under_review",
+      documents: [],
+      createdAt: "2024-02-04T12:00:00Z",
+      updatedAt: "2024-02-04T12:00:00Z",
+      assignedExecutive: "Priya Singh",
+      paymentStatus: "paid",
+      paymentAmount: 2999,
+      eta: "2024-02-12T00:00:00Z",
+    },
+    {
+      id: "app_demo_3",
+      userId: "user_demo_2",
+      serviceId: 3,
+      serviceName: "PAN Registration",
+      status: "submitted",
+      documents: [],
+      createdAt: "2024-02-05T08:30:00Z",
+      updatedAt: "2024-02-05T08:30:00Z",
+      paymentStatus: "pending",
+      paymentAmount: 299,
+      eta: "2024-02-07T00:00:00Z",
+    },
+  ];
+
+  demoApplications.forEach((app) => {
+    applications.set(app.id, app);
+  });
+
+  console.log("✓ Demo applications seeded successfully");
+};
+
+seedDemoApplications();
+
 // Simple JWT simulation (use jsonwebtoken package in production)
 const generateToken = (userId: string): string => {
   return Buffer.from(JSON.stringify({ userId, iat: Date.now() })).toString(
