@@ -16,7 +16,9 @@ import Signup from "./pages/Signup";
 import ServiceDetail from "./pages/ServiceDetail";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminOverview from "./pages/AdminOverview";
+import AdminUsers from "./pages/AdminUsers";
+import AdminApplications from "./pages/AdminApplications";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -60,7 +62,47 @@ const AppRoutes = () => (
       path="/admin"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminDashboard />
+          <AdminOverview />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/users"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminUsers />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/applications"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminApplications />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/payments"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <PlaceholderPage
+            title="Payment Management"
+            description="Coming soon - Manage all payments and transactions"
+            icon={<FileText className="w-16 h-16 text-muted-foreground" />}
+          />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/settings"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <PlaceholderPage
+            title="Admin Settings"
+            description="Coming soon - Configure platform settings"
+            icon={<FileText className="w-16 h-16 text-muted-foreground" />}
+          />
         </ProtectedRoute>
       }
     />

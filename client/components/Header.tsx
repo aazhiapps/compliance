@@ -67,12 +67,21 @@ export default function Header() {
             <div className="hidden md:flex gap-2 items-center">
               {isAuthenticated && user ? (
                 <>
-                  <Link to="/dashboard">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      {language === "en" ? "Dashboard" : "डैशबोर्ड"}
-                    </Button>
-                  </Link>
+                  {user.role === "admin" ? (
+                    <Link to="/admin">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" />
+                        {language === "en" ? "Admin" : "एडमिन"}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/dashboard">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" />
+                        {language === "en" ? "Dashboard" : "डैशबोर्ड"}
+                      </Button>
+                    </Link>
+                  )}
                   <div className="h-6 w-px bg-border"></div>
                   <Button
                     variant="ghost"
@@ -131,12 +140,21 @@ export default function Header() {
               <div className="px-4 py-2 border-t border-border flex flex-col gap-2 pt-4">
                 {isAuthenticated && user ? (
                   <>
-                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
-                        <LayoutDashboard className="w-4 h-4" />
-                        {language === "en" ? "Dashboard" : "डैशबोर्ड"}
-                      </Button>
-                    </Link>
+                    {user.role === "admin" ? (
+                      <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                          <LayoutDashboard className="w-4 h-4" />
+                          {language === "en" ? "Admin" : "एडमिन"}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                          <LayoutDashboard className="w-4 h-4" />
+                          {language === "en" ? "Dashboard" : "डैशबोर्ड"}
+                        </Button>
+                      </Link>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"

@@ -225,14 +225,16 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground mb-1">Action</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex items-center gap-2"
-                            >
-                              View Details
-                              <ChevronRight className="w-4 h-4" />
-                            </Button>
+                            <Link to={`/application/${app.id}`}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex items-center gap-2"
+                              >
+                                View Details
+                                <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       </div>
