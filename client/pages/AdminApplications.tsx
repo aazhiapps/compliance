@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import ApplicationDetailModal from "@/components/ApplicationDetailModal";
 
 interface Application {
   id: string;
@@ -30,9 +31,9 @@ export default function AdminApplications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
-
-  // Mock application data
-  const applications: Application[] = [
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const [applications, setApplications] = useState<Application[]>([
     {
       id: "app_1",
       userId: "user_1",
@@ -91,7 +92,51 @@ export default function AdminApplications() {
       paymentStatus: "paid",
       executiveAssigned: "Amit Patel",
     },
-  ];
+  ]);
+
+  const handleApprove = (appId: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, status: "approved" as const } : app
+      )
+    );
+    setModalOpen(false);
+  };
+
+  const handleReject = (appId: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, status: "rejected" as const } : app
+      )
+    );
+    setModalOpen(false);
+  };
+
+  const handleAssignExecutive = (appId: string, executive: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, executiveAssigned: executive } : app
+      )
+    );
+  };
+
+  const handleBulkApprove = () => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        selectedApps.has(app.id) ? { ...app, status: "approved" as const } : app
+      )
+    );
+    setSelectedApps(new Set());
+  };
+
+  const handleBulkReject = () => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        selectedApps.has(app.id) ? { ...app, status: "rejected" as const } : app
+      )
+    );
+    setSelectedApps(new Set());
+  };
 
   const filteredApps = applications.filter((app) => {
     const matchesSearch =
@@ -234,11 +279,20 @@ export default function AdminApplications() {
               </div>
               {selectedApps.size > 0 && (
                 <div className="flex gap-2">
-                  <Button size="sm" className="bg-success hover:bg-success/90">
-                    Approve Selected
+                  <Button
+                    size="sm"
+                    className="bg-success hover:bg-success/90"
+                    onClick={handleBulkApprove}
+                  >
+                    Approve Selected ({selectedApps.size})
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 border-red-200">
-                    Reject Selected
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-200"
+                    onClick={handleBulkReject}
+                  >
+                    Reject Selected ({selectedApps.size})
                   </Button>
                 </div>
               )}
@@ -330,6 +384,10 @@ export default function AdminApplications() {
                             variant="outline"
                             title="View Details"
                             className="p-2 h-auto"
+                            onClick={() => {
+                              setSelectedAppId(app.id);
+                              setModalOpen(true);
+                            }}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -356,6 +414,21 @@ export default function AdminApplications() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Application Detail Modal */}
+      {selectedAppId && (
+        <ApplicationDetailModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedAppId(null);
+          }}
+          applicationId={selectedAppId}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onAssignExecutive={handleAssignExecutive}
+        />
+      )}
     </AdminLayout>
   );
 }

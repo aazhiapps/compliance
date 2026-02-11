@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, UserX, Edit } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import UserEditModal from "@/components/UserEditModal";
 
 interface User {
   id: string;
