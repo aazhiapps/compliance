@@ -1,12 +1,17 @@
 import { RequestHandler } from "express";
 import { SignupRequest, LoginRequest, AuthResponse, User } from "@shared/auth";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const SALT_ROUNDS = 10;
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 // In-memory storage (replace with database in production)
 const users: Map<string, User & { password: string }> = new Map();
 const applications: Map<string, any> = new Map();
 
 // Seed demo data
-const seedDemoUsers = () => {
+const seedDemoUsers = async () => {
   const demoUsers: Array<User & { password: string }> = [
     {
       id: "user_demo_1",
@@ -19,7 +24,7 @@ const seedDemoUsers = () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: "Demo@1234", // Plain text for demo (NEVER do this in production)
+      password: await bcrypt.hash("Demo@1234", SALT_ROUNDS),
     },
     {
       id: "user_demo_2",
@@ -32,7 +37,7 @@ const seedDemoUsers = () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: "Rajesh@1234",
+      password: await bcrypt.hash("Rajesh@1234", SALT_ROUNDS),
     },
     {
       id: "user_demo_3",
@@ -45,7 +50,7 @@ const seedDemoUsers = () => {
       language: "hi",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: "Priya@1234",
+      password: await bcrypt.hash("Priya@1234", SALT_ROUNDS),
     },
     {
       id: "admin_demo_1",
@@ -58,7 +63,7 @@ const seedDemoUsers = () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: "Admin@1234",
+      password: await bcrypt.hash("Admin@1234", SALT_ROUNDS),
     },
   ];
 
@@ -127,18 +132,17 @@ const seedDemoApplications = () => {
 
 seedDemoApplications();
 
-// Simple JWT simulation (use jsonwebtoken package in production)
+// JWT token generation and verification
 const generateToken = (userId: string): string => {
-  return Buffer.from(JSON.stringify({ userId, iat: Date.now() })).toString(
-    "base64"
-  );
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
 };
 
 const verifyToken = (token: string): { userId: string } | null => {
   try {
-    const decoded = JSON.parse(Buffer.from(token, "base64").toString());
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     return decoded;
-  } catch {
+  } catch (error) {
+    console.error("Token verification failed:", error);
     return null;
   }
 };
@@ -147,7 +151,7 @@ export const handleSignup: RequestHandler<
   unknown,
   AuthResponse,
   SignupRequest
-> = (req, res) => {
+> = async (req, res) => {
   const { email, firstName, lastName, phone, password, businessType, language } =
     req.body;
 
@@ -167,6 +171,7 @@ export const handleSignup: RequestHandler<
   }
 
   const userId = `user_${Date.now()}`;
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
   const newUser: User & { password: string } = {
     id: userId,
     email,
@@ -178,7 +183,7 @@ export const handleSignup: RequestHandler<
     language,
     createdAt: new Date().toISOString(),
     isEmailVerified: false,
-    password, // In production, hash this with bcrypt
+    password: hashedPassword,
   };
 
   users.set(email, newUser);
@@ -195,7 +200,7 @@ export const handleSignup: RequestHandler<
 };
 
 export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
-  (req, res) => {
+  async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -206,7 +211,15 @@ export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
     }
 
     const user = users.get(email);
-    if (!user || user.password !== password) {
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",

@@ -176,7 +176,7 @@ export default function Checkout() {
 
       // Initialize Razorpay
       const options = {
-        key: "rzp_test_YOUR_KEY", // Replace with actual Razorpay key
+        key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_YOUR_KEY", // Get from environment variable
         amount: finalPrice * 100, // Amount in paise
         currency: "INR",
         name: "ComplianCe",
