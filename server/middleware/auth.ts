@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -8,6 +8,9 @@ if (!JWT_SECRET) {
     "JWT_SECRET environment variable is required. Please set it in your .env file.",
   );
 }
+
+// Type-safe JWT_SECRET after validation
+const SECRET: string = JWT_SECRET;
 
 /**
  * Extends Express Request with authenticated user information
@@ -32,7 +35,7 @@ export const authenticateToken: RequestHandler = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, SECRET) as { userId: string };
     (req as AuthRequest).userId = decoded.userId;
     next();
   } catch (error) {
@@ -49,14 +52,8 @@ export const authenticateToken: RequestHandler = (req, res, next) => {
  * @param expiresIn - Token expiration time (default: 7 days)
  * @returns JWT token string
  */
-export const generateToken = (
-  userId: string,
-  expiresIn: string | number = "7d",
-): string => {
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined");
-  }
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
+export const generateToken = (userId: string, expiresIn = "7d"): string => {
+  return jwt.sign({ userId }, SECRET, { expiresIn: expiresIn as "7d" });
 };
 
 /**
@@ -66,7 +63,7 @@ export const generateToken = (
  */
 export const verifyToken = (token: string): { userId: string } | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, SECRET) as { userId: string };
     return decoded;
   } catch (error) {
     return null;
