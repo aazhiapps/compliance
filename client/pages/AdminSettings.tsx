@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, Bell, Lock, CheckCircle, Zap } from "lucide-react";
@@ -6,11 +6,12 @@ import AdminLayout from "@/components/AdminLayout";
 
 export default function AdminSettings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     systemName: "ComplianCe",
     adminEmail: "admin@compliance.app",
     supportEmail: "support@compliance.app",
-    businessPhone: "+91-XXX-XXXX-XXXX",
+    businessPhone: "+91 98765 50000",
     maintenanceMode: false,
     autoApproveEnabled: false,
     emailNotifications: true,
@@ -22,6 +23,18 @@ export default function AdminSettings() {
     passwordExpiryDays: "90",
   });
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('adminSettings');
+    if (savedSettings) {
+      try {
+        setSettings(JSON.parse(savedSettings));
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      }
+    }
+  }, []);
+
   const handleInputChange = (key: string, value: any) => {
     setSettings((prev) => ({
       ...prev,
@@ -29,10 +42,18 @@ export default function AdminSettings() {
     }));
   };
 
-  const handleSave = () => {
-    // Simulate API call
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Store in localStorage for persistence (in a real app, save to backend)
+      localStorage.setItem('adminSettings', JSON.stringify(settings));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -253,8 +274,12 @@ export default function AdminSettings() {
         {/* Action Buttons */}
         <div className="flex gap-3 justify-end">
           <Button variant="outline">Reset to Defaults</Button>
-          <Button className="bg-primary hover:bg-primary/90" onClick={handleSave}>
-            Save Changes
+          <Button 
+            className="bg-primary hover:bg-primary/90" 
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>

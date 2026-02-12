@@ -221,7 +221,9 @@ const App = () => (
 );
 
 // Initialize the React root
-let root: any = null;
+import type { Root } from "react-dom/client";
+
+let root: Root | null = null;
 
 const renderApp = () => {
   const rootElement = document.getElementById("root");

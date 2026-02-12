@@ -157,20 +157,28 @@ export default function Checkout() {
       const appData = await appResponse.json();
       const applicationId = appData.application.id;
 
-      // Upload documents
+      // Upload documents with error handling
       for (const uploadedFile of uploadedFiles) {
         if (uploadedFile.status === "success") {
-          const formData = new FormData();
-          formData.append("applicationId", applicationId);
-          formData.append("fileName", uploadedFile.file.name);
-          formData.append("fileType", uploadedFile.file.type);
-          formData.append("fileUrl", `https://example.com/docs/${uploadedFile.file.name}`);
+          try {
+            const formData = new FormData();
+            formData.append("applicationId", applicationId);
+            formData.append("fileName", uploadedFile.file.name);
+            formData.append("fileType", uploadedFile.file.type);
+            formData.append("fileUrl", `https://example.com/docs/${uploadedFile.file.name}`);
 
-          await fetch("/api/applications/" + applicationId + "/documents", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
+            const uploadResponse = await fetch("/api/applications/" + applicationId + "/documents", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+              console.error(`Failed to upload ${uploadedFile.file.name}`);
+            }
+          } catch (uploadError) {
+            console.error(`Error uploading ${uploadedFile.file.name}:`, uploadError);
+          }
         }
       }
 

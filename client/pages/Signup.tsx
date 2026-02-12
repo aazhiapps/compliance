@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock, User, Phone, Globe, CheckCircle, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { isValidEmail, validatePasswordStrength } from "@/lib/utils";
 
 export default function Signup() {
   const [step, setStep] = useState(1);
@@ -28,10 +29,39 @@ export default function Signup() {
   };
 
   const handleNext = () => {
-    if (step === 2 && formData.password !== formData.confirmPassword) {
-      setLocalError("Passwords do not match");
-      return;
+    // Validate step 1 (personal info)
+    if (step === 1) {
+      if (!formData.firstName.trim() || !formData.lastName.trim()) {
+        setLocalError("Please enter your full name");
+        return;
+      }
+      if (!formData.email.trim()) {
+        setLocalError("Please enter your email");
+        return;
+      }
+      if (!isValidEmail(formData.email)) {
+        setLocalError("Please enter a valid email address");
+        return;
+      }
+      if (!formData.phone.trim()) {
+        setLocalError("Please enter your phone number");
+        return;
+      }
     }
+
+    // Validate step 2 (password)
+    if (step === 2) {
+      const passwordValidation = validatePasswordStrength(formData.password);
+      if (!passwordValidation.valid) {
+        setLocalError(passwordValidation.message || "Invalid password");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setLocalError("Passwords do not match");
+        return;
+      }
+    }
+
     if (step < 3) setStep(step + 1);
   };
 
