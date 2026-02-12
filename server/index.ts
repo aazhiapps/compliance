@@ -20,6 +20,24 @@ import {
   handleGetUserById,
   handleGetAdminStats,
 } from "./routes/admin";
+import {
+  handleCreateGSTClient,
+  handleGetGSTClients,
+  handleGetGSTClient,
+  handleUpdateGSTClient,
+  handleCreatePurchaseInvoice,
+  handleGetPurchaseInvoices,
+  handleUpdatePurchaseInvoice,
+  handleDeletePurchaseInvoice,
+  handleCreateSalesInvoice,
+  handleGetSalesInvoices,
+  handleUpdateSalesInvoice,
+  handleDeleteSalesInvoice,
+  handleUpdateGSTFiling,
+  handleGetGSTFilings,
+  handleGetMonthlySummary,
+  handleUploadGSTDocument,
+} from "./routes/gst";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { validateRequest, schemas } from "./middleware/validation";
@@ -98,6 +116,35 @@ export function createServer() {
   app.get("/api/admin/applications", authenticateToken, requireAdmin, handleGetAllApplications);
   app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
   app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
+
+  // GST Management Routes (protected)
+  // Client management
+  app.post("/api/gst/clients", authenticateToken, handleCreateGSTClient);
+  app.get("/api/gst/clients", authenticateToken, handleGetGSTClients);
+  app.get("/api/gst/clients/:id", authenticateToken, handleGetGSTClient);
+  app.patch("/api/gst/clients/:id", authenticateToken, handleUpdateGSTClient);
+
+  // Purchase invoices
+  app.post("/api/gst/purchases", authenticateToken, handleCreatePurchaseInvoice);
+  app.get("/api/gst/purchases/:clientId", authenticateToken, handleGetPurchaseInvoices);
+  app.patch("/api/gst/purchases/:id", authenticateToken, handleUpdatePurchaseInvoice);
+  app.delete("/api/gst/purchases/:id", authenticateToken, requireAdmin, handleDeletePurchaseInvoice);
+
+  // Sales invoices
+  app.post("/api/gst/sales", authenticateToken, handleCreateSalesInvoice);
+  app.get("/api/gst/sales/:clientId", authenticateToken, handleGetSalesInvoices);
+  app.patch("/api/gst/sales/:id", authenticateToken, handleUpdateSalesInvoice);
+  app.delete("/api/gst/sales/:id", authenticateToken, requireAdmin, handleDeleteSalesInvoice);
+
+  // GST filing status
+  app.post("/api/gst/filings", authenticateToken, handleUpdateGSTFiling);
+  app.get("/api/gst/filings/:clientId", authenticateToken, handleGetGSTFilings);
+
+  // Monthly summary
+  app.get("/api/gst/summary/:clientId/:month", authenticateToken, handleGetMonthlySummary);
+
+  // Document upload
+  app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);
 
   // Global error handler (must be last)
   app.use(errorHandler);

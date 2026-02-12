@@ -25,6 +25,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminServices from "./pages/AdminServices";
 import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
+import AdminGST from "./pages/AdminGST";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -132,6 +133,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminDocuments />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/gst"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminGST />
         </ProtectedRoute>
       }
     />
