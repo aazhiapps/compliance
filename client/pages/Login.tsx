@@ -123,13 +123,6 @@ export default function Login() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Info Box */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-900">
-            <strong>Demo:</strong> This is a placeholder page. The actual authentication integration will be added with your backend.
-          </p>
-        </div>
       </div>
     </div>
   );
