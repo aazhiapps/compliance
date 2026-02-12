@@ -37,3 +37,37 @@ export interface UserDocumentsResponse {
   message?: string;
   services: ServiceDocuments[];
 }
+
+/**
+ * Hierarchical document organization types for admin view
+ * Supports Users -> Services -> Year/Month -> Documents flow
+ */
+export interface MonthlyDocuments {
+  month: number; // 1-12
+  monthName: string; // e.g., "January"
+  documents: Document[];
+}
+
+export interface YearlyDocuments {
+  year: number; // e.g., 2024
+  months: MonthlyDocuments[];
+}
+
+export interface ServiceDocumentsHierarchical {
+  serviceId: number;
+  serviceName: string;
+  years: YearlyDocuments[];
+}
+
+export interface UserDocumentsHierarchical {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  services: ServiceDocumentsHierarchical[];
+}
+
+export interface AdminDocumentsResponse {
+  success: boolean;
+  message?: string;
+  users: UserDocumentsHierarchical[];
+}

@@ -1,108 +1,109 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Download, Eye, FileText, Check, X, Clock, MoreVertical } from "lucide-react";
+import { 
+  Search, 
+  Download, 
+  Eye, 
+  FileText, 
+  Check, 
+  X, 
+  Clock, 
+  MoreVertical,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Briefcase,
+  Calendar,
+  FolderOpen,
+} from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
-
-interface Document {
-  id: string;
-  fileName: string;
-  uploadedBy: string;
-  userEmail: string;
-  applicationId: string;
-  service: string;
-  fileSize: number;
-  uploadDate: string;
-  status: "approved" | "verifying" | "uploaded" | "rejected";
-  type: string;
-}
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AdminDocumentsResponse, 
+  UserDocumentsHierarchical,
+  Document,
+} from "@shared/api";
 
 export default function AdminDocuments() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
-  const [documents] = useState<Document[]>([
-    {
-      id: "doc_1",
-      fileName: "PAN_Card.pdf",
-      uploadedBy: "Demo User",
-      userEmail: "demo@example.com",
-      applicationId: "app_1",
-      service: "GST Registration",
-      fileSize: 2048,
-      uploadDate: "2024-02-10",
-      status: "approved",
-      type: "pdf",
-    },
-    {
-      id: "doc_2",
-      fileName: "Aadhar_Front.jpg",
-      uploadedBy: "Rajesh Kumar",
-      userEmail: "rajesh@example.com",
-      applicationId: "app_2",
-      service: "Company Registration",
-      fileSize: 3072,
-      uploadDate: "2024-02-10",
-      status: "verifying",
-      type: "image",
-    },
-    {
-      id: "doc_3",
-      fileName: "Bank_Statement.pdf",
-      uploadedBy: "Priya Singh",
-      userEmail: "priya@example.com",
-      applicationId: "app_3",
-      service: "PAN Registration",
-      fileSize: 5120,
-      uploadDate: "2024-02-09",
-      status: "approved",
-      type: "pdf",
-    },
-    {
-      id: "doc_4",
-      fileName: "Company_Stamp.png",
-      uploadedBy: "Amit Patel",
-      userEmail: "amit@example.com",
-      applicationId: "app_4",
-      service: "Trademark Registration",
-      fileSize: 1024,
-      uploadDate: "2024-02-09",
-      status: "uploaded",
-      type: "image",
-    },
-    {
-      id: "doc_5",
-      fileName: "Trademark_Logo.pdf",
-      uploadedBy: "Neha Sharma",
-      userEmail: "neha@example.com",
-      applicationId: "app_5",
-      service: "Trademark Registration",
-      fileSize: 4096,
-      uploadDate: "2024-02-08",
-      status: "rejected",
-      type: "pdf",
-    },
-    {
-      id: "doc_6",
-      fileName: "Business_License.pdf",
-      uploadedBy: "Demo User",
-      userEmail: "demo@example.com",
-      applicationId: "app_1",
-      service: "GST Registration",
-      fileSize: 2560,
-      uploadDate: "2024-02-08",
-      status: "approved",
-      type: "pdf",
-    },
-  ]);
+  const [usersData, setUsersData] = useState<UserDocumentsHierarchical[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+  const [expandedServices, setExpandedServices] = useState<Set<string>>(new Set());
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
-  const filteredDocuments = documents.filter((doc) => {
-    const matchesSearch =
-      doc.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.uploadedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.service.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || doc.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/documents", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (response.ok) {
+        const data: AdminDocumentsResponse = await response.json();
+        setUsersData(data.users || []);
+      } else {
+        throw new Error("Failed to fetch documents");
+      }
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load documents. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleUser = (userId: string) => {
+    const newExpanded = new Set(expandedUsers);
+    if (newExpanded.has(userId)) {
+      newExpanded.delete(userId);
+    } else {
+      newExpanded.add(userId);
+    }
+    setExpandedUsers(newExpanded);
+  };
+
+  const toggleService = (key: string) => {
+    const newExpanded = new Set(expandedServices);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedServices(newExpanded);
+  };
+
+  const toggleYear = (key: string) => {
+    const newExpanded = new Set(expandedYears);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedYears(newExpanded);
+  };
+
+  const toggleMonth = (key: string) => {
+    const newExpanded = new Set(expandedMonths);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedMonths(newExpanded);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -134,19 +135,69 @@ export default function AdminDocuments() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 B";
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes || bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  const approvedCount = documents.filter(d => d.status === "approved").length;
-  const verifyingCount = documents.filter(d => d.status === "verifying").length;
-  const uploadedCount = documents.filter(d => d.status === "uploaded").length;
-  const rejectedCount = documents.filter(d => d.status === "rejected").length;
-  const totalSize = documents.reduce((sum, d) => sum + d.fileSize, 0);
+  // Calculate statistics - memoized to avoid recalculation on every render
+  const stats = useMemo(() => {
+    let totalDocuments = 0;
+    let approvedCount = 0;
+    let verifyingCount = 0;
+    let uploadedCount = 0;
+    let rejectedCount = 0;
+
+    usersData.forEach(user => {
+      user.services.forEach(service => {
+        service.years.forEach(year => {
+          year.months.forEach(month => {
+            month.documents.forEach(doc => {
+              totalDocuments++;
+              if (doc.status === "approved") approvedCount++;
+              if (doc.status === "verifying") verifyingCount++;
+              if (doc.status === "uploaded") uploadedCount++;
+              if (doc.status === "rejected") rejectedCount++;
+            });
+          });
+        });
+      });
+    });
+
+    return { totalDocuments, approvedCount, verifyingCount, uploadedCount, rejectedCount };
+  }, [usersData]);
+
+  // Filter documents based on search and status - memoized callback
+  const filterDocument = useCallback((doc: Document): boolean => {
+    const matchesStatus = filterStatus === "all" || doc.status === filterStatus;
+    const matchesSearch = searchQuery === "" || 
+      doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  }, [filterStatus, searchQuery]);
+
+  // Check if user has matching documents - memoized callback
+  const hasMatchingDocuments = useCallback((user: UserDocumentsHierarchical): boolean => {
+    return user.services.some(service =>
+      service.years.some(year =>
+        year.months.some(month =>
+          month.documents.some(doc => filterDocument(doc))
+        )
+      )
+    );
+  }, [filterDocument]);
+
+  // Filtered users - memoized to avoid recalculation
+  const filteredUsers = useMemo(() => 
+    usersData.filter(user => 
+      hasMatchingDocuments(user) || 
+      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [usersData, hasMatchingDocuments, searchQuery]
+  );
 
   return (
     <AdminLayout>
@@ -155,7 +206,9 @@ export default function AdminDocuments() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Documents Management</h1>
-            <p className="text-muted-foreground mt-1">Review and manage uploaded documents</p>
+            <p className="text-muted-foreground mt-1">
+              Hierarchical view: Users → Services → Year/Month → Documents
+            </p>
           </div>
           <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
             <Download className="w-4 h-4" />
@@ -170,7 +223,7 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-green-600 font-medium">Approved</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{approvedCount}</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">{stats.approvedCount}</p>
                 </div>
                 <Check className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -182,7 +235,7 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-yellow-600 font-medium">Verifying</p>
-                  <p className="text-3xl font-bold text-yellow-900 mt-1">{verifyingCount}</p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">{stats.verifyingCount}</p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-50" />
               </div>
@@ -194,7 +247,7 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-600 font-medium">Uploaded</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-1">{uploadedCount}</p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">{stats.uploadedCount}</p>
                 </div>
                 <FileText className="w-10 h-10 text-blue-400 opacity-50" />
               </div>
@@ -206,7 +259,7 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-red-600 font-medium">Rejected</p>
-                  <p className="text-3xl font-bold text-red-900 mt-1">{rejectedCount}</p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">{stats.rejectedCount}</p>
                 </div>
                 <X className="w-10 h-10 text-red-400 opacity-50" />
               </div>
@@ -222,105 +275,240 @@ export default function AdminDocuments() {
                 <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search by file name, uploader, or service..."
+                  placeholder="Search by file name, user, or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
-              <div className="flex gap-2">
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="all">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="verifying">Verifying</option>
+                <option value="uploaded">Uploaded</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hierarchical Documents View */}
+        {isLoading ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading documents...</p>
+            </CardContent>
+          </Card>
+        ) : filteredUsers.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No documents found</h3>
+              <p className="text-muted-foreground">
+                {searchQuery || filterStatus !== "all" 
+                  ? "Try adjusting your filters" 
+                  : "No users have uploaded documents yet"}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredUsers.map((user) => (
+              <Card key={user.userId} className="overflow-hidden">
+                {/* User Level */}
+                <CardHeader 
+                  className="cursor-pointer hover:bg-gray-50 transition-colors bg-purple-50"
+                  onClick={() => toggleUser(user.userId)}
                 >
-                  <option value="all">All Status</option>
-                  <option value="approved">Approved</option>
-                  <option value="verifying">Verifying</option>
-                  <option value="uploaded">Uploaded</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  More
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-purple-600" />
+                        {user.userName}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {user.userEmail} • {user.services.length} service{user.services.length !== 1 ? 's' : ''}
+                      </CardDescription>
+                    </div>
+                    <Button variant="ghost" size="sm">
+                      {expandedUsers.has(user.userId) ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
 
-        {/* Documents Table */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
-            <CardTitle className="text-lg">All Documents</CardTitle>
-            <CardDescription>{filteredDocuments.length} documents - Total size: {formatFileSize(totalSize)}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-purple-200 bg-purple-50">
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">File Name</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Uploaded By</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Service</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Size</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Upload Date</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Status</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDocuments.map((doc) => (
-                    <tr key={doc.id} className="border-b border-gray-200 hover:bg-purple-50 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-foreground">{doc.fileName}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-medium text-foreground">{doc.uploadedBy}</p>
-                          <p className="text-xs text-muted-foreground">{doc.userEmail}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm">{doc.service}</td>
-                      <td className="py-3 px-4 text-sm">{formatFileSize(doc.fileSize)}</td>
-                      <td className="py-3 px-4 text-sm">
-                        {new Date(doc.uploadDate).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(doc.status)}`}>
-                          {getStatusIcon(doc.status)}
-                          {doc.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" title="View Document">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" title="Download Document">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <button className="p-2 hover:bg-gray-100 rounded transition-colors">
-                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                {expandedUsers.has(user.userId) && (
+                  <CardContent className="pt-4 space-y-3">
+                    {user.services.map((service) => {
+                      const serviceKey = `${user.userId}-${service.serviceId}`;
+                      return (
+                        <div key={serviceKey} className="border border-border rounded-lg overflow-hidden">
+                          {/* Service Level */}
+                          <div
+                            className="p-3 bg-blue-50 cursor-pointer hover:bg-blue-100 transition-colors"
+                            onClick={() => toggleService(serviceKey)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 flex-1">
+                                <Briefcase className="w-4 h-4 text-blue-600" />
+                                <span className="font-medium text-foreground">{service.serviceName}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ({service.years.length} year{service.years.length !== 1 ? 's' : ''})
+                                </span>
+                              </div>
+                              {expandedServices.has(serviceKey) ? (
+                                <ChevronUp className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )}
+                            </div>
+                          </div>
 
-              {filteredDocuments.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No documents found</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                          {expandedServices.has(serviceKey) && (
+                            <div className="p-3 space-y-2 bg-gray-50">
+                              {service.years.map((year) => {
+                                const yearKey = `${serviceKey}-${year.year}`;
+                                return (
+                                  <div key={yearKey} className="border border-border rounded-md overflow-hidden bg-white">
+                                    {/* Year Level */}
+                                    <div
+                                      className="p-2 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
+                                      onClick={() => toggleYear(yearKey)}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="w-4 h-4 text-green-600" />
+                                          <span className="font-medium text-sm">{year.year}</span>
+                                          <span className="text-xs text-muted-foreground">
+                                            ({year.months.length} month{year.months.length !== 1 ? 's' : ''})
+                                          </span>
+                                        </div>
+                                        {expandedYears.has(yearKey) ? (
+                                          <ChevronUp className="w-4 h-4" />
+                                        ) : (
+                                          <ChevronDown className="w-4 h-4" />
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {expandedYears.has(yearKey) && (
+                                      <div className="p-2 space-y-2">
+                                        {year.months.map((month) => {
+                                          const monthKey = `${yearKey}-${month.month}`;
+                                          const filteredDocs = month.documents.filter(filterDocument);
+                                          
+                                          if (filteredDocs.length === 0) return null;
+                                          
+                                          return (
+                                            <div key={monthKey} className="border border-border rounded-sm overflow-hidden">
+                                              {/* Month Level */}
+                                              <div
+                                                className="p-2 bg-orange-50 cursor-pointer hover:bg-orange-100 transition-colors"
+                                                onClick={() => toggleMonth(monthKey)}
+                                              >
+                                                <div className="flex items-center justify-between">
+                                                  <div className="flex items-center gap-2">
+                                                    <FolderOpen className="w-3 h-3 text-orange-600" />
+                                                    <span className="font-medium text-sm">{month.monthName}</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                      ({filteredDocs.length} document{filteredDocs.length !== 1 ? 's' : ''})
+                                                    </span>
+                                                  </div>
+                                                  {expandedMonths.has(monthKey) ? (
+                                                    <ChevronUp className="w-3 h-3" />
+                                                  ) : (
+                                                    <ChevronDown className="w-3 h-3" />
+                                                  )}
+                                                </div>
+                                              </div>
+
+                                              {expandedMonths.has(monthKey) && (
+                                                <div className="p-2 space-y-1 bg-white">
+                                                  {/* Documents */}
+                                                  {filteredDocs.map((doc) => (
+                                                    <div
+                                                      key={doc.id}
+                                                      className="flex items-center justify-between p-2 border border-border rounded hover:shadow-sm transition-shadow text-sm"
+                                                    >
+                                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                                        <div className="flex-1 min-w-0">
+                                                          <p className="font-medium text-foreground truncate text-sm">
+                                                            {doc.fileName}
+                                                          </p>
+                                                          <p className="text-xs text-muted-foreground">
+                                                            {new Date(doc.uploadedAt).toLocaleDateString()}
+                                                            {doc.fileSize && ` • ${formatFileSize(doc.fileSize)}`}
+                                                          </p>
+                                                        </div>
+                                                      </div>
+
+                                                      <div className="flex items-center gap-2">
+                                                        <span
+                                                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                                            doc.status
+                                                          )}`}
+                                                        >
+                                                          {getStatusIcon(doc.status)}
+                                                          {doc.status}
+                                                        </span>
+
+                                                        <div className="flex gap-1">
+                                                          <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            title="View Document"
+                                                            className="h-7 w-7 p-0"
+                                                          >
+                                                            <Eye className="w-3 h-3" />
+                                                          </Button>
+                                                          <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            title="Download Document"
+                                                            className="h-7 w-7 p-0"
+                                                          >
+                                                            <Download className="w-3 h-3" />
+                                                          </Button>
+                                                          <button 
+                                                            className="h-7 w-7 p-0 hover:bg-gray-100 rounded transition-colors flex items-center justify-center"
+                                                            title="More actions"
+                                                          >
+                                                            <MoreVertical className="w-3 h-3 text-muted-foreground" />
+                                                          </button>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
