@@ -13,6 +13,7 @@ import {
   BarChart3,
   Zap,
   DollarSign,
+  Receipt,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -32,6 +33,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasGSTAccess, setHasGSTAccess] = useState(false);
 
   useEffect(() => {
     fetchApplications();
@@ -45,7 +47,14 @@ export default function Dashboard() {
       });
       if (response.ok) {
         const data = await response.json();
-        setApplications(data.applications || []);
+        const apps = data.applications || [];
+        setApplications(apps);
+        
+        // Check if user has approved GST Registration application
+        const gstApproved = apps.some(
+          (app: Application) => app.serviceId === 1 && app.status === "approved"
+        );
+        setHasGSTAccess(gstApproved);
       } else {
         throw new Error("Failed to fetch applications");
       }
@@ -257,7 +266,27 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 md:grid-cols-${hasGSTAccess ? '4' : '3'} gap-6`}>
+          {hasGSTAccess && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-primary" />
+                  GST Filing
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Manage your GST invoices and filings
+                </p>
+                <Link to="/gst-filing">
+                  <Button variant="outline" className="w-full">
+                    Go to GST Filing
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

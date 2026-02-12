@@ -1,6 +1,9 @@
 import { RequestHandler } from "express";
 import { userRepository } from "../repositories/userRepository";
 import { applicationRepository } from "../repositories/applicationRepository";
+import { gstRepository } from "../repositories/gstRepository";
+import { GSTClient } from "@shared/gst";
+import crypto from "crypto";
 
 /**
  * Get all users (admin only)
@@ -66,6 +69,47 @@ export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
         success: false,
         message: "Application not found",
       });
+    }
+
+    // Auto-enroll users for GST Filing when GST Registration is approved
+    if (status === "approved" && application.serviceId === 1) {
+      // Check if user already has a GST client
+      const existingClients = gstRepository.findClientsByUserId(application.userId);
+      
+      if (existingClients.length === 0) {
+        // Get user details
+        const user = userRepository.findById(application.userId);
+        
+        if (user) {
+          // Get current financial year (April to March in India)
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth() + 1; // 1-12
+          const fyStartYear = currentMonth >= 4 ? currentYear : currentYear - 1;
+          
+          // Create a default GST client for the user
+          const gstClient: GSTClient = {
+            id: `gst_${crypto.randomBytes(8).toString("hex")}`,
+            userId: application.userId,
+            clientName: `${user.firstName} ${user.lastName}`,
+            gstin: "", // To be filled by user
+            businessName: user.businessType === "individual" ? `${user.firstName} ${user.lastName}` : "",
+            panNumber: "", // To be filled by user
+            filingFrequency: "monthly",
+            financialYearStart: `${fyStartYear}-04-01`,
+            address: "",
+            state: "",
+            contactPerson: `${user.firstName} ${user.lastName}`,
+            contactEmail: user.email,
+            contactPhone: user.phone,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          
+          gstRepository.createClient(gstClient);
+          console.log(`✓ Auto-created GST client for user ${user.email} (Application: ${application.id})`);
+        }
+      }
     }
 
     res.json({
