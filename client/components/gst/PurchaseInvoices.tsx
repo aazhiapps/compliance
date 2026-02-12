@@ -33,7 +33,7 @@ export default function PurchaseInvoices({
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/gst/purchases/${clientId}?month=${month}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ export default function PurchaseInvoices({
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/gst/purchases/${id}`, {
         method: "DELETE",
         headers: {

@@ -107,7 +107,7 @@ export default function InvoiceForm({
 
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const endpoint = invoice
         ? `/api/gst/${type === "purchase" ? "purchases" : "sales"}/${invoice.id}`
         : `/api/gst/${type === "purchase" ? "purchases" : "sales"}`;

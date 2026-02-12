@@ -46,7 +46,7 @@ export default function FilingStatus({
   const loadFiling = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         `/api/gst/filings/${clientId}?financialYear=${financialYear}`,
         {
@@ -86,7 +86,7 @@ export default function FilingStatus({
   const handleSave = async () => {
     try {
       setSaving(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch("/api/gst/filings", {
         method: "POST",
         headers: {
