@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Download, Eye, MoreVertical } from "lucide-react";
+import { Search, Filter, Download, Eye, MoreVertical, DollarSign, TrendingUp, CheckCircle2, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface Payment {
@@ -114,38 +114,58 @@ export default function AdminPayments() {
           <p className="text-muted-foreground mt-1">Track and manage all payments</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100">
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-primary">₹{(totalRevenue / 100).toFixed(0)}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-600 font-medium">Total Revenue</p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">₹{(totalRevenue / 100).toFixed(0)}</p>
+                </div>
+                <DollarSign className="w-10 h-10 text-purple-400 opacity-50" />
+              </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100">
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Completed</p>
-              <p className="text-3xl font-bold text-success">{completedPayments}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600 font-medium">Completed</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">{completedPayments}</p>
+                </div>
+                <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
+              </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-yellow-50 to-yellow-100">
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Pending</p>
-              <p className="text-3xl font-bold text-yellow-600">{pendingPayments}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-yellow-600 font-medium">Pending</p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">{pendingPayments}</p>
+                </div>
+                <AlertCircle className="w-10 h-10 text-yellow-400 opacity-50" />
+              </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-red-100">
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Failed</p>
-              <p className="text-3xl font-bold text-red-600">{failedPayments}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-red-600 font-medium">Failed</p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">{failedPayments}</p>
+                </div>
+                <AlertCircle className="w-10 h-10 text-red-400 opacity-50" />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card>
+        {/* Search and Filters */}
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="flex gap-4 flex-col md:flex-row">
+            <div className="flex gap-3 flex-col md:flex-row">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                 <input
@@ -178,31 +198,31 @@ export default function AdminPayments() {
         </Card>
 
         {/* Payments Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Transactions ({filteredPayments.length})</CardTitle>
-            <CardDescription>Complete history of all payments received</CardDescription>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+            <CardTitle className="text-lg">Payment Transactions</CardTitle>
+            <CardDescription>{filteredPayments.length} total transactions - Complete history of all payments received</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Transaction ID</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Applicant</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Service</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Amount</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Method</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Date</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Actions</th>
+                  <tr className="border-b border-purple-200 bg-purple-50">
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Transaction ID</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Applicant</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Service</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Amount</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Method</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Date</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Status</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredPayments.map((payment) => (
                     <tr
                       key={payment.id}
-                      className="border-b border-border hover:bg-gray-50 transition-colors"
+                      className="border-b border-gray-200 hover:bg-purple-50 transition-colors"
                     >
                       <td className="py-3 px-4 font-mono text-sm text-muted-foreground">
                         {payment.transactionId}

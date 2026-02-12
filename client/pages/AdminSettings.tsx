@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Bell, Lock, Users, Zap, HelpCircle, CheckCircle } from "lucide-react";
+import { Settings, Bell, Lock, CheckCircle, Zap } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 export default function AdminSettings() {
@@ -55,13 +55,13 @@ export default function AdminSettings() {
         )}
 
         {/* General Settings */}
-        <Card>
-          <CardHeader>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
             <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5 text-blue-600" />
               General Settings
             </CardTitle>
-            <CardDescription>Basic system configuration</CardDescription>
+            <CardDescription>Basic system configuration and application details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
@@ -139,13 +139,13 @@ export default function AdminSettings() {
         </Card>
 
         {/* Notification Settings */}
-        <Card>
-          <CardHeader>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
             <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5 text-green-600" />
               Notification Settings
             </CardTitle>
-            <CardDescription>Configure how notifications are sent</CardDescription>
+            <CardDescription>Configure how notifications are sent to users and admins</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -192,13 +192,13 @@ export default function AdminSettings() {
         </Card>
 
         {/* Security Settings */}
-        <Card>
-          <CardHeader>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-red-50 to-red-100 border-b">
             <CardTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
+              <Lock className="w-5 h-5 text-red-600" />
               Security Settings
             </CardTitle>
-            <CardDescription>Configure security and access controls</CardDescription>
+            <CardDescription>Configure security policies and access controls</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">

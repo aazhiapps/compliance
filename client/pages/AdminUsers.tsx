@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, UserX, Edit } from "lucide-react";
+import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, UserX, Edit, Users, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
 
@@ -144,15 +144,20 @@ export default function AdminUsers() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-success/10 text-success";
+        return "bg-green-100 text-green-700 border border-green-200";
       case "inactive":
-        return "bg-yellow-50 text-yellow-700";
+        return "bg-yellow-100 text-yellow-700 border border-yellow-200";
       case "suspended":
-        return "bg-red-50 text-red-700";
+        return "bg-red-100 text-red-700 border border-red-200";
       default:
-        return "bg-gray-50 text-gray-700";
+        return "bg-gray-100 text-gray-700 border border-gray-200";
     }
   };
+
+  const recentUsers = users.sort((a, b) => new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime()).slice(0, 3);
+  const inactiveUsers = users.filter(u => u.status === "inactive" || !u.verified);
+  const verifiedUsers = users.filter(u => u.verified).length;
+  const activeUsers = users.filter(u => u.status === "active").length;
 
   return (
     <AdminLayout>
@@ -169,10 +174,156 @@ export default function AdminUsers() {
           </Button>
         </div>
 
-        {/* Filters */}
-        <Card>
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-600 font-medium">Total Users</p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">{users.length}</p>
+                </div>
+                <Users className="w-10 h-10 text-blue-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600 font-medium">Active Users</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">{activeUsers}</p>
+                </div>
+                <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-purple-600 font-medium">Verified</p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">{verifiedUsers}</p>
+                </div>
+                <Shield className="w-10 h-10 text-purple-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-orange-100">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-orange-600 font-medium">Pending Action</p>
+                  <p className="text-3xl font-bold text-orange-900 mt-1">{inactiveUsers.length}</p>
+                </div>
+                <AlertCircle className="w-10 h-10 text-orange-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Featured Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Recent Signups */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Recent Signups
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {recentUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(user.joinedDate).toLocaleDateString()}</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    setSelectedUserId(user.id);
+                    setModalOpen(true);
+                  }}>
+                    Review
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Pending Approvals */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-500" />
+                Pending Approvals
+              </CardTitle>
+              <CardDescription>{inactiveUsers.length} users need verification</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {inactiveUsers.slice(0, 3).map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-orange-600 capitalize">{user.status} • {!user.verified ? 'Unverified' : 'Verified'}</p>
+                  </div>
+                  <Button size="sm" className="bg-orange-500 hover:bg-orange-600" onClick={() => {
+                    setSelectedUserId(user.id);
+                    setModalOpen(true);
+                  }}>
+                    Approve
+                  </Button>
+                </div>
+              ))}
+              {inactiveUsers.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">All users verified!</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                User Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm font-medium">Active</p>
+                  <span className="text-sm font-semibold text-green-600">{activeUsers}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{width: `${(activeUsers/users.length)*100}%`}}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm font-medium">Verified</p>
+                  <span className="text-sm font-semibold text-purple-600">{verifiedUsers}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{width: `${(verifiedUsers/users.length)*100}%`}}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm font-medium">Pending</p>
+                  <span className="text-sm font-semibold text-orange-600">{inactiveUsers.length}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-orange-500 h-2 rounded-full" style={{width: `${(inactiveUsers.length/users.length)*100}%`}}></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="flex gap-4 flex-col md:flex-row">
+            <div className="flex gap-3 flex-col md:flex-row">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                 <input
@@ -195,7 +346,7 @@ export default function AdminUsers() {
                 </select>
                 <Button variant="outline" className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
-                  More Filters
+                  More
                 </Button>
               </div>
             </div>
@@ -203,31 +354,31 @@ export default function AdminUsers() {
         </Card>
 
         {/* Users Table */}
-        <Card>
-          <CardHeader>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Users ({filteredUsers.length})</CardTitle>
+                <CardTitle className="text-lg">All Users</CardTitle>
                 <CardDescription>
-                  {selectedUsers.size > 0 && `${selectedUsers.size} selected`}
+                  {selectedUsers.size > 0 ? `${selectedUsers.size} selected` : `${filteredUsers.length} total users`}
                 </CardDescription>
               </div>
               {selectedUsers.size > 0 && (
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="bg-success hover:bg-success/90"
+                    className="bg-success hover:bg-success/90 text-white"
                     onClick={handleBulkApprove}
                   >
-                    Approve Selected ({selectedUsers.size})
+                    Approve ({selectedUsers.size})
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-red-600 border-red-200"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                     onClick={handleBulkSuspend}
                   >
-                    Suspend Selected ({selectedUsers.size})
+                    Suspend ({selectedUsers.size})
                   </Button>
                 </div>
               )}
@@ -237,8 +388,8 @@ export default function AdminUsers() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4">
+                  <tr className="border-b border-blue-200 bg-blue-50">
+                    <th className="text-left py-4 px-4">
                       <input
                         type="checkbox"
                         onChange={(e) => {
@@ -251,18 +402,18 @@ export default function AdminUsers() {
                         className="rounded"
                       />
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Email</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Business</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Joined</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Apps</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Actions</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Name</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Email</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Business</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Joined</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Apps</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Status</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-border hover:bg-gray-50 transition-colors">
+                    <tr key={user.id} className="border-b border-gray-200 hover:bg-blue-50 transition-colors">
                       <td className="py-3 px-4">
                         <input
                           type="checkbox"
@@ -329,33 +480,7 @@ export default function AdminUsers() {
           </CardContent>
         </Card>
 
-        {/* Stats Footer */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Total Users</p>
-              <p className="text-3xl font-bold">{users.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Active</p>
-              <p className="text-3xl font-bold text-success">{users.filter((u) => u.status === "active").length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Verified</p>
-              <p className="text-3xl font-bold text-primary">{users.filter((u) => u.verified).length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Pending</p>
-              <p className="text-3xl font-bold text-yellow-600">{users.filter((u) => !u.verified).length}</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Footer - Hidden since we have featured sections */}
       </div>
 
       {/* User Edit Modal */}
