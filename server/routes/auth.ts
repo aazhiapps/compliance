@@ -86,7 +86,38 @@ const seedDemoApplications = () => {
       serviceId: 1,
       serviceName: "GST Registration",
       status: "approved",
-      documents: [],
+      documents: [
+        {
+          id: "doc_demo_1",
+          applicationId: "app_demo_1",
+          fileName: "PAN_Card.pdf",
+          fileUrl: "data:application/pdf;base64,demo",
+          fileType: "application/pdf",
+          fileSize: 245678,
+          status: "approved",
+          uploadedAt: "2024-02-01T11:00:00Z",
+        },
+        {
+          id: "doc_demo_2",
+          applicationId: "app_demo_1",
+          fileName: "Aadhar_Card.pdf",
+          fileUrl: "data:application/pdf;base64,demo",
+          fileType: "application/pdf",
+          fileSize: 189234,
+          status: "approved",
+          uploadedAt: "2024-02-01T11:30:00Z",
+        },
+        {
+          id: "doc_demo_3",
+          applicationId: "app_demo_1",
+          fileName: "Business_Address_Proof.pdf",
+          fileUrl: "data:application/pdf;base64,demo",
+          fileType: "application/pdf",
+          fileSize: 312456,
+          status: "approved",
+          uploadedAt: "2024-02-02T09:00:00Z",
+        },
+      ],
       createdAt: "2024-02-01T10:00:00Z",
       updatedAt: "2024-02-03T14:30:00Z",
       assignedExecutive: "Rajesh Kumar",
@@ -100,7 +131,28 @@ const seedDemoApplications = () => {
       serviceId: 2,
       serviceName: "Company Registration",
       status: "under_review",
-      documents: [],
+      documents: [
+        {
+          id: "doc_demo_4",
+          applicationId: "app_demo_2",
+          fileName: "MOA_AOA.pdf",
+          fileUrl: "data:application/pdf;base64,demo",
+          fileType: "application/pdf",
+          fileSize: 456789,
+          status: "verifying",
+          uploadedAt: "2024-02-04T13:00:00Z",
+        },
+        {
+          id: "doc_demo_5",
+          applicationId: "app_demo_2",
+          fileName: "Director_ID_Proof.pdf",
+          fileUrl: "data:application/pdf;base64,demo",
+          fileType: "application/pdf",
+          fileSize: 234567,
+          status: "approved",
+          uploadedAt: "2024-02-04T13:30:00Z",
+        },
+      ],
       createdAt: "2024-02-04T12:00:00Z",
       updatedAt: "2024-02-04T12:00:00Z",
       assignedExecutive: "Priya Singh",
@@ -114,7 +166,18 @@ const seedDemoApplications = () => {
       serviceId: 3,
       serviceName: "PAN Registration",
       status: "submitted",
-      documents: [],
+      documents: [
+        {
+          id: "doc_demo_6",
+          applicationId: "app_demo_3",
+          fileName: "Photo.jpg",
+          fileUrl: "data:image/jpeg;base64,demo",
+          fileType: "image/jpeg",
+          fileSize: 123456,
+          status: "uploaded",
+          uploadedAt: "2024-02-05T09:00:00Z",
+        },
+      ],
       createdAt: "2024-02-05T08:30:00Z",
       updatedAt: "2024-02-05T08:30:00Z",
       paymentStatus: "pending",
@@ -400,5 +463,57 @@ export const handleUploadDocument: RequestHandler = (req, res) => {
   res.status(201).json({
     success: true,
     document: newDocument,
+  });
+};
+
+export const handleGetUserDocuments: RequestHandler = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+
+  // Get all applications for this user
+  const userApplications = Array.from(applications.values()).filter(
+    (app) => app.userId === decoded.userId
+  );
+
+  // Group documents by service
+  const serviceDocsMap = new Map<number, {
+    serviceId: number;
+    serviceName: string;
+    documents: any[];
+    applicationIds: string[];
+  }>();
+
+  userApplications.forEach((app) => {
+    if (!serviceDocsMap.has(app.serviceId)) {
+      serviceDocsMap.set(app.serviceId, {
+        serviceId: app.serviceId,
+        serviceName: app.serviceName,
+        documents: [],
+        applicationIds: [],
+      });
+    }
+
+    const serviceDoc = serviceDocsMap.get(app.serviceId)!;
+    serviceDoc.applicationIds.push(app.id);
+    
+    // Add all documents from this application
+    if (app.documents && app.documents.length > 0) {
+      serviceDoc.documents.push(...app.documents);
+    }
+  });
+
+  const services = Array.from(serviceDocsMap.values());
+
+  res.json({
+    success: true,
+    services,
   });
 };

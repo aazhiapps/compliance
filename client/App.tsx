@@ -16,6 +16,7 @@ import Signup from "./pages/Signup";
 import ServiceDetail from "./pages/ServiceDetail";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
+import MyDocuments from "./pages/MyDocuments";
 import AdminOverview from "./pages/AdminOverview";
 import AdminUsers from "./pages/AdminUsers";
 import AdminApplications from "./pages/AdminApplications";
@@ -52,6 +53,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/documents"
+      element={
+        <ProtectedRoute>
+          <MyDocuments />
         </ProtectedRoute>
       }
     />
