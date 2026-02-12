@@ -30,7 +30,7 @@ export default function AdminGST() {
   const loadClients = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch("/api/gst/clients", {
         headers: {
           Authorization: `Bearer ${token}`,

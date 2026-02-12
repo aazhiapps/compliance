@@ -22,7 +22,7 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
   const loadSummary = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/gst/summary/${clientId}/${month}`, {
         headers: {
           Authorization: `Bearer ${token}`,
