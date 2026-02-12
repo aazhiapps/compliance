@@ -32,6 +32,15 @@ export function isValidEmail(email: string): boolean {
 
 /**
  * Validates password strength
+ * Requirements:
+ * - Minimum 8 characters
+ * - At least one uppercase letter
+ * - At least one lowercase letter
+ * - At least one number
+ * - At least one special character from: !@#$%^&*(),.?":{}|<>
+ * 
+ * Note: Special characters listed here are for password requirements only.
+ * User input should still be sanitized before display to prevent XSS.
  */
 export function validatePasswordStrength(password: string): { 
   valid: boolean; 

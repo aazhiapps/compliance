@@ -31,11 +31,11 @@ export default function Signup() {
   const handleNext = () => {
     // Validate step 1 (personal info)
     if (step === 1) {
-      if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
         setLocalError("Please enter your full name");
         return;
       }
-      if (!formData.email.trim()) {
+      if (!formData.email?.trim()) {
         setLocalError("Please enter your email");
         return;
       }
@@ -43,7 +43,7 @@ export default function Signup() {
         setLocalError("Please enter a valid email address");
         return;
       }
-      if (!formData.phone.trim()) {
+      if (!formData.phone?.trim()) {
         setLocalError("Please enter your phone number");
         return;
       }

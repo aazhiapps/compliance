@@ -11,7 +11,7 @@ export default function AdminSettings() {
     systemName: "ComplianCe",
     adminEmail: "admin@compliance.app",
     supportEmail: "support@compliance.app",
-    businessPhone: "+91 98765 50000",
+    businessPhone: "+91 XXXX XXXXX", // Placeholder - should be configured with actual phone
     maintenanceMode: false,
     autoApproveEnabled: false,
     emailNotifications: true,

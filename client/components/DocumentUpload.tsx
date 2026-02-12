@@ -35,7 +35,8 @@ export default function DocumentUpload({
   useEffect(() => {
     return () => {
       fileReadersRef.current.forEach((reader) => {
-        if (reader.readyState === FileReader.LOADING) {
+        // Abort readers that haven't completed yet
+        if (reader.readyState !== FileReader.DONE) {
           reader.abort();
         }
       });
