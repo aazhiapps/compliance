@@ -8,7 +8,8 @@ import { gstRepository } from "../repositories/gstRepository";
 
 /**
  * Seed demo GST data for development/testing
- * WARNING: Remove or disable in production
+ * WARNING: This should only run in development/testing environments
+ * The server/index.ts file includes a check to prevent running in production
  */
 
 /**
