@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Download, Eye, MoreVertical, DollarSign, TrendingUp, CheckCircle2, AlertCircle } from "lucide-react";
+import { Search, Download, Eye, MoreVertical, DollarSign, CheckCircle2, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface Payment {

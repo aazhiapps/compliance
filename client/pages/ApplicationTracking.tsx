@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowLeft,
   Clock,
@@ -9,7 +9,6 @@ import {
   AlertCircle,
   FileText,
   MessageCircle,
-  User,
   Phone,
   Mail,
   Download,
@@ -37,7 +36,7 @@ interface Document {
 export default function ApplicationTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "documents" | "chat">("timeline");
@@ -242,7 +241,7 @@ export default function ApplicationTracking() {
                     <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary to-gray-200"></div>
 
                     {/* Timeline events */}
-                    {application.timeline.map((event, idx) => (
+                    {application.timeline.map((event) => (
                       <div key={event.id} className="relative pl-20">
                         {/* Timeline dot */}
                         <div className="absolute -left-2.5 top-1 w-6 h-6 rounded-full border-4 border-white bg-primary flex items-center justify-center">

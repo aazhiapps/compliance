@@ -11,8 +11,6 @@ import {
   CreditCard,
   ArrowRight,
   Clock,
-  TrendingUp,
-  Lock,
 } from "lucide-react";
 import { services, features as featuresData, howItWorks } from "@shared/staticData";
 

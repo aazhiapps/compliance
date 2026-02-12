@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, Edit, Trash2, Eye, MoreVertical, Package, TrendingUp } from "lucide-react";
+import { Search, Filter, Plus, Edit, Eye, MoreVertical, Package, TrendingUp } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface Service {
@@ -20,7 +20,7 @@ interface Service {
 export default function AdminServices() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [services, setServices] = useState<Service[]>([
+  const [services] = useState<Service[]>([
     {
       id: "svc_1",
       name: "GST Registration",

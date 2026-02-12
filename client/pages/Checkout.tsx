@@ -3,11 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ShoppingCart,
   CheckCircle,
   Lock,
   ArrowLeft,
-  DollarSign,
   FileText,
   Clock,
   AlertCircle,
@@ -206,7 +204,7 @@ export default function Checkout() {
           email: user.email,
           contact: user.phone,
         },
-        handler: function (response: any) {
+        handler: function (_response: any) {
           // Payment successful
           navigate(`/dashboard`);
         },

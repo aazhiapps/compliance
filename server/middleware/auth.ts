@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import type { StringValue } from "ms";
 
 const JWT_SECRET = process.env.JWT_SECRET;

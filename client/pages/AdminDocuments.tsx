@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Download, Eye, Trash2, FileText, Check, X, Clock, TrendingUp, MoreVertical } from "lucide-react";
+import { Search, Filter, Download, Eye, FileText, Check, X, Clock, MoreVertical } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface Document {
@@ -20,7 +20,7 @@ interface Document {
 export default function AdminDocuments() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
-  const [documents, setDocuments] = useState<Document[]>([
+  const [documents] = useState<Document[]>([
     {
       id: "doc_1",
       fileName: "PAN_Card.pdf",

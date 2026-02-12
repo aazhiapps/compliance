@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, AlertCircle, CheckCircle2, Clock, TrendingUp, Eye, Edit, MoreVertical } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Search, Filter, Plus, AlertCircle, CheckCircle2, Clock, Eye, Edit, MoreVertical } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface ComplianceItem {
@@ -19,7 +19,7 @@ interface ComplianceItem {
 export default function AdminCompliance() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
-  const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([
+  const [complianceItems] = useState<ComplianceItem[]>([
     {
       id: "comp_1",
       name: "GDPR Compliance",

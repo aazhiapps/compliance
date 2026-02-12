@@ -28,7 +28,6 @@ import AdminDocuments from "./pages/AdminDocuments";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
-  BarChart3,
   BookOpen,
   Users,
   HelpCircle,
