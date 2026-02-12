@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle,
   Lock,
@@ -67,6 +68,7 @@ export default function Checkout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, token } = useAuth();
+  const { toast } = useToast();
   const serviceId = id ? parseInt(id) : 1;
   const service = services[serviceId];
 
@@ -206,7 +208,13 @@ export default function Checkout() {
         },
         handler: function (_response: any) {
           // Payment successful
-          navigate(`/dashboard`);
+          toast({
+            title: "Payment Successful!",
+            description: "Your application has been submitted successfully.",
+          });
+          setTimeout(() => {
+            navigate(`/dashboard`);
+          }, 1000);
         },
         modal: {
           ondismiss: function () {

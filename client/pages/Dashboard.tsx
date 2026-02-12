@@ -307,8 +307,8 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 View and manage your payments
               </p>
-              <Button variant="outline" className="w-full" disabled>
-                View Payments
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/admin/payments">View Payments</Link>
               </Button>
             </CardContent>
           </Card>

@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Clock,
   CheckCircle,
   AlertCircle,
   FileText,
-  MessageCircle,
   Phone,
   Mail,
   Download,
@@ -37,9 +37,24 @@ export default function ApplicationTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user: _user } = useAuth();
+  const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "documents" | "chat">("timeline");
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState<Array<{
+    id: string;
+    sender: "user" | "admin";
+    message: string;
+    timestamp: string;
+  }>>([
+    {
+      id: "msg_1",
+      sender: "admin",
+      message: "Hello! I'm reviewing your application. Please let me know if you have any questions.",
+      timestamp: new Date().toISOString(),
+    },
+  ]);
 
   // Mock application data
   const application = {
@@ -133,6 +148,40 @@ export default function ApplicationTracking() {
       default:
         return "bg-gray-50 text-gray-700";
     }
+  };
+
+  const handleDownloadDocument = (doc: Document) => {
+    toast({
+      title: "Download Started",
+      description: `Downloading ${doc.name}...`,
+    });
+    // In a real app, this would trigger an actual download
+    // For now, we just show a toast
+  };
+
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    
+    const newMessage = {
+      id: `msg_${Date.now()}`,
+      sender: "user" as const,
+      message: chatMessage,
+      timestamp: new Date().toISOString(),
+    };
+    
+    setChatMessages([...chatMessages, newMessage]);
+    setChatMessage("");
+    
+    // Simulate admin reply after 2 seconds
+    setTimeout(() => {
+      const adminReply = {
+        id: `msg_${Date.now()}`,
+        sender: "admin" as const,
+        message: "Thank you for your message. We'll get back to you shortly.",
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, adminReply]);
+    }, 2000);
   };
 
   return (
@@ -309,7 +358,11 @@ export default function ApplicationTracking() {
                             {doc.status === "uploaded" && "Uploaded"}
                             {doc.status === "pending" && "Pending"}
                           </span>
-                          <button className="p-2 hover:bg-gray-100 rounded transition-colors">
+                          <button 
+                            className="p-2 hover:bg-gray-100 rounded transition-colors"
+                            onClick={() => handleDownloadDocument(doc)}
+                            title="Download document"
+                          >
                             <Download className="w-4 h-4 text-muted-foreground" />
                           </button>
                         </div>
@@ -324,12 +377,50 @@ export default function ApplicationTracking() {
             {activeTab === "chat" && (
               <Card>
                 <CardContent className="p-6">
-                  <div className="text-center py-12">
-                    <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Chat feature coming soon</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      You can message your assigned executive here
-                    </p>
+                  <div className="flex flex-col h-[500px]">
+                    {/* Chat Messages */}
+                    <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                      {chatMessages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[70%] rounded-lg p-3 ${
+                              msg.sender === "user"
+                                ? "bg-primary text-white"
+                                : "bg-gray-100 text-foreground"
+                            }`}
+                          >
+                            <p className="text-sm">{msg.message}</p>
+                            <p className="text-xs mt-1 opacity-70">
+                              {new Date(msg.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Chat Input */}
+                    <div className="border-t pt-4">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={chatMessage}
+                          onChange={(e) => setChatMessage(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              handleSendMessage();
+                            }
+                          }}
+                          placeholder="Type your message..."
+                          className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        <Button onClick={handleSendMessage} disabled={!chatMessage.trim()}>
+                          Send
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
