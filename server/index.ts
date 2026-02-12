@@ -49,6 +49,10 @@ import {
   authLimiter,
   fileLimiter,
 } from "./middleware/rateLimiter";
+import { seedGSTData } from "./utils/gstSeedData";
+
+// Seed GST demo data on startup
+seedGSTData();
 
 export function createServer() {
   const app = express();
