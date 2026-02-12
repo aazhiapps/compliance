@@ -54,6 +54,7 @@ export interface Document {
   fileName: string;
   fileUrl: string;
   fileType: string;
+  fileSize?: number;
   status: "uploaded" | "verifying" | "approved" | "rejected";
   uploadedAt: string;
   remarks?: string;

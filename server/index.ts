@@ -12,16 +12,32 @@ import {
   handleUploadDocument,
   handleGetUserDocuments,
 } from "./routes/auth";
+import { authenticateToken } from "./middleware/auth";
+import { validateRequest, schemas } from "./middleware/validation";
+import { errorHandler } from "./middleware/errorHandler";
+import { requestLogger } from "./middleware/logging";
+import {
+  apiLimiter,
+  authLimiter,
+  fileLimiter,
+} from "./middleware/rateLimiter";
 
 export function createServer() {
   const app = express();
 
-  // Middleware
-  app.use(cors());
+  // Global middleware
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true,
+  }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(requestLogger);
 
-  // Example API routes
+  // Apply rate limiting to all API routes
+  app.use("/api/", apiLimiter);
+
+  // Health check endpoint
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
@@ -29,19 +45,45 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Auth routes
-  app.post("/api/auth/signup", handleSignup);
-  app.post("/api/auth/login", handleLogin);
-  app.get("/api/auth/profile", handleGetProfile);
+  // Public auth routes with validation and rate limiting
+  app.post(
+    "/api/auth/signup",
+    authLimiter,
+    validateRequest(schemas.signup),
+    handleSignup,
+  );
+  app.post(
+    "/api/auth/login",
+    authLimiter,
+    validateRequest(schemas.login),
+    handleLogin,
+  );
   app.post("/api/auth/logout", handleLogout);
 
-  // Application routes
-  app.get("/api/applications", handleGetApplications);
-  app.post("/api/applications", handleCreateApplication);
-  app.post("/api/applications/:id/documents", handleUploadDocument);
-  
-  // Document routes
-  app.get("/api/documents", handleGetUserDocuments);
+  // Protected auth routes
+  app.get("/api/auth/profile", authenticateToken, handleGetProfile);
+
+  // Protected application routes
+  app.get("/api/applications", authenticateToken, handleGetApplications);
+  app.post(
+    "/api/applications",
+    authenticateToken,
+    validateRequest(schemas.createApplication),
+    handleCreateApplication,
+  );
+  app.post(
+    "/api/applications/:id/documents",
+    authenticateToken,
+    fileLimiter,
+    validateRequest(schemas.uploadDocument),
+    handleUploadDocument,
+  );
+
+  // Protected document routes
+  app.get("/api/documents", authenticateToken, handleGetUserDocuments);
+
+  // Global error handler (must be last)
+  app.use(errorHandler);
 
   return app;
 }
