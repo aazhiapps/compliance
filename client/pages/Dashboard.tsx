@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
   FileText,
@@ -21,12 +22,14 @@ interface Application {
   serviceName: string;
   status: "draft" | "submitted" | "under_review" | "approved" | "rejected";
   paymentStatus: "pending" | "paid" | "refunded";
+  paymentAmount?: number;
   createdAt: string;
   eta: string;
 }
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,9 +46,16 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setApplications(data.applications || []);
+      } else {
+        throw new Error("Failed to fetch applications");
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load your applications. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +109,7 @@ export default function Dashboard() {
       label: "Total Paid",
       value: `₹${applications
         .filter((a) => a.paymentStatus === "paid")
-        .reduce((sum, a) => sum + 999, 0)}`,
+        .reduce((sum, a) => sum + (a.paymentAmount || 0), 0)}`,
       icon: <DollarSign className="w-6 h-6 text-green-600" />,
     },
   ];

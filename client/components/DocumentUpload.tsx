@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ interface DocumentUploadProps {
   maxFiles?: number;
   acceptedFormats?: string[];
   maxFileSize?: number; // in MB
+  applicationId?: string; // Optional: if provided, will upload to server immediately
 }
 
 export default function DocumentUpload({
@@ -23,10 +24,82 @@ export default function DocumentUpload({
   maxFiles = 5,
   acceptedFormats = ["pdf", "jpg", "jpeg", "png"],
   maxFileSize = 10,
+  applicationId,
 }: DocumentUploadProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileReadersRef = useRef<FileReader[]>([]);
+
+  // Cleanup FileReaders on unmount
+  useEffect(() => {
+    return () => {
+      fileReadersRef.current.forEach((reader) => {
+        // Abort readers that haven't completed yet
+        if (reader.readyState !== FileReader.DONE) {
+          reader.abort();
+        }
+      });
+      fileReadersRef.current = [];
+    };
+  }, []);
+
+  const uploadFileToServer = async (uploadedFile: UploadedFile, appId: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const reader = new FileReader();
+      fileReadersRef.current.push(reader);
+      
+      reader.onloadend = async () => {
+        const fileUrl = reader.result as string;
+        
+        const response = await fetch(`/api/applications/${appId}/documents`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            applicationId: appId,
+            fileName: uploadedFile.file.name,
+            fileType: uploadedFile.file.type,
+            fileUrl: fileUrl,
+          }),
+        });
+
+        if (response.ok) {
+          setUploadedFiles((prev) =>
+            prev.map((f) =>
+              f.id === uploadedFile.id ? { ...f, status: "success" } : f
+            )
+          );
+        } else {
+          throw new Error("Upload failed");
+        }
+      };
+      
+      reader.onerror = () => {
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadedFile.id
+              ? { ...f, status: "error", error: "Failed to read file" }
+              : f
+          )
+        );
+      };
+      
+      reader.readAsDataURL(uploadedFile.file);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadedFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadedFile.id
+            ? { ...f, status: "error", error: "Upload failed" }
+            : f
+        )
+      );
+    }
+  };
 
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     // Check file size
@@ -75,6 +148,7 @@ export default function DocumentUpload({
         // Create preview for images
         if (file.type.startsWith("image/")) {
           const reader = new FileReader();
+          fileReadersRef.current.push(reader);
           reader.onload = (e) => {
             const fileToUpdate = newFiles.find((f) => f.id === uploadedFile.id);
             if (fileToUpdate && e.target?.result) {
@@ -84,14 +158,19 @@ export default function DocumentUpload({
           reader.readAsDataURL(file);
         }
 
-        // Simulate upload success
-        setTimeout(() => {
-          setUploadedFiles((prev) =>
-            prev.map((f) =>
-              f.id === uploadedFile.id ? { ...f, status: "success" } : f
-            )
-          );
-        }, 1500);
+        // Upload to server if applicationId is provided
+        if (applicationId) {
+          uploadFileToServer(uploadedFile, applicationId);
+        } else {
+          // Just simulate success for local preview
+          setTimeout(() => {
+            setUploadedFiles((prev) =>
+              prev.map((f) =>
+                f.id === uploadedFile.id ? { ...f, status: "success" } : f
+              )
+            );
+          }, 1500);
+        }
       }
 
       newFiles.push(uploadedFile);

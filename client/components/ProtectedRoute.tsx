@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/login" />;
   }
 
-  if (requiredRole && user?.role !== requiredRole && user?.role !== "admin") {
+  if (requiredRole && user?.role !== "admin" && user?.role !== requiredRole) {
     return (
       <PlaceholderPage
         title="Access Denied"

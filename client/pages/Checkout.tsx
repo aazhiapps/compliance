@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +78,17 @@ export default function Checkout() {
   const [error, setError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
+  const razorpayScriptRef = useRef<HTMLScriptElement | null>(null);
+
+  // Cleanup Razorpay script on unmount
+  useEffect(() => {
+    return () => {
+      if (razorpayScriptRef.current) {
+        document.body.removeChild(razorpayScriptRef.current);
+        razorpayScriptRef.current = null;
+      }
+    };
+  }, []);
 
   if (!service) {
     return (
@@ -157,26 +168,34 @@ export default function Checkout() {
       const appData = await appResponse.json();
       const applicationId = appData.application.id;
 
-      // Upload documents
+      // Upload documents with error handling
       for (const uploadedFile of uploadedFiles) {
         if (uploadedFile.status === "success") {
-          const formData = new FormData();
-          formData.append("applicationId", applicationId);
-          formData.append("fileName", uploadedFile.file.name);
-          formData.append("fileType", uploadedFile.file.type);
-          formData.append("fileUrl", `https://example.com/docs/${uploadedFile.file.name}`);
+          try {
+            const formData = new FormData();
+            formData.append("applicationId", applicationId);
+            formData.append("fileName", uploadedFile.file.name);
+            formData.append("fileType", uploadedFile.file.type);
+            formData.append("fileUrl", `https://example.com/docs/${uploadedFile.file.name}`);
 
-          await fetch("/api/applications/" + applicationId + "/documents", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
+            const uploadResponse = await fetch("/api/applications/" + applicationId + "/documents", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+              console.error(`Failed to upload ${uploadedFile.file.name}`);
+            }
+          } catch (uploadError) {
+            console.error(`Error uploading ${uploadedFile.file.name}:`, uploadError);
+          }
         }
       }
 
       // Initialize Razorpay
       const options = {
-        key: "rzp_test_YOUR_KEY", // Replace with actual Razorpay key
+        key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_YOUR_KEY", // Get from environment variable
         amount: finalPrice * 100, // Amount in paise
         currency: "INR",
         name: "ComplianCe",
@@ -205,6 +224,7 @@ export default function Checkout() {
         const razorpay = new (window as any).Razorpay(options);
         razorpay.open();
       };
+      razorpayScriptRef.current = script;
       document.body.appendChild(script);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed");
