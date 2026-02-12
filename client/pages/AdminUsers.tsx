@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, UserX, Edit, Users, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, Edit, Users, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
 

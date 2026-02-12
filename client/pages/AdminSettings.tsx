@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Bell, Lock, CheckCircle, Zap } from "lucide-react";
+import { Settings, Bell, Lock, CheckCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 export default function AdminSettings() {

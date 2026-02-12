@@ -11,8 +11,6 @@ import {
   CreditCard,
   ArrowRight,
   Clock,
-  TrendingUp,
-  Lock,
 } from "lucide-react";
 import { services, features as featuresData, howItWorks } from "@shared/staticData";
 
@@ -66,7 +64,16 @@ export default function Index() {
                     Get Started Free <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full sm:w-auto text-base"
+                  onClick={() => {
+                    document.getElementById('services')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                  }}
+                >
                   View All Services
                 </Button>
               </div>

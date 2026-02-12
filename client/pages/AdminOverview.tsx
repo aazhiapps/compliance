@@ -1,14 +1,13 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import {
-  BarChart3,
   TrendingUp,
   Users,
   FileText,
-  DollarSign,
   CheckCircle,
-  AlertCircle,
   Clock,
   ChevronRight,
   Package,
@@ -17,60 +16,97 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
+interface AdminStats {
+  totalUsers: number;
+  totalApplications: number;
+  pendingApplications: number;
+  approvedApplications: number;
+  rejectedApplications: number;
+  recentApplications: Array<{
+    id: string;
+    userId: string;
+    serviceName: string;
+    serviceType: string;
+    status: string;
+    paymentAmount: number;
+    createdAt: string;
+  }>;
+}
+
 export default function AdminOverview() {
-  const stats = [
+  const { toast } = useToast();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/admin/stats", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
+      } else {
+        throw new Error("Failed to fetch stats");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load admin statistics",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading statistics...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const statCards = stats ? [
     {
       label: "Total Users",
-      value: "1,243",
+      value: stats.totalUsers.toString(),
       change: "+12%",
       icon: <Users className="w-6 h-6 text-primary" />,
     },
     {
       label: "Active Applications",
-      value: "456",
+      value: stats.totalApplications.toString(),
       change: "+23%",
       icon: <FileText className="w-6 h-6 text-blue-600" />,
     },
     {
-      label: "Total Revenue",
-      value: "₹24,50,000",
-      change: "+18%",
-      icon: <DollarSign className="w-6 h-6 text-green-600" />,
+      label: "Pending Review",
+      value: stats.pendingApplications.toString(),
+      change: "+5%",
+      icon: <Clock className="w-6 h-6 text-yellow-600" />,
     },
     {
-      label: "Approval Rate",
-      value: "94.2%",
+      label: "Approved",
+      value: stats.approvedApplications.toString(),
       change: "+2.1%",
       icon: <CheckCircle className="w-6 h-6 text-success" />,
     },
-  ];
-
-  const recentApplications = [
-    {
-      id: "app_001",
-      user: "Demo User",
-      service: "GST Registration",
-      status: "approved",
-      date: "2024-02-05",
-      amount: "₹499",
-    },
-    {
-      id: "app_002",
-      user: "Rajesh Kumar",
-      service: "Company Registration",
-      status: "under_review",
-      date: "2024-02-04",
-      amount: "₹2,999",
-    },
-    {
-      id: "app_003",
-      user: "Priya Singh",
-      service: "PAN Registration",
-      status: "submitted",
-      date: "2024-02-03",
-      amount: "₹299",
-    },
-  ];
+  ] : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -105,7 +141,7 @@ export default function AdminOverview() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {stats.map((stat, idx) => (
+          {statCards.map((stat, idx) => (
             <Card key={idx}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -222,28 +258,32 @@ export default function AdminOverview() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentApplications.map((app) => (
-                    <div
-                      key={app.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{app.service}</p>
-                        <p className="text-sm text-muted-foreground">{app.user}</p>
+                  {stats && stats.recentApplications.length > 0 ? (
+                    stats.recentApplications.map((app) => (
+                      <div
+                        key={app.id}
+                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">{app.serviceName}</p>
+                          <p className="text-sm text-muted-foreground">{new Date(app.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span
+                            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              app.status
+                            )}`}
+                          >
+                            {getStatusIcon(app.status)}
+                            {app.status.replace(/_/g, " ")}
+                          </span>
+                          <span className="text-sm font-medium text-muted-foreground">₹{app.paymentAmount}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span
-                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            app.status
-                          )}`}
-                        >
-                          {getStatusIcon(app.status)}
-                          {app.status.replace(/_/g, " ")}
-                        </span>
-                        <span className="text-sm font-medium text-muted-foreground">{app.amount}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">No recent applications</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

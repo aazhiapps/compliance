@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Upload, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface UploadedFile {
