@@ -266,7 +266,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className={`grid grid-cols-1 md:grid-cols-${hasGSTAccess ? '4' : '3'} gap-6`}>
+        <div className={hasGSTAccess ? 'grid grid-cols-1 md:grid-cols-4 gap-6' : 'grid grid-cols-1 md:grid-cols-3 gap-6'}>
           {hasGSTAccess && (
             <Card>
               <CardHeader>
