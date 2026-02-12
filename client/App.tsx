@@ -21,6 +21,9 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminApplications from "./pages/AdminApplications";
 import AdminPayments from "./pages/AdminPayments";
 import AdminSettings from "./pages/AdminSettings";
+import AdminServices from "./pages/AdminServices";
+import AdminCompliance from "./pages/AdminCompliance";
+import AdminDocuments from "./pages/AdminDocuments";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -97,6 +100,30 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminSettings />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/services"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminServices />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/compliance"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminCompliance />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/documents"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminDocuments />
         </ProtectedRoute>
       }
     />

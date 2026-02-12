@@ -11,6 +11,9 @@ import {
   AlertCircle,
   Clock,
   ChevronRight,
+  Package,
+  CheckCircle2,
+  File,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -120,6 +123,84 @@ export default function AdminOverview() {
           ))}
         </div>
 
+        {/* Management Sections */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Services Card */}
+          <Link to="/admin/services">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-foreground">Services</h3>
+                  <Package className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Active Services</span>
+                    <span className="font-bold">5</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Revenue</span>
+                    <span className="font-bold">₹2.46L</span>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full mt-3">
+                    Manage Services <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Compliance Card */}
+          <Link to="/admin/compliance">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-foreground">Compliance</h3>
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Compliant</span>
+                    <span className="font-bold text-green-600">3</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">At Risk</span>
+                    <span className="font-bold text-orange-600">2</span>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full mt-3">
+                    View Compliance <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Documents Card */}
+          <Link to="/admin/documents">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-foreground">Documents</h3>
+                  <File className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Docs</span>
+                    <span className="font-bold">156</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Pending Review</span>
+                    <span className="font-bold text-yellow-600">18</span>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full mt-3">
+                    View Documents <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Applications */}
@@ -187,14 +268,18 @@ export default function AdminOverview() {
                     Review Applications
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  View Payments
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </Button>
+                <Link to="/admin/documents">
+                  <Button variant="outline" className="w-full justify-start">
+                    <File className="w-4 h-4 mr-2" />
+                    Review Documents
+                  </Button>
+                </Link>
+                <Link to="/admin/compliance">
+                  <Button variant="outline" className="w-full justify-start">
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Compliance Status
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
