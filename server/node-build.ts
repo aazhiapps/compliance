@@ -2,6 +2,7 @@ import path from "path";
 import { createServer } from "./index";
 import * as express from "express";
 import { validateEnv } from "./config/env";
+import rateLimit from "express-rate-limit";
 
 // Validate environment variables before starting server
 validateEnv();
@@ -16,8 +17,17 @@ const distPath = path.join(__dirname, "../spa");
 // Serve static files
 app.use(express.static(distPath));
 
+// Rate limiter for static file serving
+const staticFileLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Generous limit for legitimate use
+  message: "Too many requests for static files",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Handle React Router - serve index.html for all non-API routes
-app.use((req, res, next) => {
+app.use(staticFileLimiter, (req, res, next) => {
   // Skip for API routes - let them hit the 404 handler below
   if (req.path.startsWith("/api/")) {
     return next();

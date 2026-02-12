@@ -16,6 +16,11 @@ import { authenticateToken } from "./middleware/auth";
 import { validateRequest, schemas } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
+import {
+  apiLimiter,
+  authLimiter,
+  fileLimiter,
+} from "./middleware/rateLimiter";
 
 export function createServer() {
   const app = express();
@@ -29,6 +34,9 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
 
+  // Apply rate limiting to all API routes
+  app.use("/api/", apiLimiter);
+
   // Health check endpoint
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
@@ -37,9 +45,19 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Public auth routes with validation
-  app.post("/api/auth/signup", validateRequest(schemas.signup), handleSignup);
-  app.post("/api/auth/login", validateRequest(schemas.login), handleLogin);
+  // Public auth routes with validation and rate limiting
+  app.post(
+    "/api/auth/signup",
+    authLimiter,
+    validateRequest(schemas.signup),
+    handleSignup,
+  );
+  app.post(
+    "/api/auth/login",
+    authLimiter,
+    validateRequest(schemas.login),
+    handleLogin,
+  );
   app.post("/api/auth/logout", handleLogout);
 
   // Protected auth routes
@@ -56,6 +74,7 @@ export function createServer() {
   app.post(
     "/api/applications/:id/documents",
     authenticateToken,
+    fileLimiter,
     validateRequest(schemas.uploadDocument),
     handleUploadDocument,
   );

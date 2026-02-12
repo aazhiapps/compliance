@@ -23,7 +23,8 @@ server/
 │   ├── auth.ts       # Authentication & JWT handling
 │   ├── validation.ts # Request validation with Zod
 │   ├── errorHandler.ts # Global error handling
-│   └── logging.ts    # Request logging
+│   ├── logging.ts    # Request logging
+│   └── rateLimiter.ts # Rate limiting
 ├── repositories/     # Data access layer
 │   ├── userRepository.ts
 │   └── applicationRepository.ts
@@ -152,7 +153,25 @@ app.use(cors({
 }));
 ```
 
-### 5. Input Sanitization
+### 5. Rate Limiting
+
+**File:** `server/middleware/rateLimiter.ts`
+
+Three levels of rate limiting:
+
+1. **General API Limiter** - 100 requests per 15 minutes for all API routes
+2. **Auth Limiter** - 5 attempts per 15 minutes for login/signup (prevents brute force)
+3. **File Limiter** - 20 file operations per hour (prevents abuse)
+
+```typescript
+// Authentication routes
+app.post("/api/auth/login", authLimiter, validateRequest(schemas.login), handleLogin);
+
+// File upload routes
+app.post("/api/documents", authenticateToken, fileLimiter, handleUploadDocument);
+```
+
+### 6. Input Sanitization
 
 All user input is validated and sanitized through Zod schemas before processing.
 
