@@ -3,15 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, User, Mail, Phone, Shield, CheckCircle, AlertCircle } from "lucide-react";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  businessType: string;
+  joinedDate: string;
+  status: "active" | "inactive" | "suspended";
+  applications: number;
+  verified: boolean;
+}
+
 interface UserEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  userPhone: string;
-  userStatus: "active" | "inactive" | "suspended";
-  onSave: (userId: string, updates: any) => void;
+  user: User;
+  onSave: (updatedUser: User) => void;
   onSuspend: (userId: string) => void;
   onApprove: (userId: string) => void;
 }
@@ -19,39 +26,40 @@ interface UserEditModalProps {
 export default function UserEditModal({
   isOpen,
   onClose,
-  userId,
-  userName,
-  userEmail,
-  userPhone,
-  userStatus,
+  user,
   onSave,
   onSuspend,
   onApprove,
 }: UserEditModalProps) {
   const [formData, setFormData] = useState({
-    name: userName,
-    email: userEmail,
-    phone: userPhone,
-    status: userStatus,
+    name: user.name,
+    email: user.email,
+    phone: "",
+    status: user.status,
     notes: "",
   });
 
   if (!isOpen) return null;
 
   const handleSave = () => {
-    onSave(userId, formData);
-    onClose();
+    const updatedUser: User = {
+      ...user,
+      name: formData.name,
+      email: formData.email,
+      status: formData.status,
+    };
+    onSave(updatedUser);
   };
 
   const handleSuspend = () => {
     if (window.confirm("Are you sure you want to suspend this user?")) {
-      onSuspend(userId);
+      onSuspend(user.id);
       onClose();
     }
   };
 
   const handleApprove = () => {
-    onApprove(userId);
+    onApprove(user.id);
     onClose();
   };
 
@@ -79,16 +87,16 @@ export default function UserEditModal({
           <div>
             <span
               className={`px-4 py-2 rounded-full font-semibold flex items-center gap-2 w-fit ${
-                userStatus === "active"
+                user.status === "active"
                   ? "bg-success/10 text-success"
-                  : userStatus === "suspended"
+                  : user.status === "suspended"
                     ? "bg-red-50 text-red-700"
                     : "bg-yellow-50 text-yellow-700"
               }`}
             >
-              {userStatus === "active" && <CheckCircle className="w-5 h-5" />}
-              {userStatus === "suspended" && <AlertCircle className="w-5 h-5" />}
-              {userStatus.charAt(0).toUpperCase() + userStatus.slice(1)}
+              {user.status === "active" && <CheckCircle className="w-5 h-5" />}
+              {user.status === "suspended" && <AlertCircle className="w-5 h-5" />}
+              {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
             </span>
           </div>
 
@@ -176,7 +184,7 @@ export default function UserEditModal({
             <Button onClick={handleSave} className="flex-1 bg-primary hover:bg-primary/90">
               Save Changes
             </Button>
-            {userStatus !== "active" && (
+            {user.status !== "active" && (
               <Button
                 onClick={handleApprove}
                 className="flex-1 bg-success hover:bg-success/90 flex items-center gap-2"
@@ -185,7 +193,7 @@ export default function UserEditModal({
                 Approve User
               </Button>
             )}
-            {userStatus !== "suspended" && (
+            {user.status !== "suspended" && (
               <Button
                 onClick={handleSuspend}
                 variant="outline"

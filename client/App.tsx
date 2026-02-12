@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard";
 import AdminOverview from "./pages/AdminOverview";
 import AdminUsers from "./pages/AdminUsers";
 import AdminApplications from "./pages/AdminApplications";
+import AdminPayments from "./pages/AdminPayments";
+import AdminSettings from "./pages/AdminSettings";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -86,11 +88,7 @@ const AppRoutes = () => (
       path="/admin/payments"
       element={
         <ProtectedRoute requiredRole="admin">
-          <PlaceholderPage
-            title="Payment Management"
-            description="Coming soon - Manage all payments and transactions"
-            icon={<FileText className="w-16 h-16 text-muted-foreground" />}
-          />
+          <AdminPayments />
         </ProtectedRoute>
       }
     />
@@ -98,11 +96,7 @@ const AppRoutes = () => (
       path="/admin/settings"
       element={
         <ProtectedRoute requiredRole="admin">
-          <PlaceholderPage
-            title="Admin Settings"
-            description="Coming soon - Configure platform settings"
-            icon={<FileText className="w-16 h-16 text-muted-foreground" />}
-          />
+          <AdminSettings />
         </ProtectedRoute>
       }
     />

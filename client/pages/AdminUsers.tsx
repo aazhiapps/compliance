@@ -20,9 +20,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-
-  // Mock user data
-  const users: User[] = [
+  const [users, setUsers] = useState<User[]>([
     {
       id: "user_1",
       name: "Demo User",
@@ -73,7 +71,9 @@ export default function AdminUsers() {
       applications: 3,
       verified: true,
     },
-  ];
+  ]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -82,6 +82,54 @@ export default function AdminUsers() {
     const matchesStatus = filterStatus === "all" || user.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const handleSaveUser = (updatedUser: User) => {
+    setUsers((prev) =>
+      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+    );
+    setModalOpen(false);
+    setSelectedUserId(null);
+  };
+
+  const handleApproveUser = (userId: string) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId
+          ? { ...user, verified: true, status: "active" as const }
+          : user
+      )
+    );
+  };
+
+  const handleSuspendUser = (userId: string) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId ? { ...user, status: "suspended" as const } : user
+      )
+    );
+  };
+
+  const handleBulkApprove = () => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        selectedUsers.has(user.id)
+          ? { ...user, verified: true, status: "active" as const }
+          : user
+      )
+    );
+    setSelectedUsers(new Set());
+  };
+
+  const handleBulkSuspend = () => {
+    if (window.confirm(`Are you sure you want to suspend ${selectedUsers.size} user(s)?`)) {
+      setUsers((prev) =>
+        prev.map((user) =>
+          selectedUsers.has(user.id) ? { ...user, status: "suspended" as const } : user
+        )
+      );
+      setSelectedUsers(new Set());
+    }
+  };
 
   const toggleUserSelect = (userId: string) => {
     const newSelected = new Set(selectedUsers);
@@ -166,11 +214,20 @@ export default function AdminUsers() {
               </div>
               {selectedUsers.size > 0 && (
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
-                    Approve Selected
+                  <Button
+                    size="sm"
+                    className="bg-success hover:bg-success/90"
+                    onClick={handleBulkApprove}
+                  >
+                    Approve Selected ({selectedUsers.size})
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600">
-                    Suspend Selected
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-200"
+                    onClick={handleBulkSuspend}
+                  >
+                    Suspend Selected ({selectedUsers.size})
                   </Button>
                 </div>
               )}
@@ -241,7 +298,15 @@ export default function AdminUsers() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1"
+                            onClick={() => {
+                              setSelectedUserId(user.id);
+                              setModalOpen(true);
+                            }}
+                          >
                             <Edit className="w-4 h-4" />
                             Edit
                           </Button>
@@ -292,6 +357,21 @@ export default function AdminUsers() {
           </Card>
         </div>
       </div>
+
+      {/* User Edit Modal */}
+      {selectedUserId && (
+        <UserEditModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedUserId(null);
+          }}
+          user={users.find((u) => u.id === selectedUserId)!}
+          onSave={handleSaveUser}
+          onApprove={handleApproveUser}
+          onSuspend={handleSuspendUser}
+        />
+      )}
     </AdminLayout>
   );
 }
