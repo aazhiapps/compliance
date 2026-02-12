@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { z, ZodSchema } from "zod";
+import { FILE_UPLOAD } from "../utils/constants";
 
 /**
  * Middleware factory for validating request body against a Zod schema
@@ -70,6 +71,9 @@ export const schemas = {
     fileName: z.string().min(1, "File name is required"),
     fileType: z.string().min(1, "File type is required"),
     fileUrl: z.string().min(1, "File URL is required"),
-    fileSize: z.number().positive().max(10485760, "File size must not exceed 10MB"),
+    fileSize: z
+      .number()
+      .positive()
+      .max(FILE_UPLOAD.MAX_SIZE_BYTES, "File size must not exceed 10MB"),
   }),
 };

@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import jwt, { SignOptions } from "jsonwebtoken";
+import type { StringValue } from "ms";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -52,8 +53,11 @@ export const authenticateToken: RequestHandler = (req, res, next) => {
  * @param expiresIn - Token expiration time (default: 7 days)
  * @returns JWT token string
  */
-export const generateToken = (userId: string, expiresIn = "7d"): string => {
-  return jwt.sign({ userId }, SECRET, { expiresIn: expiresIn as "7d" });
+export const generateToken = (
+  userId: string,
+  expiresIn: StringValue | number = "7d",
+): string => {
+  return jwt.sign({ userId }, SECRET, { expiresIn });
 };
 
 /**

@@ -29,7 +29,20 @@ const envSchema = z.object({
  */
 export function validateEnv() {
   try {
-    return envSchema.parse(process.env);
+    const env = envSchema.parse(process.env);
+
+    // Additional security check: prevent demo JWT_SECRET in production
+    if (
+      env.NODE_ENV === "production" &&
+      env.JWT_SECRET.includes("demo-secret-key")
+    ) {
+      throw new Error(
+        "Security Error: Demo JWT_SECRET cannot be used in production. " +
+          "Generate a secure secret with: openssl rand -base64 32",
+      );
+    }
+
+    return env;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors
