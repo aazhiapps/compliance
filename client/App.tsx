@@ -220,4 +220,24 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Initialize the React root
+let root: any = null;
+
+const renderApp = () => {
+  const rootElement = document.getElementById("root");
+  if (!rootElement) return;
+
+  if (!root) {
+    root = createRoot(rootElement);
+  }
+  root.render(<App />);
+};
+
+renderApp();
+
+// Handle Vite HMR to prevent duplicate createRoot warnings
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    renderApp();
+  });
+}
