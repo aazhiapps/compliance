@@ -10,3 +10,30 @@
 export interface DemoResponse {
   message: string;
 }
+
+/**
+ * Document types for service-based document management
+ */
+export interface Document {
+  id: string;
+  applicationId: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize?: number;
+  status: "uploaded" | "verifying" | "approved" | "rejected";
+  uploadedAt: string;
+}
+
+export interface ServiceDocuments {
+  serviceId: number;
+  serviceName: string;
+  documents: Document[];
+  applicationIds: string[];
+}
+
+export interface UserDocumentsResponse {
+  success: boolean;
+  message?: string;
+  services: ServiceDocuments[];
+}

@@ -10,6 +10,7 @@ import {
   handleGetApplications,
   handleCreateApplication,
   handleUploadDocument,
+  handleGetUserDocuments,
 } from "./routes/auth";
 
 export function createServer() {
@@ -38,6 +39,9 @@ export function createServer() {
   app.get("/api/applications", handleGetApplications);
   app.post("/api/applications", handleCreateApplication);
   app.post("/api/applications/:id/documents", handleUploadDocument);
+  
+  // Document routes
+  app.get("/api/documents", handleGetUserDocuments);
 
   return app;
 }

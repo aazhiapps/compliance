@@ -288,9 +288,11 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground mb-4">
                 Upload and manage your documents here
               </p>
-              <Button variant="outline" className="w-full" disabled>
-                Manage Documents
-              </Button>
+              <Link to="/documents">
+                <Button variant="outline" className="w-full">
+                  Manage Documents
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
