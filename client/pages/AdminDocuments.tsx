@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -143,8 +143,8 @@ export default function AdminDocuments() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  // Calculate statistics
-  const calculateStats = () => {
+  // Calculate statistics - memoized to avoid recalculation on every render
+  const stats = useMemo(() => {
     let totalDocuments = 0;
     let approvedCount = 0;
     let verifyingCount = 0;
@@ -168,19 +168,18 @@ export default function AdminDocuments() {
     });
 
     return { totalDocuments, approvedCount, verifyingCount, uploadedCount, rejectedCount };
-  };
+  }, [usersData]);
 
-  const stats = calculateStats();
-
-  // Filter documents based on search and status
-  const filterDocument = (doc: Document): boolean => {
+  // Filter documents based on search and status - memoized callback
+  const filterDocument = useCallback((doc: Document): boolean => {
     const matchesStatus = filterStatus === "all" || doc.status === filterStatus;
     const matchesSearch = searchQuery === "" || 
       doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
-  };
+  }, [filterStatus, searchQuery]);
 
-  const hasMatchingDocuments = (user: UserDocumentsHierarchical): boolean => {
+  // Check if user has matching documents - memoized callback
+  const hasMatchingDocuments = useCallback((user: UserDocumentsHierarchical): boolean => {
     return user.services.some(service =>
       service.years.some(year =>
         year.months.some(month =>
@@ -188,12 +187,16 @@ export default function AdminDocuments() {
         )
       )
     );
-  };
+  }, [filterDocument]);
 
-  const filteredUsers = usersData.filter(user => 
-    hasMatchingDocuments(user) || 
-    user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filtered users - memoized to avoid recalculation
+  const filteredUsers = useMemo(() => 
+    usersData.filter(user => 
+      hasMatchingDocuments(user) || 
+      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [usersData, hasMatchingDocuments, searchQuery]
   );
 
   return (
