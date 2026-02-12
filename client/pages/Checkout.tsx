@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +78,17 @@ export default function Checkout() {
   const [error, setError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
+  const razorpayScriptRef = useRef<HTMLScriptElement | null>(null);
+
+  // Cleanup Razorpay script on unmount
+  useEffect(() => {
+    return () => {
+      if (razorpayScriptRef.current) {
+        document.body.removeChild(razorpayScriptRef.current);
+        razorpayScriptRef.current = null;
+      }
+    };
+  }, []);
 
   if (!service) {
     return (
@@ -213,6 +224,7 @@ export default function Checkout() {
         const razorpay = new (window as any).Razorpay(options);
         razorpay.open();
       };
+      razorpayScriptRef.current = script;
       document.body.appendChild(script);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed");
