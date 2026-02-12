@@ -12,7 +12,16 @@ import {
   handleUploadDocument,
   handleGetUserDocuments,
 } from "./routes/auth";
+import {
+  handleGetAllUsers,
+  handleGetAllApplications,
+  handleUpdateApplicationStatus,
+  handleGetApplicationById,
+  handleGetUserById,
+  handleGetAdminStats,
+} from "./routes/admin";
 import { authenticateToken } from "./middleware/auth";
+import { requireAdmin } from "./middleware/admin";
 import { validateRequest, schemas } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
@@ -81,6 +90,14 @@ export function createServer() {
 
   // Protected document routes
   app.get("/api/documents", authenticateToken, handleGetUserDocuments);
+
+  // Admin routes (protected by admin role)
+  app.get("/api/admin/stats", authenticateToken, requireAdmin, handleGetAdminStats);
+  app.get("/api/admin/users", authenticateToken, requireAdmin, handleGetAllUsers);
+  app.get("/api/admin/users/:id", authenticateToken, requireAdmin, handleGetUserById);
+  app.get("/api/admin/applications", authenticateToken, requireAdmin, handleGetAllApplications);
+  app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
+  app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
 
   // Global error handler (must be last)
   app.use(errorHandler);
