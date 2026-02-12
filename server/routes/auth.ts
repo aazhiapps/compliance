@@ -1,16 +1,16 @@
 import { RequestHandler } from "express";
-import { SignupRequest, LoginRequest, AuthResponse, User } from "@shared/auth";
+import { SignupRequest, LoginRequest, AuthResponse, User, Application } from "@shared/auth";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { generateToken } from "../middleware/auth";
+import { userRepository } from "../repositories/userRepository";
+import { applicationRepository } from "../repositories/applicationRepository";
+import { AUTH, HTTP_STATUS } from "../utils/constants";
+import { AuthRequest } from "../middleware/auth";
 
-const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
-
-// In-memory storage (replace with database in production)
-const users: Map<string, User & { password: string }> = new Map();
-const applications: Map<string, any> = new Map();
-
-// Seed demo data
+/**
+ * Seed demo users for development/testing
+ * WARNING: Remove or disable in production
+ */
 const seedDemoUsers = async () => {
   const demoUsers: Array<User & { password: string }> = [
     {
@@ -24,7 +24,7 @@ const seedDemoUsers = async () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: await bcrypt.hash("Demo@1234", SALT_ROUNDS),
+      password: await bcrypt.hash("Demo@1234", AUTH.SALT_ROUNDS),
     },
     {
       id: "user_demo_2",
@@ -37,7 +37,7 @@ const seedDemoUsers = async () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: await bcrypt.hash("Rajesh@1234", SALT_ROUNDS),
+      password: await bcrypt.hash("Rajesh@1234", AUTH.SALT_ROUNDS),
     },
     {
       id: "user_demo_3",
@@ -50,7 +50,7 @@ const seedDemoUsers = async () => {
       language: "hi",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: await bcrypt.hash("Priya@1234", SALT_ROUNDS),
+      password: await bcrypt.hash("Priya@1234", AUTH.SALT_ROUNDS),
     },
     {
       id: "admin_demo_1",
@@ -63,12 +63,12 @@ const seedDemoUsers = async () => {
       language: "en",
       createdAt: new Date().toISOString(),
       isEmailVerified: true,
-      password: await bcrypt.hash("Admin@1234", SALT_ROUNDS),
+      password: await bcrypt.hash("Admin@1234", AUTH.SALT_ROUNDS),
     },
   ];
 
   demoUsers.forEach((user) => {
-    users.set(user.email, user);
+    userRepository.create(user);
   });
 
   console.log("✓ Demo users seeded successfully");
@@ -77,9 +77,12 @@ const seedDemoUsers = async () => {
 // Seed demo data on startup
 seedDemoUsers();
 
-// Seed demo applications
+/**
+ * Seed demo applications for development/testing
+ * WARNING: Remove or disable in production
+ */
 const seedDemoApplications = () => {
-  const demoApplications = [
+  const demoApplications: Application[] = [
     {
       id: "app_demo_1",
       userId: "user_demo_1",
@@ -187,7 +190,7 @@ const seedDemoApplications = () => {
   ];
 
   demoApplications.forEach((app) => {
-    applications.set(app.id, app);
+    applicationRepository.create(app);
   });
 
   console.log("✓ Demo applications seeded successfully");
@@ -195,21 +198,10 @@ const seedDemoApplications = () => {
 
 seedDemoApplications();
 
-// JWT token generation and verification
-const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
-};
-
-const verifyToken = (token: string): { userId: string } | null => {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    return decoded;
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return null;
-  }
-};
-
+/**
+ * Handle user signup
+ * Creates a new user account with validation
+ */
 export const handleSignup: RequestHandler<
   unknown,
   AuthResponse,
@@ -218,40 +210,16 @@ export const handleSignup: RequestHandler<
   const { email, firstName, lastName, phone, password, businessType, language } =
     req.body;
 
-  // Validation
-  if (!email || !password || !firstName || !lastName) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing required fields",
-    });
-  }
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid email format",
-    });
-  }
-
-  // Password validation
-  if (password.length < 8) {
-    return res.status(400).json({
-      success: false,
-      message: "Password must be at least 8 characters long",
-    });
-  }
-
-  if (users.has(email)) {
-    return res.status(400).json({
+  // Check if user already exists
+  if (userRepository.exists(email)) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: "Email already registered",
     });
   }
 
   const userId = `user_${Date.now()}`;
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hash(password, AUTH.SALT_ROUNDS);
   const newUser: User & { password: string } = {
     id: userId,
     email,
@@ -266,12 +234,12 @@ export const handleSignup: RequestHandler<
     password: hashedPassword,
   };
 
-  users.set(email, newUser);
+  userRepository.create(newUser);
 
   const token = generateToken(userId);
   const { password: _, ...userWithoutPassword } = newUser;
 
-  res.status(201).json({
+  res.status(HTTP_STATUS.CREATED).json({
     success: true,
     message: "Account created successfully",
     user: userWithoutPassword,
@@ -279,20 +247,17 @@ export const handleSignup: RequestHandler<
   });
 };
 
+/**
+ * Handle user login
+ * Authenticates user with email and password
+ */
 export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
   async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password required",
-      });
-    }
-
-    const user = users.get(email);
+    const user = userRepository.findByEmail(email);
     if (!user) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: "Invalid email or password",
       });
@@ -300,7 +265,7 @@ export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: "Invalid email or password",
       });
@@ -317,35 +282,24 @@ export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
     });
   };
 
+/**
+ * Get authenticated user profile
+ * Requires authentication middleware
+ */
 export const handleGetProfile: RequestHandler = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const userId = (req as AuthRequest).userId;
 
-  if (!token) {
-    return res.status(401).json({
+  if (!userId) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
       success: false,
-      message: "No token provided",
+      message: "Authentication required",
     });
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid token",
-    });
-  }
-
-  // Find user by ID
-  let user = null;
-  for (const u of users.values()) {
-    if (u.id === decoded.userId) {
-      user = u;
-      break;
-    }
-  }
+  const user = userRepository.findById(userId);
 
   if (!user) {
-    return res.status(404).json({
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
       success: false,
       message: "User not found",
     });
@@ -360,29 +314,32 @@ export const handleGetProfile: RequestHandler = (req, res) => {
   });
 };
 
-export const handleLogout: RequestHandler = (req, res) => {
+/**
+ * Handle user logout
+ * Note: JWT is stateless, so this is just a confirmation
+ */
+export const handleLogout: RequestHandler = (_req, res) => {
   res.json({
     success: true,
     message: "Logged out successfully",
   });
 };
 
+/**
+ * Get applications for authenticated user
+ * Requires authentication middleware
+ */
 export const handleGetApplications: RequestHandler = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const userId = (req as AuthRequest).userId;
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
+  if (!userId) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Authentication required",
+    });
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ success: false, message: "Invalid token" });
-  }
-
-  // Return applications for this user
-  const userApplications = Array.from(applications.values()).filter(
-    (app) => app.userId === decoded.userId
-  );
+  const userApplications = applicationRepository.findByUserId(userId);
 
   res.json({
     success: true,
@@ -390,24 +347,26 @@ export const handleGetApplications: RequestHandler = (req, res) => {
   });
 };
 
+/**
+ * Create a new application
+ * Requires authentication middleware
+ */
 export const handleCreateApplication: RequestHandler = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const userId = (req as AuthRequest).userId;
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ success: false, message: "Invalid token" });
+  if (!userId) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Authentication required",
+    });
   }
 
   const { serviceId, serviceName } = req.body;
 
   const applicationId = `app_${Date.now()}`;
-  const newApplication = {
+  const newApplication: Application = {
     id: applicationId,
-    userId: decoded.userId,
+    userId,
     serviceId,
     serviceName,
     status: "draft",
@@ -419,31 +378,36 @@ export const handleCreateApplication: RequestHandler = (req, res) => {
     eta: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   };
 
-  applications.set(applicationId, newApplication);
+  applicationRepository.create(newApplication);
 
-  res.status(201).json({
+  res.status(HTTP_STATUS.CREATED).json({
     success: true,
     application: newApplication,
   });
 };
 
+/**
+ * Upload a document to an application
+ * Requires authentication middleware
+ */
 export const handleUploadDocument: RequestHandler = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const userId = (req as AuthRequest).userId;
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ success: false, message: "Invalid token" });
+  if (!userId) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Authentication required",
+    });
   }
 
   const { applicationId, fileName, fileType, fileUrl } = req.body;
 
-  const application = applications.get(applicationId);
-  if (!application || application.userId !== decoded.userId) {
-    return res.status(404).json({ success: false, message: "Application not found" });
+  const application = applicationRepository.findById(applicationId);
+  if (!application || application.userId !== userId) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      success: false,
+      message: "Application not found",
+    });
   }
 
   const documentId = `doc_${Date.now()}`;
@@ -453,43 +417,44 @@ export const handleUploadDocument: RequestHandler = (req, res) => {
     fileName,
     fileUrl,
     fileType,
-    status: "uploaded",
+    status: "uploaded" as const,
     uploadedAt: new Date().toISOString(),
   };
 
-  application.documents.push(newDocument);
-  application.updatedAt = new Date().toISOString();
+  applicationRepository.addDocument(applicationId, newDocument);
 
-  res.status(201).json({
+  res.status(HTTP_STATUS.CREATED).json({
     success: true,
     document: newDocument,
   });
 };
 
+/**
+ * Get all documents for authenticated user grouped by service
+ * Requires authentication middleware
+ */
 export const handleGetUserDocuments: RequestHandler = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const userId = (req as AuthRequest).userId;
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
+  if (!userId) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Authentication required",
+    });
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ success: false, message: "Invalid token" });
-  }
-
-  // Get all applications for this user
-  const userApplications = Array.from(applications.values()).filter(
-    (app) => app.userId === decoded.userId
-  );
+  const userApplications = applicationRepository.findByUserId(userId);
 
   // Group documents by service
-  const serviceDocsMap = new Map<number, {
-    serviceId: number;
-    serviceName: string;
-    documents: any[];
-    applicationIds: string[];
-  }>();
+  const serviceDocsMap = new Map<
+    number,
+    {
+      serviceId: number;
+      serviceName: string;
+      documents: Application["documents"];
+      applicationIds: string[];
+    }
+  >();
 
   userApplications.forEach((app) => {
     if (!serviceDocsMap.has(app.serviceId)) {
@@ -503,7 +468,7 @@ export const handleGetUserDocuments: RequestHandler = (req, res) => {
 
     const serviceDoc = serviceDocsMap.get(app.serviceId)!;
     serviceDoc.applicationIds.push(app.id);
-    
+
     // Add all documents from this application
     if (app.documents && app.documents.length > 0) {
       serviceDoc.documents.push(...app.documents);
