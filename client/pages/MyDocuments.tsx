@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   FileText,
   Download,
-  Eye,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -95,6 +94,14 @@ export default function MyDocuments() {
       default:
         return <FileText className="w-4 h-4" />;
     }
+  };
+
+  const formatFileSize = (bytes?: number): string => {
+    if (!bytes || bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const totalDocuments = services.reduce((sum, s) => sum + s.documents.length, 0);
@@ -229,7 +236,7 @@ export default function MyDocuments() {
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
-                                  {doc.fileSize && ` • ${(doc.fileSize / 1024).toFixed(0)} KB`}
+                                  {doc.fileSize && ` • ${formatFileSize(doc.fileSize)}`}
                                 </p>
                               </div>
                             </div>
@@ -245,19 +252,6 @@ export default function MyDocuments() {
                               </span>
 
                               <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  title="View Document"
-                                  onClick={() => {
-                                    toast({
-                                      title: "Document Preview",
-                                      description: "Document preview feature coming soon",
-                                    });
-                                  }}
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
