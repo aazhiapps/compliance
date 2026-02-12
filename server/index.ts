@@ -19,6 +19,7 @@ import {
   handleGetApplicationById,
   handleGetUserById,
   handleGetAdminStats,
+  handleGetAllDocuments,
 } from "./routes/admin";
 import {
   handleCreateGSTClient,
@@ -116,6 +117,7 @@ export function createServer() {
   app.get("/api/admin/applications", authenticateToken, requireAdmin, handleGetAllApplications);
   app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
   app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
+  app.get("/api/admin/documents", authenticateToken, requireAdmin, handleGetAllDocuments);
 
   // GST Management Routes (protected)
   // Client management

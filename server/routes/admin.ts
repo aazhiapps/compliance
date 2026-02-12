@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { userRepository } from "../repositories/userRepository";
 import { applicationRepository } from "../repositories/applicationRepository";
+import { UserDocumentsHierarchical } from "@shared/api";
 
 /**
  * Get all users (admin only)
@@ -168,6 +169,131 @@ export const handleGetAdminStats: RequestHandler = (_req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch statistics",
+    });
+  }
+};
+
+/**
+ * Get all documents with hierarchical structure (admin only)
+ * GET /api/admin/documents
+ * Returns: Users -> Services -> Year/Month -> Documents
+ */
+export const handleGetAllDocuments: RequestHandler = (_req, res) => {
+  try {
+    const users = userRepository.findAll();
+    const applications = applicationRepository.findAll();
+
+    // Helper function to get month name
+    const getMonthName = (month: number): string => {
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      return monthNames[month - 1] || "Unknown";
+    };
+
+    // Build hierarchical structure
+    const userDocumentsMap = new Map<string, UserDocumentsHierarchical>();
+
+    applications.forEach((app) => {
+      // Get user information
+      const user = users.find(u => u.id === app.userId);
+      if (!user) return;
+
+      // Initialize user entry if not exists
+      if (!userDocumentsMap.has(user.id)) {
+        userDocumentsMap.set(user.id, {
+          userId: user.id,
+          userName: `${user.firstName} ${user.lastName}`,
+          userEmail: user.email,
+          services: [],
+        });
+      }
+
+      const userDocs = userDocumentsMap.get(user.id)!;
+
+      // Process each document in the application
+      if (app.documents && app.documents.length > 0) {
+        app.documents.forEach((doc) => {
+          // Find or create service entry
+          let service = userDocs.services.find(s => s.serviceId === app.serviceId);
+          if (!service) {
+            service = {
+              serviceId: app.serviceId,
+              serviceName: app.serviceName,
+              years: [],
+            };
+            userDocs.services.push(service);
+          }
+
+          // Parse upload date
+          const uploadDate = new Date(doc.uploadedAt);
+          const year = uploadDate.getFullYear();
+          const month = uploadDate.getMonth() + 1; // 1-12
+
+          // Find or create year entry
+          let yearEntry = service.years.find(y => y.year === year);
+          if (!yearEntry) {
+            yearEntry = {
+              year,
+              months: [],
+            };
+            service.years.push(yearEntry);
+          }
+
+          // Find or create month entry
+          let monthEntry = yearEntry.months.find(m => m.month === month);
+          if (!monthEntry) {
+            monthEntry = {
+              month,
+              monthName: getMonthName(month),
+              documents: [],
+            };
+            yearEntry.months.push(monthEntry);
+          }
+
+          // Add document to month
+          monthEntry.documents.push(doc);
+        });
+      }
+    });
+
+    // Sort the hierarchy
+    const usersHierarchy = Array.from(userDocumentsMap.values());
+    usersHierarchy.forEach(user => {
+      // Sort services by name
+      user.services.sort((a, b) => a.serviceName.localeCompare(b.serviceName));
+      
+      user.services.forEach(service => {
+        // Sort years descending (newest first)
+        service.years.sort((a, b) => b.year - a.year);
+        
+        service.years.forEach(year => {
+          // Sort months descending (newest first)
+          year.months.sort((a, b) => b.month - a.month);
+          
+          year.months.forEach(monthEntry => {
+            // Sort documents by upload date descending (newest first)
+            monthEntry.documents.sort((a, b) => 
+              new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+            );
+          });
+        });
+      });
+    });
+
+    // Sort users by name
+    usersHierarchy.sort((a, b) => a.userName.localeCompare(b.userName));
+
+    res.json({
+      success: true,
+      users: usersHierarchy,
+    });
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch documents",
     });
   }
 };
