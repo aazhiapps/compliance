@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { PurchaseInvoice, SalesInvoice } from "@shared/gst";
 import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
+import { X } from "lucide-react";
 
 interface InvoiceFormProps {
   type: "purchase" | "sales";
