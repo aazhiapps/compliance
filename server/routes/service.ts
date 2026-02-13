@@ -68,10 +68,10 @@ export const handleCreateService: RequestHandler = (req, res) => {
     }
 
     // Validate price is positive
-    if (serviceData.price < 0) {
+    if (serviceData.price <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Price must be a positive number",
+        message: "Price must be greater than zero",
       });
     }
 
@@ -110,10 +110,10 @@ export const handleUpdateService: RequestHandler = (req, res) => {
     }
 
     // Validate price if provided
-    if (updates.price !== undefined && updates.price < 0) {
+    if (updates.price !== undefined && updates.price <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Price must be a positive number",
+        message: "Price must be greater than zero",
       });
     }
 

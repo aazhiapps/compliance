@@ -245,7 +245,7 @@ export default function AdminServices() {
   const removeArrayItem = (field: keyof ServiceFormData, index: number) => {
     setFormData(prev => ({
       ...prev,
-      [field]: (prev[field] as any[]).filter((_, i) => i !== index),
+      [field]: (prev[field] as string[] | Array<{ question: string; answer: string }>).filter((_, i) => i !== index),
     }));
   };
 
