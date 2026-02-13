@@ -39,6 +39,13 @@ import {
   handleGetMonthlySummary,
   handleUploadGSTDocument,
 } from "./routes/gst";
+import {
+  handleGetAllServices,
+  handleGetServiceById,
+  handleCreateService,
+  handleUpdateService,
+  handleDeleteService,
+} from "./routes/service";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { validateRequest, schemas } from "./middleware/validation";
@@ -124,6 +131,13 @@ export function createServer() {
   app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
   app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
   app.get("/api/admin/documents", authenticateToken, requireAdmin, handleGetAllDocuments);
+
+  // Service Management Routes (admin only)
+  app.get("/api/admin/services", authenticateToken, requireAdmin, handleGetAllServices);
+  app.get("/api/admin/services/:id", authenticateToken, requireAdmin, handleGetServiceById);
+  app.post("/api/admin/services", authenticateToken, requireAdmin, handleCreateService);
+  app.patch("/api/admin/services/:id", authenticateToken, requireAdmin, handleUpdateService);
+  app.delete("/api/admin/services/:id", authenticateToken, requireAdmin, handleDeleteService);
 
   // GST Management Routes (protected)
   // Client management
