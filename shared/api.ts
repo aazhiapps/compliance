@@ -115,3 +115,16 @@ export interface PaymentsListResponse {
   payments: PaymentRecord[];
   total: number;
 }
+
+/**
+ * Compliance Management types
+ */
+export interface CustomerCompliance {
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  complianceStatus: "compliant" | "pending" | "at_risk" | "non_compliant";
+  process: string;
+  lastUpdated: string;
+  applicationId?: string;
+}
