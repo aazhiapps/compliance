@@ -37,6 +37,7 @@ import {
   handleUpdateGSTFiling,
   handleGetGSTFilings,
   handleGetMonthlySummary,
+  handleGetAllClientsSummary,
   handleUploadGSTDocument,
 } from "./routes/gst";
 import { authenticateToken } from "./middleware/auth";
@@ -150,6 +151,7 @@ export function createServer() {
 
   // Monthly summary
   app.get("/api/gst/summary/:clientId/:month", authenticateToken, handleGetMonthlySummary);
+  app.get("/api/gst/summary/all/:month", authenticateToken, handleGetAllClientsSummary);
 
   // Document upload
   app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);

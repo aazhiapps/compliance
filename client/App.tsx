@@ -27,6 +27,7 @@ import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminGST from "./pages/AdminGST";
 import UserGST from "./pages/UserGST";
+import GSTSummary from "./pages/GSTSummary";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -78,6 +79,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <UserGST />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/gst-summary"
+      element={
+        <ProtectedRoute>
+          <GSTSummary />
         </ProtectedRoute>
       }
     />
