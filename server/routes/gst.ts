@@ -1041,11 +1041,20 @@ export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
       // Get filing status
       const filing = gstRepository.findGSTFilingByMonth(client.id, month);
 
+      // Derive financial year from month if not available from invoices
+      let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
+      if (!financialYear) {
+        const [year, monthNum] = month.split('-').map(Number);
+        // Financial year starts in April (month 4)
+        const fyStartYear = monthNum >= 4 ? year : year - 1;
+        financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
+      }
+
       const summary: MonthlyGSTSummary = {
         clientId: client.id,
         clientName: client.clientName,
         month,
-        financialYear: purchases[0]?.financialYear || sales[0]?.financialYear || "",
+        financialYear,
         totalPurchases,
         totalSales,
         itcAvailable,

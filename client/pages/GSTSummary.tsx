@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,14 +28,9 @@ export default function GSTSummary() {
     setSelectedMonth(month);
   }, []);
 
-  // Load summaries when month changes
-  useEffect(() => {
-    if (selectedMonth) {
-      loadSummaries();
-    }
-  }, [selectedMonth]);
-
-  const loadSummaries = async () => {
+  const loadSummaries = useCallback(async () => {
+    if (!selectedMonth) return;
+    
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
@@ -53,7 +48,12 @@ export default function GSTSummary() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonth]);
+
+  // Load summaries when month changes
+  useEffect(() => {
+    loadSummaries();
+  }, [loadSummaries]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
