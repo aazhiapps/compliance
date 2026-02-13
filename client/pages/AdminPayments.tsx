@@ -58,7 +58,7 @@ export default function AdminPayments() {
         },
       });
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.applications) {
         // Filter to only show applications without payments
         const appsWithoutPayment = data.applications.filter(
           (app: Application) => app.paymentStatus === "pending"
