@@ -324,9 +324,7 @@ export default function AdminApplicationDetail() {
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       application.status === "under_review" || application.status === "approved"
                         ? "bg-primary text-white"
-                        : application.status === "rejected"
-                          ? "bg-gray-300 text-gray-600"
-                          : "bg-gray-300 text-gray-600"
+                        : "bg-gray-300 text-gray-600"
                     }`}
                   >
                     <Clock className="w-5 h-5" />
