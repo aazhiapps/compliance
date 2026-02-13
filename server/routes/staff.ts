@@ -37,7 +37,7 @@ export const getStaffApplications: RequestHandler = (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching staff applications:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
       success: false,
       message: "Failed to fetch applications",
     });
@@ -51,9 +51,8 @@ export const updateApplicationStatus: RequestHandler = (req, res) => {
   try {
     const { applicationId } = req.params;
     const { status, internalNotes } = req.body;
-    const userId = (req as AuthRequest).userId!;
 
-    const application = applicationRepository.findById(applicationId);
+    const application = applicationRepository.findById(applicationId as string);
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -70,7 +69,7 @@ export const updateApplicationStatus: RequestHandler = (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    applicationRepository.update(applicationId, updatedApplication);
+    applicationRepository.update(applicationId as string, updatedApplication);
 
     return res.json({
       success: true,
@@ -79,7 +78,7 @@ export const updateApplicationStatus: RequestHandler = (req, res) => {
     });
   } catch (error) {
     console.error("Error updating application:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
       success: false,
       message: "Failed to update application",
     });
@@ -94,7 +93,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
     const { applicationId } = req.params;
     const { staffId } = req.body;
 
-    const application = applicationRepository.findById(applicationId);
+    const application = applicationRepository.findById(applicationId as string);
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -103,7 +102,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
       });
     }
 
-    const staff = userRepository.findById(staffId);
+    const staff = userRepository.findById(staffId as string);
 
     if (!staff || (staff.role !== "staff" && staff.role !== "admin")) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -120,7 +119,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    applicationRepository.update(applicationId, updatedApplication);
+    applicationRepository.update(applicationId as string, updatedApplication);
 
     return res.json({
       success: true,
@@ -129,7 +128,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
     });
   } catch (error) {
     console.error("Error assigning application:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
       success: false,
       message: "Failed to assign application",
     });
@@ -167,7 +166,7 @@ export const getStaffStats: RequestHandler = (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching staff stats:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
       success: false,
       message: "Failed to fetch statistics",
     });
@@ -177,7 +176,7 @@ export const getStaffStats: RequestHandler = (req, res) => {
 /**
  * Get all staff members (for admin to view and assign)
  */
-export const getAllStaff: RequestHandler = (req, res) => {
+export const getAllStaff: RequestHandler = (_req, res) => {
   try {
     const allUsers = userRepository.findAll();
     const staffMembers = allUsers.filter(
@@ -190,7 +189,7 @@ export const getAllStaff: RequestHandler = (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching staff members:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
       success: false,
       message: "Failed to fetch staff members",
     });

@@ -26,7 +26,7 @@ interface Application {
   submittedDate: string;
   amount: number;
   paymentStatus: "pending" | "paid";
-  executiveAssigned?: string;
+  staffAssigned?: string;
 }
 
 export default function AdminApplications() {
@@ -46,7 +46,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-01",
       amount: 499,
       paymentStatus: "paid",
-      executiveAssigned: "Rajesh Kumar",
+      staffAssigned: "Staff Member",
     },
     {
       id: "app_2",
@@ -58,7 +58,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-04",
       amount: 2999,
       paymentStatus: "paid",
-      executiveAssigned: "Priya Singh",
+      staffAssigned: "Sarah Johnson",
     },
     {
       id: "app_3",
@@ -92,7 +92,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-07",
       amount: 3999,
       paymentStatus: "paid",
-      executiveAssigned: "Amit Patel",
+      staffAssigned: "Staff Member",
     },
   ]);
 
@@ -114,10 +114,10 @@ export default function AdminApplications() {
     setModalOpen(false);
   };
 
-  const handleAssignExecutive = (appId: string, executive: string) => {
+  const handleAssignStaff = (appId: string, staff: string) => {
     setApplications((prev) =>
       prev.map((app) =>
-        app.id === appId ? { ...app, executiveAssigned: executive } : app
+        app.id === appId ? { ...app, staffAssigned: executive } : app
       )
     );
   };
@@ -430,8 +430,8 @@ export default function AdminApplications() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {app.executiveAssigned ? (
-                          <span className="text-sm font-medium">{app.executiveAssigned}</span>
+                        {app.staffAssigned ? (
+                          <span className="text-sm font-medium">{app.staffAssigned}</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">Unassigned</span>
                         )}
@@ -485,7 +485,7 @@ export default function AdminApplications() {
           applicationId={selectedAppId}
           onApprove={handleApprove}
           onReject={handleReject}
-          onAssignExecutive={handleAssignExecutive}
+          onAssignStaff={handleAssignStaff}
         />
       )}
     </AdminLayout>

@@ -65,7 +65,7 @@ export default function ApplicationTracking() {
     expectedDate: "2024-02-05",
     paymentAmount: 499,
     paymentStatus: "paid" as const,
-    assignedExecutive: {
+    assignedStaff: {
       name: "Rajesh Kumar",
       phone: "+91 98765 43210",
       email: "rajesh.kumar@complance.com",
@@ -429,42 +429,42 @@ export default function ApplicationTracking() {
 
           {/* Right Sidebar */}
           <div className="lg:col-span-1">
-            {/* Assigned Executive */}
+            {/* Assigned Staff */}
             <Card className="sticky top-8">
               <CardHeader>
-                <CardTitle className="text-lg">Your Executive</CardTitle>
+                <CardTitle className="text-lg">Your Staff</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-                    {application.assignedExecutive.avatar}
+                    {application.assignedStaff.avatar}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">{application.assignedExecutive.name}</h3>
+                    <h3 className="font-semibold text-sm">{application.assignedStaff.name}</h3>
                     <p className="text-xs text-muted-foreground">GST Specialist</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 pt-4 border-t">
                   <a
-                    href={`tel:${application.assignedExecutive.phone}`}
+                    href={`tel:${application.assignedStaff.phone}`}
                     className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Call</p>
-                      <p className="text-sm font-medium">{application.assignedExecutive.phone}</p>
+                      <p className="text-sm font-medium">{application.assignedStaff.phone}</p>
                     </div>
                   </a>
 
                   <a
-                    href={`mailto:${application.assignedExecutive.email}`}
+                    href={`mailto:${application.assignedStaff.email}`}
                     className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium break-all">{application.assignedExecutive.email}</p>
+                      <p className="text-sm font-medium break-all">{application.assignedStaff.email}</p>
                     </div>
                   </a>
                 </div>
@@ -481,7 +481,7 @@ export default function ApplicationTracking() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Contact your assigned executive or our support team for any queries
+                  Contact your assigned staff or our support team for any queries
                 </p>
                 <Button variant="outline" className="w-full">
                   Contact Support
