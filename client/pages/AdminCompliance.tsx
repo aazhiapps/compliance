@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Plus, AlertCircle, CheckCircle2, Clock, Eye, Edit, MoreVertical } from "lucide-react";
+import { Search, Filter, Plus, AlertCircle, CheckCircle2, Clock, Eye, Edit, MoreVertical, ChevronDown, ChevronUp, Users } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { CustomerCompliance } from "@shared/api";
 
 interface ComplianceItem {
   id: string;
@@ -14,11 +15,13 @@ interface ComplianceItem {
   category: string;
   applicationsAffected: number;
   lastUpdated: string;
+  customers: CustomerCompliance[];
 }
 
 export default function AdminCompliance() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [complianceItems] = useState<ComplianceItem[]>([
     {
       id: "comp_1",
@@ -30,6 +33,35 @@ export default function AdminCompliance() {
       category: "Data Privacy",
       applicationsAffected: 120,
       lastUpdated: "2024-02-10",
+      customers: [
+        {
+          customerId: "user_1",
+          customerName: "John Smith",
+          customerEmail: "john.smith@example.com",
+          complianceStatus: "compliant",
+          process: "Data Protection Review Completed",
+          lastUpdated: "2024-02-10",
+          applicationId: "app_101",
+        },
+        {
+          customerId: "user_2",
+          customerName: "Sarah Johnson",
+          customerEmail: "sarah.johnson@example.com",
+          complianceStatus: "compliant",
+          process: "Privacy Policy Acknowledged",
+          lastUpdated: "2024-02-09",
+          applicationId: "app_102",
+        },
+        {
+          customerId: "user_3",
+          customerName: "Michael Chen",
+          customerEmail: "michael.chen@example.com",
+          complianceStatus: "pending",
+          process: "Awaiting Data Consent Form",
+          lastUpdated: "2024-02-08",
+          applicationId: "app_103",
+        },
+      ],
     },
     {
       id: "comp_2",
@@ -41,6 +73,26 @@ export default function AdminCompliance() {
       category: "Tax",
       applicationsAffected: 65,
       lastUpdated: "2024-02-09",
+      customers: [
+        {
+          customerId: "user_4",
+          customerName: "Priya Sharma",
+          customerEmail: "priya.sharma@example.com",
+          complianceStatus: "compliant",
+          process: "GST Returns Filed - Q4 2023",
+          lastUpdated: "2024-02-09",
+          applicationId: "app_201",
+        },
+        {
+          customerId: "user_5",
+          customerName: "Rahul Patel",
+          customerEmail: "rahul.patel@example.com",
+          complianceStatus: "at_risk",
+          process: "Pending GST Document Upload",
+          lastUpdated: "2024-02-08",
+          applicationId: "app_202",
+        },
+      ],
     },
     {
       id: "comp_3",
@@ -52,6 +104,35 @@ export default function AdminCompliance() {
       category: "Verification",
       applicationsAffected: 45,
       lastUpdated: "2024-02-08",
+      customers: [
+        {
+          customerId: "user_6",
+          customerName: "Emily Davis",
+          customerEmail: "emily.davis@example.com",
+          complianceStatus: "pending",
+          process: "Document Verification in Progress",
+          lastUpdated: "2024-02-08",
+          applicationId: "app_301",
+        },
+        {
+          customerId: "user_7",
+          customerName: "David Wilson",
+          customerEmail: "david.wilson@example.com",
+          complianceStatus: "non_compliant",
+          process: "Incomplete KYC Documents",
+          lastUpdated: "2024-02-07",
+          applicationId: "app_302",
+        },
+        {
+          customerId: "user_8",
+          customerName: "Anjali Kumar",
+          customerEmail: "anjali.kumar@example.com",
+          complianceStatus: "compliant",
+          process: "KYC Verification Completed",
+          lastUpdated: "2024-02-06",
+          applicationId: "app_303",
+        },
+      ],
     },
     {
       id: "comp_4",
@@ -63,6 +144,26 @@ export default function AdminCompliance() {
       category: "Financial",
       applicationsAffected: 80,
       lastUpdated: "2024-02-07",
+      customers: [
+        {
+          customerId: "user_9",
+          customerName: "Robert Brown",
+          customerEmail: "robert.brown@example.com",
+          complianceStatus: "at_risk",
+          process: "Pending Risk Assessment",
+          lastUpdated: "2024-02-07",
+          applicationId: "app_401",
+        },
+        {
+          customerId: "user_10",
+          customerName: "Lisa Anderson",
+          customerEmail: "lisa.anderson@example.com",
+          complianceStatus: "compliant",
+          process: "AML Verification Completed",
+          lastUpdated: "2024-02-06",
+          applicationId: "app_402",
+        },
+      ],
     },
     {
       id: "comp_5",
@@ -74,6 +175,17 @@ export default function AdminCompliance() {
       category: "Digital",
       applicationsAffected: 35,
       lastUpdated: "2024-02-06",
+      customers: [
+        {
+          customerId: "user_11",
+          customerName: "Vikram Singh",
+          customerEmail: "vikram.singh@example.com",
+          complianceStatus: "compliant",
+          process: "Digital Signature Verified",
+          lastUpdated: "2024-02-06",
+          applicationId: "app_501",
+        },
+      ],
     },
     {
       id: "comp_6",
@@ -85,6 +197,26 @@ export default function AdminCompliance() {
       category: "Tax",
       applicationsAffected: 25,
       lastUpdated: "2024-02-05",
+      customers: [
+        {
+          customerId: "user_12",
+          customerName: "Neha Gupta",
+          customerEmail: "neha.gupta@example.com",
+          complianceStatus: "non_compliant",
+          process: "Missing Tax Documents",
+          lastUpdated: "2024-02-05",
+          applicationId: "app_601",
+        },
+        {
+          customerId: "user_13",
+          customerName: "Amit Shah",
+          customerEmail: "amit.shah@example.com",
+          complianceStatus: "pending",
+          process: "Tax Filing in Progress",
+          lastUpdated: "2024-02-04",
+          applicationId: "app_602",
+        },
+      ],
     },
   ]);
 
@@ -130,6 +262,18 @@ export default function AdminCompliance() {
   const pendingCount = complianceItems.filter(i => i.status === "pending").length;
   const atRiskCount = complianceItems.filter(i => i.status === "at_risk").length;
   const nonCompliantCount = complianceItems.filter(i => i.status === "non_compliant").length;
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <AdminLayout>
@@ -276,6 +420,64 @@ export default function AdminCompliance() {
                           <p className="text-sm font-medium">{item.applicationsAffected}</p>
                         </div>
                       </div>
+
+                      {/* Customer List Toggle */}
+                      {item.customers && item.customers.length > 0 && (
+                        <div className="mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleExpanded(item.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <Users className="w-4 h-4" />
+                            {expandedItems.has(item.id) ? "Hide" : "Show"} Customers ({item.customers.length})
+                            {expandedItems.has(item.id) ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Expanded Customer List */}
+                      {expandedItems.has(item.id) && item.customers && item.customers.length > 0 && (
+                        <div className="mt-4 border-t pt-4">
+                          <h4 className="text-sm font-semibold mb-3 text-foreground">Customer Compliance Status</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Customer</th>
+                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Email</th>
+                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
+                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Process</th>
+                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Last Updated</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.customers.map((customer) => (
+                                  <tr key={customer.customerId} className="border-b last:border-b-0 hover:bg-muted/50">
+                                    <td className="py-3 px-3 font-medium">{customer.customerName}</td>
+                                    <td className="py-3 px-3 text-muted-foreground">{customer.customerEmail}</td>
+                                    <td className="py-3 px-3">
+                                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(customer.complianceStatus)}`}>
+                                        {getStatusIcon(customer.complianceStatus)}
+                                        {customer.complianceStatus.replace(/_/g, " ")}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-3">{customer.process}</td>
+                                    <td className="py-3 px-3 text-muted-foreground">
+                                      {new Date(customer.lastUpdated).toLocaleDateString()}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
