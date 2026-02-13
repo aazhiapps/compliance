@@ -991,6 +991,97 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
 };
 
 /**
+ * Get summary of all clients for a specific month
+ */
+export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = userRepository.findById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+    const { month } = req.params;
+    if (!month || Array.isArray(month)) {
+      return res.status(400).json({ success: false, message: "Invalid month" });
+    }
+
+    // Get all clients based on user role
+    let clients: GSTClient[];
+    if (user.role === "admin") {
+      clients = gstRepository.findAllClients();
+    } else {
+      clients = gstRepository.findClientsByUserId(user.id);
+    }
+
+    // Calculate summary for each client
+    const summaries: MonthlyGSTSummary[] = [];
+    for (const client of clients) {
+      // Get purchases for the month
+      const purchases = gstRepository.findPurchaseInvoicesByMonth(client.id, month);
+      const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const itcAvailable = purchases.reduce(
+        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+        0
+      );
+
+      // Get sales for the month
+      const sales = gstRepository.findSalesInvoicesByMonth(client.id, month);
+      const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const outputTax = sales.reduce(
+        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+        0
+      );
+
+      // Calculate net tax payable
+      const netTaxPayable = outputTax - itcAvailable;
+
+      // Get filing status
+      const filing = gstRepository.findGSTFilingByMonth(client.id, month);
+
+      // Derive financial year from month if not available from invoices
+      let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
+      if (!financialYear) {
+        const [year, monthNum] = month.split('-').map(Number);
+        // Financial year starts in April (month 4)
+        const fyStartYear = monthNum >= 4 ? year : year - 1;
+        financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
+      }
+
+      const summary: MonthlyGSTSummary = {
+        clientId: client.id,
+        clientName: client.clientName,
+        month,
+        financialYear,
+        totalPurchases,
+        totalSales,
+        itcAvailable,
+        outputTax,
+        netTaxPayable,
+        filingStatus: filing?.filingStatus || "pending",
+        gstr1Filed: filing?.gstr1Filed || false,
+        gstr3bFiled: filing?.gstr3bFiled || false,
+      };
+
+      summaries.push(summary);
+    }
+
+    res.json({
+      success: true,
+      summaries,
+    });
+  } catch (error) {
+    console.error("Error calculating all clients summary:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to calculate all clients summary",
+    });
+  }
+};
+
+/**
  * Upload document for invoice or filing
  */
 export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
