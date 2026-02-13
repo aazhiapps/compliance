@@ -1136,8 +1136,37 @@ export const handleDownloadGSTDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    // TODO: Add permission check to verify user has access to this file
-    // For now, allow all authenticated users to download
+    // Verify user has access to this file by checking client ownership
+    // Extract client name from file path structure: ClientName/FinancialYear/Month/Subfolder/filename
+    const pathParts = filePath.split("/");
+    if (pathParts.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid file path",
+      });
+    }
+
+    // Find all clients for this user
+    let hasAccess = false;
+    if (user.role === "admin") {
+      hasAccess = true; // Admins can download all files
+    } else {
+      const userClients = gstRepository.findClientsByUserId(user.id);
+      // Check if any of user's clients match the file path
+      const clientNameFromPath = pathParts[0].replace(/_/g, " "); // Sanitized names use underscores
+      hasAccess = userClients.some(client => {
+        const sanitizedClientName = client.clientName.replace(/[^a-zA-Z0-9_\-\.]/g, "_");
+        return sanitizedClientName === pathParts[0] || 
+               client.clientName.toLowerCase() === clientNameFromPath.toLowerCase();
+      });
+    }
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
 
     const { readGSTFile } = await import("../utils/fileStorage");
     const fileBuffer = await readGSTFile(filePath);
@@ -1224,7 +1253,7 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
     await deleteGSTFile(filePath);
 
     // Update invoice to remove document path
-    const updatedDocuments = invoice.documents.filter(doc => doc !== filePath);
+    const updatedDocuments = (invoice.documents || []).filter(doc => doc !== filePath);
 
     if (type === "purchase") {
       gstRepository.updatePurchaseInvoice(entityId, {
