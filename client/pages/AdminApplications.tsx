@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { Service } from "@shared/service";
 
 interface Application {
   id: string;
@@ -33,7 +34,9 @@ export default function AdminApplications() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
+  const [filterService, setFilterService] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
+  const [services, setServices] = useState<Service[]>([]);
   const [applications, setApplications] = useState<Application[]>([
     {
       id: "app_1",
@@ -95,13 +98,45 @@ export default function AdminApplications() {
     },
   ]);
 
+  // Fetch available services for the filter dropdown
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch("/api/admin/services", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.services) {
+            setServices(data.services);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch services:", error);
+      }
+      
+      // Fallback to mock data if API call fails
+      // Extract unique services from applications for filtering
+      const uniqueServices = Array.from(
+        new Set(applications.map((app) => app.service))
+      ).map((serviceName) => ({
+        id: serviceName.toLowerCase().replace(/\s+/g, '-'),
+        name: serviceName,
+      })) as Service[];
+      setServices(uniqueServices);
+    };
+    fetchServices();
+  }, [applications]);
+
   const handleApprove = (appId: string) => {
     setApplications((prev) =>
       prev.map((app) =>
         app.id === appId ? { ...app, status: "approved" as const } : app
       )
     );
-    setModalOpen(false);
   };
 
   const handleReject = (appId: string) => {
@@ -110,7 +145,6 @@ export default function AdminApplications() {
         app.id === appId ? { ...app, status: "rejected" as const } : app
       )
     );
-    setModalOpen(false);
   };
 
   const handleAssignStaff = (appId: string, staff: string) => {
@@ -145,7 +179,8 @@ export default function AdminApplications() {
       app.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.service.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || app.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesService = filterService === "all" || app.service === filterService;
+    return matchesSearch && matchesStatus && matchesService;
   });
 
   const toggleAppSelect = (appId: string) => {
@@ -301,6 +336,18 @@ export default function AdminApplications() {
                 />
               </div>
               <div className="flex gap-2">
+                <select
+                  value={filterService}
+                  onChange={(e) => setFilterService(e.target.value)}
+                  className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value="all">All Services</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.name}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -466,21 +513,6 @@ export default function AdminApplications() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Application Detail Modal */}
-      {selectedAppId && (
-        <ApplicationDetailModal
-          isOpen={modalOpen}
-          onClose={() => {
-            setModalOpen(false);
-            setSelectedAppId(null);
-          }}
-          applicationId={selectedAppId}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          onAssignStaff={handleAssignStaff}
-        />
-      )}
     </AdminLayout>
   );
 }
