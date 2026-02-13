@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,7 +15,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
-import ApplicationDetailModal from "@/components/ApplicationDetailModal";
 
 interface Application {
   id: string;
@@ -26,15 +26,14 @@ interface Application {
   submittedDate: string;
   amount: number;
   paymentStatus: "pending" | "paid";
-  executiveAssigned?: string;
+  staffAssigned?: string;
 }
 
 export default function AdminApplications() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [applications, setApplications] = useState<Application[]>([
     {
       id: "app_1",
@@ -46,7 +45,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-01",
       amount: 499,
       paymentStatus: "paid",
-      executiveAssigned: "Rajesh Kumar",
+      staffAssigned: "Staff Member",
     },
     {
       id: "app_2",
@@ -58,7 +57,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-04",
       amount: 2999,
       paymentStatus: "paid",
-      executiveAssigned: "Priya Singh",
+      staffAssigned: "Sarah Johnson",
     },
     {
       id: "app_3",
@@ -92,7 +91,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-07",
       amount: 3999,
       paymentStatus: "paid",
-      executiveAssigned: "Amit Patel",
+      staffAssigned: "Staff Member",
     },
   ]);
 
@@ -114,10 +113,10 @@ export default function AdminApplications() {
     setModalOpen(false);
   };
 
-  const handleAssignExecutive = (appId: string, executive: string) => {
+  const handleAssignStaff = (appId: string, staff: string) => {
     setApplications((prev) =>
       prev.map((app) =>
-        app.id === appId ? { ...app, executiveAssigned: executive } : app
+        app.id === appId ? { ...app, staffAssigned: staff } : app
       )
     );
   };
@@ -277,10 +276,7 @@ export default function AdminApplications() {
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t">
                     <span className="text-sm font-medium">₹{app.amount}</span>
-                    <Button size="sm" variant="outline" onClick={() => {
-                      setSelectedAppId(app.id);
-                      setModalOpen(true);
-                    }}>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/admin/applications/${app.id}`)}>
                       Review
                     </Button>
                   </div>
@@ -430,8 +426,8 @@ export default function AdminApplications() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {app.executiveAssigned ? (
-                          <span className="text-sm font-medium">{app.executiveAssigned}</span>
+                        {app.staffAssigned ? (
+                          <span className="text-sm font-medium">{app.staffAssigned}</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">Unassigned</span>
                         )}
@@ -443,10 +439,7 @@ export default function AdminApplications() {
                             variant="outline"
                             title="View Details"
                             className="p-2 h-auto"
-                            onClick={() => {
-                              setSelectedAppId(app.id);
-                              setModalOpen(true);
-                            }}
+                            onClick={() => navigate(`/admin/applications/${app.id}`)}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -485,7 +478,7 @@ export default function AdminApplications() {
           applicationId={selectedAppId}
           onApprove={handleApprove}
           onReject={handleReject}
-          onAssignExecutive={handleAssignExecutive}
+          onAssignStaff={handleAssignStaff}
         />
       )}
     </AdminLayout>

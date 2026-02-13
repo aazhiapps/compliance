@@ -991,6 +991,97 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
 };
 
 /**
+ * Get summary of all clients for a specific month
+ */
+export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = userRepository.findById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+    const { month } = req.params;
+    if (!month || Array.isArray(month)) {
+      return res.status(400).json({ success: false, message: "Invalid month" });
+    }
+
+    // Get all clients based on user role
+    let clients: GSTClient[];
+    if (user.role === "admin") {
+      clients = gstRepository.findAllClients();
+    } else {
+      clients = gstRepository.findClientsByUserId(user.id);
+    }
+
+    // Calculate summary for each client
+    const summaries: MonthlyGSTSummary[] = [];
+    for (const client of clients) {
+      // Get purchases for the month
+      const purchases = gstRepository.findPurchaseInvoicesByMonth(client.id, month);
+      const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const itcAvailable = purchases.reduce(
+        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+        0
+      );
+
+      // Get sales for the month
+      const sales = gstRepository.findSalesInvoicesByMonth(client.id, month);
+      const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const outputTax = sales.reduce(
+        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+        0
+      );
+
+      // Calculate net tax payable
+      const netTaxPayable = outputTax - itcAvailable;
+
+      // Get filing status
+      const filing = gstRepository.findGSTFilingByMonth(client.id, month);
+
+      // Derive financial year from month if not available from invoices
+      let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
+      if (!financialYear) {
+        const [year, monthNum] = month.split('-').map(Number);
+        // Financial year starts in April (month 4)
+        const fyStartYear = monthNum >= 4 ? year : year - 1;
+        financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
+      }
+
+      const summary: MonthlyGSTSummary = {
+        clientId: client.id,
+        clientName: client.clientName,
+        month,
+        financialYear,
+        totalPurchases,
+        totalSales,
+        itcAvailable,
+        outputTax,
+        netTaxPayable,
+        filingStatus: filing?.filingStatus || "pending",
+        gstr1Filed: filing?.gstr1Filed || false,
+        gstr3bFiled: filing?.gstr3bFiled || false,
+      };
+
+      summaries.push(summary);
+    }
+
+    res.json({
+      success: true,
+      summaries,
+    });
+  } catch (error) {
+    console.error("Error calculating all clients summary:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to calculate all clients summary",
+    });
+  }
+};
+
+/**
  * Upload document for invoice or filing
  */
 export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
@@ -1003,29 +1094,289 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
-    const { type, entityId } = req.body;
-    const file = req.body.fileData; // Base64 encoded file
+    const { type, entityId, clientId, fileData, fileName } = req.body;
 
-    if (!file || !type || !entityId) {
+    if (!fileData || !type || !entityId || !clientId || !fileName) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
       });
     }
 
-    // TODO: Implement actual file upload handling
-    // This is a placeholder for the file upload logic
-    
+    // Verify access to client
+    const client = gstRepository.findClientById(clientId);
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: "Client not found",
+      });
+    }
+
+    if (user.role !== "admin" && client.userId !== user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    // Get invoice/filing to determine folder structure
+    let invoice: PurchaseInvoice | SalesInvoice | undefined;
+    let subfolder: "Purchases" | "Sales" | "Returns" | "Challans" = "Purchases";
+    let invoiceNumber = "UNKNOWN";
+
+    if (type === "purchase") {
+      invoice = gstRepository.findPurchaseInvoiceById(entityId);
+      subfolder = "Purchases";
+      if (invoice) {
+        invoiceNumber = invoice.invoiceNumber;
+      }
+    } else if (type === "sales") {
+      invoice = gstRepository.findSalesInvoiceById(entityId);
+      subfolder = "Sales";
+      if (invoice) {
+        invoiceNumber = invoice.invoiceNumber;
+      }
+    }
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        message: `${type} invoice not found`,
+      });
+    }
+
+    // Decode base64 file
+    const base64Data = fileData.replace(/^data:[^;]+;base64,/, "");
+    const fileBuffer = Buffer.from(base64Data, "base64");
+
+    // Save file using fileStorage utility
+    const { saveGSTFile } = await import("../utils/fileStorage");
+    const filePath = await saveGSTFile(
+      client.clientName,
+      invoice.financialYear,
+      invoice.month,
+      subfolder,
+      invoiceNumber,
+      "invoice",
+      fileBuffer,
+      fileName
+    );
+
+    // Update invoice with new document path
+    const currentDocuments = invoice.documents || [];
+    const updatedDocuments = [...currentDocuments, filePath];
+
+    if (type === "purchase") {
+      gstRepository.updatePurchaseInvoice(entityId, {
+        documents: updatedDocuments,
+      });
+    } else if (type === "sales") {
+      gstRepository.updateSalesInvoice(entityId, {
+        documents: updatedDocuments,
+      });
+    }
+
+    // Add audit log
+    const auditLog: GSTAuditLog = {
+      id: `audit_${Date.now()}`,
+      entityType: type as "purchase" | "sales",
+      entityId,
+      action: "update",
+      changes: { addedDocument: filePath },
+      performedBy: user.id,
+      performedAt: new Date().toISOString(),
+    };
+    gstRepository.addAuditLog(auditLog);
+
     res.json({
       success: true,
       message: "Document uploaded successfully",
-      filePath: `uploads/${entityId}_${Date.now()}.pdf`,
+      filePath,
+      fileName,
     });
   } catch (error) {
     console.error("Error uploading document:", error);
     res.status(500).json({
       success: false,
       message: "Failed to upload document",
+    });
+  }
+};
+
+/**
+ * Download GST document
+ */
+export const handleDownloadGSTDocument: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = userRepository.findById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+
+    const filePathParam = req.query.filePath;
+    const filePath = typeof filePathParam === "string" ? filePathParam : undefined;
+
+    if (!filePath) {
+      return res.status(400).json({
+        success: false,
+        message: "File path is required",
+      });
+    }
+
+    // Verify user has access to this file by checking client ownership
+    // Extract client name from file path structure: ClientName/FinancialYear/Month/Subfolder/filename
+    const pathParts = filePath.split("/");
+    if (pathParts.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid file path",
+      });
+    }
+
+    // Find all clients for this user
+    let hasAccess = false;
+    if (user.role === "admin") {
+      hasAccess = true; // Admins can download all files
+    } else {
+      const userClients = gstRepository.findClientsByUserId(user.id);
+      // Check if any of user's clients match the file path
+      const clientNameFromPath = pathParts[0].replace(/_/g, " "); // Sanitized names use underscores
+      hasAccess = userClients.some(client => {
+        const sanitizedClientName = client.clientName.replace(/[^a-zA-Z0-9_\-\.]/g, "_");
+        return sanitizedClientName === pathParts[0] || 
+               client.clientName.toLowerCase() === clientNameFromPath.toLowerCase();
+      });
+    }
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const { readGSTFile } = await import("../utils/fileStorage");
+    const fileBuffer = await readGSTFile(filePath);
+
+    // Extract filename from path
+    const fileName = filePath.split("/").pop() || "download.pdf";
+
+    // Set appropriate content type based on file extension
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    const contentTypes: Record<string, string> = {
+      pdf: "application/pdf",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xls: "application/vnd.ms-excel",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    };
+    const contentType = contentTypes[ext || ""] || "application/octet-stream";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error("Error downloading document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to download document",
+    });
+  }
+};
+
+/**
+ * Delete GST document
+ */
+export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = userRepository.findById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+
+    const { filePath, entityId, type } = req.body;
+
+    if (!filePath || !entityId || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    // Get invoice to verify ownership
+    let invoice: PurchaseInvoice | SalesInvoice | undefined;
+    
+    if (type === "purchase") {
+      invoice = gstRepository.findPurchaseInvoiceById(entityId);
+    } else if (type === "sales") {
+      invoice = gstRepository.findSalesInvoiceById(entityId);
+    }
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        message: `${type} invoice not found`,
+      });
+    }
+
+    const client = gstRepository.findClientById(invoice.clientId);
+    if (!client || (user.role !== "admin" && client.userId !== user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    // Delete file from storage
+    const { deleteGSTFile } = await import("../utils/fileStorage");
+    await deleteGSTFile(filePath);
+
+    // Update invoice to remove document path
+    const updatedDocuments = (invoice.documents || []).filter(doc => doc !== filePath);
+
+    if (type === "purchase") {
+      gstRepository.updatePurchaseInvoice(entityId, {
+        documents: updatedDocuments,
+      });
+    } else if (type === "sales") {
+      gstRepository.updateSalesInvoice(entityId, {
+        documents: updatedDocuments,
+      });
+    }
+
+    // Add audit log
+    const auditLog: GSTAuditLog = {
+      id: `audit_${Date.now()}`,
+      entityType: type as "purchase" | "sales",
+      entityId,
+      action: "update",
+      changes: { deletedDocument: filePath },
+      performedBy: user.id,
+      performedAt: new Date().toISOString(),
+    };
+    gstRepository.addAuditLog(auditLog);
+
+    res.json({
+      success: true,
+      message: "Document deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete document",
     });
   }
 };

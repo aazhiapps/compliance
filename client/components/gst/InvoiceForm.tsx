@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { PurchaseInvoice, SalesInvoice } from "@shared/gst";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 interface InvoiceFormProps {
   type: "purchase" | "sales";
@@ -32,6 +33,7 @@ export default function InvoiceForm({
   onSuccess,
 }: InvoiceFormProps) {
   const [loading, setLoading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     partyName: "",
@@ -42,6 +44,7 @@ export default function InvoiceForm({
     sgst: 0,
     igst: 0,
   });
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
 
   useEffect(() => {
     if (invoice) {
@@ -57,6 +60,7 @@ export default function InvoiceForm({
           sgst: p.sgst,
           igst: p.igst,
         });
+        setAttachedFiles(p.documents || []);
       } else {
         const s = invoice as SalesInvoice;
         setFormData({
@@ -69,9 +73,106 @@ export default function InvoiceForm({
           sgst: s.sgst,
           igst: s.igst,
         });
+        setAttachedFiles(s.documents || []);
       }
     }
   }, [invoice, type]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !invoice) {
+      if (!invoice) {
+        toast.error("Please save the invoice first before uploading attachments");
+      }
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const fileData = event.target?.result;
+        if (!fileData) return;
+
+        const token = localStorage.getItem("authToken");
+        const response = await fetch("/api/gst/documents", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type,
+            entityId: invoice.id,
+            clientId,
+            fileData,
+            fileName: file.name,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setAttachedFiles([...attachedFiles, data.filePath]);
+          toast.success("File uploaded successfully");
+        } else {
+          toast.error(data.message || "Failed to upload file");
+        }
+        setUploadingFile(false);
+      };
+
+      reader.onerror = () => {
+        toast.error("Failed to read file");
+        setUploadingFile(false);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("An error occurred while uploading the file");
+      setUploadingFile(false);
+    }
+  };
+
+  const handleDeleteFile = async (filePath: string) => {
+    if (!invoice || !confirm("Are you sure you want to delete this file?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/gst/documents", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          filePath,
+          entityId: invoice.id,
+          type,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setAttachedFiles(attachedFiles.filter((f) => f !== filePath));
+        toast.success("File deleted successfully");
+      } else {
+        toast.error(data.message || "Failed to delete file");
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast.error("An error occurred while deleting the file");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,6 +250,10 @@ export default function InvoiceForm({
       formData.sgst +
       formData.igst
     );
+  };
+
+  const getFileName = (filePath: string) => {
+    return filePath.split("/").pop() || filePath;
   };
 
   return (
@@ -269,6 +374,51 @@ export default function InvoiceForm({
                 ₹{calculateTotal().toFixed(2)}
               </div>
             </div>
+          </div>
+
+          {/* File Attachments Section */}
+          <div className="space-y-2 border-t pt-4">
+            <Label>Attachments</Label>
+            {invoice ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    onChange={handleFileUpload}
+                    disabled={uploadingFile}
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                    className="flex-1"
+                  />
+                  {uploadingFile && (
+                    <span className="text-sm text-muted-foreground">Uploading...</span>
+                  )}
+                </div>
+                {attachedFiles.length > 0 && (
+                  <div className="space-y-1">
+                    {attachedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-muted rounded text-sm"
+                      >
+                        <span className="truncate flex-1">{getFileName(file)}</span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteFile(file)}
+                        >
+                          <X className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Save the invoice first to upload attachments
+              </p>
+            )}
           </div>
 
           <DialogFooter>

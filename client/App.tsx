@@ -20,13 +20,16 @@ import MyDocuments from "./pages/MyDocuments";
 import AdminOverview from "./pages/AdminOverview";
 import AdminUsers from "./pages/AdminUsers";
 import AdminApplications from "./pages/AdminApplications";
+import AdminApplicationDetail from "./pages/AdminApplicationDetail";
 import AdminPayments from "./pages/AdminPayments";
 import AdminSettings from "./pages/AdminSettings";
 import AdminServices from "./pages/AdminServices";
 import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminGST from "./pages/AdminGST";
+import StaffDashboard from "./pages/StaffDashboard";
 import UserGST from "./pages/UserGST";
+import GSTSummary from "./pages/GSTSummary";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -82,6 +85,14 @@ const AppRoutes = () => (
       }
     />
     <Route
+      path="/gst-summary"
+      element={
+        <ProtectedRoute>
+          <GSTSummary />
+        </ProtectedRoute>
+      }
+    />
+    <Route
       path="/admin"
       element={
         <ProtectedRoute requiredRole="admin">
@@ -102,6 +113,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminApplications />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/applications/:id"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminApplicationDetail />
         </ProtectedRoute>
       }
     />
@@ -150,6 +169,16 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminGST />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Staff Routes */}
+    <Route
+      path="/staff"
+      element={
+        <ProtectedRoute requiredRole="staff">
+          <StaffDashboard />
         </ProtectedRoute>
       }
     />

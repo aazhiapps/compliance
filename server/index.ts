@@ -22,6 +22,13 @@ import {
   handleGetAllDocuments,
 } from "./routes/admin";
 import {
+  getStaffApplications,
+  updateApplicationStatus,
+  assignApplicationToStaff,
+  getStaffStats,
+  getAllStaff,
+} from "./routes/staff";
+import {
   handleCreateGSTClient,
   handleGetGSTClients,
   handleGetGSTClient,
@@ -37,7 +44,10 @@ import {
   handleUpdateGSTFiling,
   handleGetGSTFilings,
   handleGetMonthlySummary,
+  handleGetAllClientsSummary,
   handleUploadGSTDocument,
+  handleDownloadGSTDocument,
+  handleDeleteGSTDocument,
 } from "./routes/gst";
 import {
   handleGetAllServices,
@@ -48,6 +58,7 @@ import {
 } from "./routes/service";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
+import { requireStaff } from "./middleware/staff";
 import { validateRequest, schemas } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
@@ -138,6 +149,12 @@ export function createServer() {
   app.post("/api/admin/services", authenticateToken, requireAdmin, handleCreateService);
   app.patch("/api/admin/services/:id", authenticateToken, requireAdmin, handleUpdateService);
   app.delete("/api/admin/services/:id", authenticateToken, requireAdmin, handleDeleteService);
+  // Staff routes (protected by staff role - includes both staff and admin)
+  app.get("/api/staff/applications", authenticateToken, requireStaff, getStaffApplications);
+  app.patch("/api/staff/applications/:applicationId", authenticateToken, requireStaff, updateApplicationStatus);
+  app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
+  app.get("/api/staff/members", authenticateToken, requireAdmin, getAllStaff);
+  app.post("/api/staff/assign/:applicationId", authenticateToken, requireAdmin, assignApplicationToStaff);
 
   // GST Management Routes (protected)
   // Client management
@@ -164,9 +181,12 @@ export function createServer() {
 
   // Monthly summary
   app.get("/api/gst/summary/:clientId/:month", authenticateToken, handleGetMonthlySummary);
+  app.get("/api/gst/summary/all/:month", authenticateToken, handleGetAllClientsSummary);
 
-  // Document upload
+  // Document management
   app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);
+  app.get("/api/gst/documents/download", authenticateToken, handleDownloadGSTDocument);
+  app.delete("/api/gst/documents", authenticateToken, handleDeleteGSTDocument);
 
   // Global error handler (must be last)
   app.use(errorHandler);
