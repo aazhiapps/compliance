@@ -49,6 +49,13 @@ import {
   handleDownloadGSTDocument,
   handleDeleteGSTDocument,
 } from "./routes/gst";
+import {
+  handleGetAllServices,
+  handleGetServiceById,
+  handleCreateService,
+  handleUpdateService,
+  handleDeleteService,
+} from "./routes/service";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { requireStaff } from "./middleware/staff";
@@ -136,6 +143,12 @@ export function createServer() {
   app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
   app.get("/api/admin/documents", authenticateToken, requireAdmin, handleGetAllDocuments);
 
+  // Service Management Routes (admin only)
+  app.get("/api/admin/services", authenticateToken, requireAdmin, handleGetAllServices);
+  app.get("/api/admin/services/:id", authenticateToken, requireAdmin, handleGetServiceById);
+  app.post("/api/admin/services", authenticateToken, requireAdmin, handleCreateService);
+  app.patch("/api/admin/services/:id", authenticateToken, requireAdmin, handleUpdateService);
+  app.delete("/api/admin/services/:id", authenticateToken, requireAdmin, handleDeleteService);
   // Staff routes (protected by staff role - includes both staff and admin)
   app.get("/api/staff/applications", authenticateToken, requireStaff, getStaffApplications);
   app.patch("/api/staff/applications/:applicationId", authenticateToken, requireStaff, updateApplicationStatus);
