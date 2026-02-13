@@ -27,7 +27,9 @@ import AdminServices from "./pages/AdminServices";
 import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminGST from "./pages/AdminGST";
+import StaffDashboard from "./pages/StaffDashboard";
 import UserGST from "./pages/UserGST";
+import GSTSummary from "./pages/GSTSummary";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
 import {
@@ -79,6 +81,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <UserGST />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/gst-summary"
+      element={
+        <ProtectedRoute>
+          <GSTSummary />
         </ProtectedRoute>
       }
     />
@@ -159,6 +169,16 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminGST />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Staff Routes */}
+    <Route
+      path="/staff"
+      element={
+        <ProtectedRoute requiredRole="staff">
+          <StaffDashboard />
         </ProtectedRoute>
       }
     />

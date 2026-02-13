@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, FileText, TrendingUp, Calendar } from "lucide-react";
+import { Plus, Building2, FileText, TrendingUp, Calendar, LayoutGrid } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { GSTClient } from "@shared/gst";
 import ClientSelector from "@/components/gst/ClientSelector";
@@ -18,6 +19,7 @@ export default function UserGST() {
   const [showClientForm, setShowClientForm] = useState(false);
   const [clients, setClients] = useState<GSTClient[]>([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Initialize with current month
   useEffect(() => {
@@ -69,10 +71,16 @@ export default function UserGST() {
               Manage GST clients, track purchases, sales, and filing status
             </p>
           </div>
-          <Button onClick={() => setShowClientForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add GST Client
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/gst-summary")}>
+              <LayoutGrid className="w-4 h-4 mr-2" />
+              View All Client Data
+            </Button>
+            <Button onClick={() => setShowClientForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add GST Client
+            </Button>
+          </div>
         </div>
 
         {/* Client Form Dialog */}

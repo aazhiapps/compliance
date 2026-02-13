@@ -165,12 +165,12 @@ export default function AdminUsers() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-            <p className="text-muted-foreground mt-1">Manage and approve user accounts</p>
+            <h1 className="text-3xl font-bold text-foreground">Customer Management</h1>
+            <p className="text-muted-foreground mt-1">Manage and approve customer accounts</p>
           </div>
           <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            Add User
+            Add Customer
           </Button>
         </div>
 
@@ -180,7 +180,7 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Total Users</p>
+                  <p className="text-sm text-blue-600 font-medium">Total Customers</p>
                   <p className="text-3xl font-bold text-blue-900 mt-1">{users.length}</p>
                 </div>
                 <Users className="w-10 h-10 text-blue-400 opacity-50" />
@@ -191,7 +191,7 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-medium">Active Users</p>
+                  <p className="text-sm text-green-600 font-medium">Active Customers</p>
                   <p className="text-3xl font-bold text-green-900 mt-1">{activeUsers}</p>
                 </div>
                 <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
@@ -257,7 +257,7 @@ export default function AdminUsers() {
                 <AlertCircle className="w-5 h-5 text-orange-500" />
                 Pending Approvals
               </CardTitle>
-              <CardDescription>{inactiveUsers.length} users need verification</CardDescription>
+              <CardDescription>{inactiveUsers.length} customers need verification</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {inactiveUsers.slice(0, 3).map((user) => (
@@ -285,7 +285,7 @@ export default function AdminUsers() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                User Distribution
+                Customer Distribution
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -358,9 +358,9 @@ export default function AdminUsers() {
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle className="text-lg">All Users</CardTitle>
+                <CardTitle className="text-lg">All Customers</CardTitle>
                 <CardDescription>
-                  {selectedUsers.size > 0 ? `${selectedUsers.size} selected` : `${filteredUsers.length} total users`}
+                  {selectedUsers.size > 0 ? `${selectedUsers.size} selected` : `${filteredUsers.length} total customers`}
                 </CardDescription>
               </div>
               {selectedUsers.size > 0 && (

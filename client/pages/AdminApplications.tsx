@@ -26,7 +26,7 @@ interface Application {
   submittedDate: string;
   amount: number;
   paymentStatus: "pending" | "paid";
-  executiveAssigned?: string;
+  staffAssigned?: string;
 }
 
 export default function AdminApplications() {
@@ -45,7 +45,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-01",
       amount: 499,
       paymentStatus: "paid",
-      executiveAssigned: "Rajesh Kumar",
+      staffAssigned: "Staff Member",
     },
     {
       id: "app_2",
@@ -57,7 +57,7 @@ export default function AdminApplications() {
       submittedDate: "2024-02-04",
       amount: 2999,
       paymentStatus: "paid",
-      executiveAssigned: "Priya Singh",
+      staffAssigned: "Sarah Johnson",
     },
     {
       id: "app_3",
@@ -91,10 +91,35 @@ export default function AdminApplications() {
       submittedDate: "2024-02-07",
       amount: 3999,
       paymentStatus: "paid",
-      executiveAssigned: "Amit Patel",
+      staffAssigned: "Staff Member",
     },
   ]);
 
+  const handleApprove = (appId: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, status: "approved" as const } : app
+      )
+    );
+    setModalOpen(false);
+  };
+
+  const handleReject = (appId: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, status: "rejected" as const } : app
+      )
+    );
+    setModalOpen(false);
+  };
+
+  const handleAssignStaff = (appId: string, staff: string) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === appId ? { ...app, staffAssigned: staff } : app
+      )
+    );
+  };
 
   const handleBulkApprove = () => {
     setApplications((prev) =>
@@ -401,8 +426,8 @@ export default function AdminApplications() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {app.executiveAssigned ? (
-                          <span className="text-sm font-medium">{app.executiveAssigned}</span>
+                        {app.staffAssigned ? (
+                          <span className="text-sm font-medium">{app.staffAssigned}</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">Unassigned</span>
                         )}
@@ -441,6 +466,21 @@ export default function AdminApplications() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Application Detail Modal */}
+      {selectedAppId && (
+        <ApplicationDetailModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedAppId(null);
+          }}
+          applicationId={selectedAppId}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onAssignStaff={handleAssignStaff}
+        />
+      )}
     </AdminLayout>
   );
 }

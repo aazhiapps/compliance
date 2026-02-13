@@ -74,6 +74,13 @@ export default function Header() {
                         {language === "en" ? "Admin" : "एडमिन"}
                       </Button>
                     </Link>
+                  ) : user.role === "staff" ? (
+                    <Link to="/staff">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" />
+                        {language === "en" ? "Staff" : "स्टाफ"}
+                      </Button>
+                    </Link>
                   ) : (
                     <Link to="/dashboard">
                       <Button variant="ghost" size="sm" className="flex items-center gap-2">

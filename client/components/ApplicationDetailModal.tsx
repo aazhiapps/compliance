@@ -20,7 +20,7 @@ interface ApplicationDetailModalProps {
   applicationId: string;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
-  onAssignExecutive: (id: string, executive: string) => void;
+  onAssignStaff: (id: string, staff: string) => void;
 }
 
 const mockApplicationDetails = {
@@ -40,7 +40,7 @@ const mockApplicationDetails = {
       { id: "doc_3", name: "Business Address Proof", status: "approved" },
     ],
     remarks: "All documents verified. GST number assigned successfully.",
-    executiveAssigned: "Rajesh Kumar",
+    staffAssigned: "Rajesh Kumar",
   },
   app_2: {
     id: "app_2",
@@ -59,7 +59,7 @@ const mockApplicationDetails = {
       { id: "doc_4", name: "Bank Statement", status: "uploaded" },
     ],
     remarks: "Verifying business address details with municipality.",
-    executiveAssigned: "Priya Singh",
+    staffAssigned: "Priya Singh",
   },
   app_3: {
     id: "app_3",
@@ -76,7 +76,7 @@ const mockApplicationDetails = {
       { id: "doc_2", name: "Address Proof", status: "uploaded" },
     ],
     remarks: "Pending payment before processing.",
-    executiveAssigned: null,
+    staffAssigned: null,
   },
 };
 
@@ -86,9 +86,9 @@ export default function ApplicationDetailModal({
   applicationId,
   onApprove,
   onReject,
-  onAssignExecutive,
+  onAssignStaff,
 }: ApplicationDetailModalProps) {
-  const [assignedExecutive, setAssignedExecutive] = useState("");
+  const [assignedStaff, setAssignedStaff] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
@@ -96,12 +96,12 @@ export default function ApplicationDetailModal({
 
   if (!isOpen || !application) return null;
 
-  const executives = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Neha Sharma"];
+  const staffs = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Neha Sharma"];
 
   const handleAssign = () => {
-    if (assignedExecutive) {
-      onAssignExecutive(applicationId, assignedExecutive);
-      setAssignedExecutive("");
+    if (assignedStaff) {
+      onAssignStaff(applicationId, assignedStaff);
+      setAssignedStaff("");
     }
   };
 
@@ -264,34 +264,34 @@ export default function ApplicationDetailModal({
             </CardContent>
           </Card>
 
-          {/* Executive Assignment */}
+          {/* Staff Assignment */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                Executive Assignment
+                Staff Assignment
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {application.executiveAssigned ? (
+              {application.staffAssigned ? (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-900">
-                    <strong>Currently assigned to:</strong> {application.executiveAssigned}
+                    <strong>Currently assigned to:</strong> {application.staffAssigned}
                   </p>
                 </div>
               ) : (
                 <p className="text-sm text-yellow-700 bg-yellow-50 p-4 rounded-lg">
-                  ⚠️ No executive assigned yet
+                  ⚠️ No staff assigned yet
                 </p>
               )}
               <div className="flex gap-2">
                 <select
-                  value={assignedExecutive}
-                  onChange={(e) => setAssignedExecutive(e.target.value)}
+                  value={assignedStaff}
+                  onChange={(e) => setAssignedStaff(e.target.value)}
                   className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
-                  <option value="">Select Executive</option>
-                  {executives.map((exec) => (
+                  <option value="">Select Staff</option>
+                  {staffs.map((exec) => (
                     <option key={exec} value={exec}>
                       {exec}
                     </option>
@@ -299,7 +299,7 @@ export default function ApplicationDetailModal({
                 </select>
                 <Button
                   onClick={handleAssign}
-                  disabled={!assignedExecutive}
+                  disabled={!assignedStaff}
                   className="bg-primary hover:bg-primary/90"
                 >
                   Assign
