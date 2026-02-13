@@ -38,6 +38,8 @@ import {
   handleGetGSTFilings,
   handleGetMonthlySummary,
   handleUploadGSTDocument,
+  handleDownloadGSTDocument,
+  handleDeleteGSTDocument,
 } from "./routes/gst";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
@@ -151,8 +153,10 @@ export function createServer() {
   // Monthly summary
   app.get("/api/gst/summary/:clientId/:month", authenticateToken, handleGetMonthlySummary);
 
-  // Document upload
+  // Document management
   app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);
+  app.get("/api/gst/documents/download", authenticateToken, handleDownloadGSTDocument);
+  app.delete("/api/gst/documents", authenticateToken, handleDeleteGSTDocument);
 
   // Global error handler (must be last)
   app.use(errorHandler);

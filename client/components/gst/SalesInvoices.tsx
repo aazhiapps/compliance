@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Paperclip, Download } from "lucide-react";
 import { SalesInvoice } from "@shared/gst";
 import { toast } from "sonner";
 import InvoiceForm from "./InvoiceForm";
@@ -76,12 +76,45 @@ export default function SalesInvoices({
     }
   };
 
+  const handleDownloadFile = async (filePath: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`/api/gst/documents/download?filePath=${encodeURIComponent(filePath)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filePath.split("/").pop() || "download";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("File downloaded successfully");
+      } else {
+        toast.error("Failed to download file");
+      }
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error("An error occurred while downloading the file");
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const getFileName = (filePath: string) => {
+    return filePath.split("/").pop() || filePath;
   };
 
   const totalAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
@@ -126,6 +159,23 @@ export default function SalesInvoices({
                         SGST: {formatCurrency(invoice.sgst)} | 
                         IGST: {formatCurrency(invoice.igst)}
                       </div>
+                      {invoice.documents && invoice.documents.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Paperclip className="w-4 h-4 text-muted-foreground" />
+                          <div className="flex flex-wrap gap-2">
+                            {invoice.documents.map((doc, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleDownloadFile(doc)}
+                                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                              >
+                                <Download className="w-3 h-3" />
+                                {getFileName(doc)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right mr-4">
