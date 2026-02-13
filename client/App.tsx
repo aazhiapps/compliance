@@ -20,6 +20,7 @@ import MyDocuments from "./pages/MyDocuments";
 import AdminOverview from "./pages/AdminOverview";
 import AdminUsers from "./pages/AdminUsers";
 import AdminApplications from "./pages/AdminApplications";
+import AdminApplicationDetail from "./pages/AdminApplicationDetail";
 import AdminPayments from "./pages/AdminPayments";
 import AdminSettings from "./pages/AdminSettings";
 import AdminServices from "./pages/AdminServices";
@@ -102,6 +103,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminApplications />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/applications/:id"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminApplicationDetail />
         </ProtectedRoute>
       }
     />
