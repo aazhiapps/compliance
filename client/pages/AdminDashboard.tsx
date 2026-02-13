@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "applications" | "payments">(
+  const [activeTab, setActiveTab] = useState<"overview" | "customers" | "applications" | "payments">(
     "overview"
   );
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   // Mock data
   const stats = [
     {
-      label: "Total Users",
+      label: "Total Customers",
       value: "1,243",
       change: "+12%",
       icon: <Users className="w-6 h-6 text-primary" />,
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage users, applications, and monitor platform performance</p>
+          <p className="text-muted-foreground">Manage customers, applications, and monitor platform performance</p>
         </div>
 
         {/* Stats Grid */}
@@ -132,10 +132,10 @@ export default function AdminDashboard() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 border-b border-border">
-          {(["overview", "users", "applications", "payments"] as const).map((tab) => (
+          {(["overview", "customers", "applications", "payments"] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => setActiveTab(tab as any)}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab
                   ? "border-primary text-primary"
@@ -152,8 +152,8 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Users</CardTitle>
-                <CardDescription>Latest user registrations</CardDescription>
+                <CardTitle>Recent Customers</CardTitle>
+                <CardDescription>Latest customer registrations</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -249,16 +249,16 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Users Tab */}
-        {activeTab === "users" && (
+        {/* Customers Tab */}
+        {activeTab === "customers" && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>All Users</CardTitle>
-                  <CardDescription>Manage user accounts and permissions</CardDescription>
+                  <CardTitle>All Customers</CardTitle>
+                  <CardDescription>Manage customer accounts and permissions</CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">Add User</Button>
+                <Button className="bg-primary hover:bg-primary/90">Add Customer</Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -267,7 +267,7 @@ export default function AdminDashboard() {
                   <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Search users..."
+                    placeholder="Search customers..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"

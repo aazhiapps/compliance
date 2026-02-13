@@ -4,12 +4,17 @@ export interface User {
   firstName: string;
   lastName: string;
   phone: string;
-  role: "user" | "admin" | "executive";
+  role: "user" | "admin" | "staff";
   businessType: "individual" | "startup" | "company" | "nonprofit";
   language: "en" | "hi";
   createdAt: string;
   isEmailVerified: boolean;
 }
+
+// Helper type aliases for clarity
+export type Customer = User & { role: "user" };
+export type StaffUser = User & { role: "staff"; department?: string };
+export type AdminUser = User & { role: "admin" };
 
 export interface AuthResponse {
   success: boolean;
@@ -42,10 +47,12 @@ export interface Application {
   documents: Document[];
   createdAt: string;
   updatedAt: string;
-  assignedExecutive?: string;
+  assignedStaff?: string;
+  assignedStaffName?: string;
   paymentStatus: "pending" | "paid" | "refunded";
   paymentAmount: number;
   eta: string;
+  internalNotes?: string;
 }
 
 export interface Document {

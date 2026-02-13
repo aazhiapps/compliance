@@ -73,18 +73,56 @@ The application comes pre-seeded with demo users for testing all features. All d
 
 **What you can do:**
 - ✅ Access admin dashboard at `/admin`
-- ✅ View all users and applications
-- ✅ Manage user accounts
+- ✅ View all customers and applications
+- ✅ Manage customer accounts
 - ✅ Review and approve/reject applications
 - ✅ View payment details
 - ✅ Monitor platform analytics
-- ✅ Assign executives to applications
+- ✅ Assign staff to applications
+- ✅ Manage staff members
 
 **Admin Features:**
-- User management with search/filter
+- Customer management with search/filter
 - Application review panel
 - Payment tracking
 - Performance analytics
+- Staff assignment and management
+
+---
+
+### 5. Staff Account 1
+**Email:** `staff@example.com`  
+**Password:** `Staff@1234`  
+**Role:** Staff  
+**Business Type:** Company  
+**Language:** English  
+**Phone:** +91 98765 60000
+
+**What you can do:**
+- ✅ Access staff dashboard at `/staff`
+- ✅ View assigned applications
+- ✅ Update application status
+- ✅ Add internal notes (not visible to customers)
+- ✅ Process customer requests
+- ✅ Track staff performance metrics
+
+**Staff Features:**
+- View assigned applications
+- Update application status
+- Add internal processing notes
+- Track personal statistics
+
+---
+
+### 6. Staff Account 2
+**Email:** `sarah@example.com`  
+**Password:** `Sarah@1234`  
+**Role:** Staff  
+**Business Type:** Company  
+**Language:** English  
+**Phone:** +91 98765 60001
+
+**Features:** Same as Staff Account 1
 
 ---
 
@@ -103,12 +141,22 @@ The application comes pre-seeded with demo users for testing all features. All d
 ### Scenario 2: Admin Review
 1. Log in with admin account
 2. Go to `/admin`
-3. View "Overview" tab - see users and applications
-4. Click "Users" tab - search/filter users
+3. View "Overview" tab - see customers and applications
+4. Click "Customers" tab - search/filter customers
 5. Click "Applications" tab - review submissions
-6. See application details and update status
+6. Assign applications to staff members
+7. See application details and update status
 
-### Scenario 3: Service Browsing
+### Scenario 3: Staff Processing
+1. Log in with staff account (`staff@example.com`)
+2. Go to `/staff` to access staff dashboard
+3. View assigned applications
+4. Click "Manage" on an application
+5. Add internal notes for processing
+6. Update application status (under review, approved, rejected)
+7. View personal statistics
+
+### Scenario 4: Service Browsing
 1. Visit homepage `/`
 2. View service catalog
 3. Click on service cards (expandable)
@@ -116,13 +164,13 @@ The application comes pre-seeded with demo users for testing all features. All d
 5. See pricing, turnaround, requirements
 6. Click "Begin Application" to start checkout
 
-### Scenario 4: Dashboard Management
+### Scenario 5: Dashboard Management
 1. Log in as regular user
 2. View `/dashboard`
 3. See application statistics
 4. Click on application to view details
 5. Check document status
-6. View assigned executive contact
+6. View assigned staff contact
 
 ---
 
@@ -155,12 +203,21 @@ The checkout flow is configured for **Razorpay test mode**.
 - ✅ Executive assignment
 
 ### Admin Features
-- ✅ User management panel
+- ✅ Customer management panel
 - ✅ Application review interface
 - ✅ Payment tracking
 - ✅ Analytics dashboard
 - ✅ Search and filter capabilities
-- ✅ User approval workflows
+- ✅ Customer approval workflows
+- ✅ Staff management and assignment
+
+### Staff Features
+- ✅ Staff dashboard with personal statistics
+- ✅ View assigned applications
+- ✅ Update application status
+- ✅ Add internal processing notes
+- ✅ Track performance metrics
+- ✅ Manage customer requests
 
 ---
 
@@ -174,6 +231,15 @@ POST   /api/auth/signup          - Create new account
 POST   /api/auth/login           - Login and get token
 GET    /api/auth/profile         - Get current user profile
 POST   /api/auth/logout          - Logout
+```
+
+### Staff Endpoints (Requires Staff or Admin Role)
+```
+GET    /api/staff/applications   - Get staff member's assigned applications
+PATCH  /api/staff/applications/:id - Update application status and add notes
+GET    /api/staff/stats          - Get staff member's statistics
+GET    /api/staff/members        - Get all staff members (admin only)
+POST   /api/staff/assign/:id     - Assign application to staff (admin only)
 ```
 
 ### Application Endpoints
