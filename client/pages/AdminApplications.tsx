@@ -117,7 +117,7 @@ export default function AdminApplications() {
   const handleAssignStaff = (appId: string, staff: string) => {
     setApplications((prev) =>
       prev.map((app) =>
-        app.id === appId ? { ...app, staffAssigned: executive } : app
+        app.id === appId ? { ...app, staffAssigned: staff } : app
       )
     );
   };
