@@ -129,7 +129,8 @@ export default function AdminApplications() {
       setServices(uniqueServices);
     };
     fetchServices();
-  }, [applications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only fetch services once on mount
 
   const handleApprove = (appId: string) => {
     setApplications((prev) =>
