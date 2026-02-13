@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowLeft, CheckCircle2, Clock, AlertCircle, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
 import { MonthlyGSTSummary } from "@shared/gst";
 import {
   Table,
@@ -123,41 +122,40 @@ export default function GSTSummary() {
   );
 
   return (
-    <AppLayout>
-      <div className="container mx-auto max-w-7xl px-4 py-8">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">GST Filing Summary - All Clients</h1>
-              <p className="text-muted-foreground mt-1">
-                Overview of all clients' filing status and GST data for the selected month
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+    <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">GST Filing Summary - All Clients</h1>
+            <p className="text-muted-foreground mt-1">
+              Overview of all clients' filing status and GST data for the selected month
+            </p>
           </div>
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
 
-          {/* Month Selector */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <Calendar className="w-5 h-5 text-muted-foreground" />
-                <label className="font-medium">Select Month:</label>
-                <input
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="px-3 py-2 border rounded-md"
-                />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Month Selector */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <Calendar className="w-5 h-5 text-muted-foreground" />
+              <label className="font-medium">Select Month:</label>
+              <input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="px-3 py-2 border rounded-md"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
@@ -215,8 +213,8 @@ export default function GSTSummary() {
             </Card>
           </div>
 
-          {/* Clients Table */}
-          <Card>
+        {/* Clients Table */}
+        <Card>
             <CardHeader>
               <CardTitle>Client Filing Status</CardTitle>
               <CardDescription>
@@ -284,6 +282,5 @@ export default function GSTSummary() {
           </Card>
         </div>
       </div>
-    </AppLayout>
   );
 }
