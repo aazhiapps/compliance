@@ -22,6 +22,13 @@ import {
   handleGetAllDocuments,
 } from "./routes/admin";
 import {
+  getStaffApplications,
+  updateApplicationStatus,
+  assignApplicationToStaff,
+  getStaffStats,
+  getAllStaff,
+} from "./routes/staff";
+import {
   handleCreateGSTClient,
   handleGetGSTClients,
   handleGetGSTClient,
@@ -41,6 +48,7 @@ import {
 } from "./routes/gst";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
+import { requireStaff } from "./middleware/staff";
 import { validateRequest, schemas } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
@@ -124,6 +132,13 @@ export function createServer() {
   app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
   app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
   app.get("/api/admin/documents", authenticateToken, requireAdmin, handleGetAllDocuments);
+
+  // Staff routes (protected by staff role - includes both staff and admin)
+  app.get("/api/staff/applications", authenticateToken, requireStaff, getStaffApplications);
+  app.patch("/api/staff/applications/:applicationId", authenticateToken, requireStaff, updateApplicationStatus);
+  app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
+  app.get("/api/staff/members", authenticateToken, requireAdmin, getAllStaff);
+  app.post("/api/staff/assign/:applicationId", authenticateToken, requireAdmin, assignApplicationToStaff);
 
   // GST Management Routes (protected)
   // Client management

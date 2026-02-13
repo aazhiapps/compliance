@@ -65,6 +65,32 @@ const seedDemoUsers = async () => {
       isEmailVerified: true,
       password: await bcrypt.hash("Admin@1234", AUTH.SALT_ROUNDS),
     },
+    {
+      id: "staff_demo_1",
+      email: "staff@example.com",
+      firstName: "Staff",
+      lastName: "Member",
+      phone: "+91 98765 60000",
+      role: "staff",
+      businessType: "company",
+      language: "en",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: await bcrypt.hash("Staff@1234", AUTH.SALT_ROUNDS),
+    },
+    {
+      id: "staff_demo_2",
+      email: "sarah@example.com",
+      firstName: "Sarah",
+      lastName: "Johnson",
+      phone: "+91 98765 60001",
+      role: "staff",
+      businessType: "company",
+      language: "en",
+      createdAt: new Date().toISOString(),
+      isEmailVerified: true,
+      password: await bcrypt.hash("Sarah@1234", AUTH.SALT_ROUNDS),
+    },
   ];
 
   demoUsers.forEach((user) => {

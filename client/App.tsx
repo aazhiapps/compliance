@@ -26,6 +26,7 @@ import AdminServices from "./pages/AdminServices";
 import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminGST from "./pages/AdminGST";
+import StaffDashboard from "./pages/StaffDashboard";
 import UserGST from "./pages/UserGST";
 import ApplicationTracking from "./pages/ApplicationTracking";
 import NotFound from "./pages/NotFound";
@@ -150,6 +151,16 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminGST />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Staff Routes */}
+    <Route
+      path="/staff"
+      element={
+        <ProtectedRoute requiredRole="staff">
+          <StaffDashboard />
         </ProtectedRoute>
       }
     />

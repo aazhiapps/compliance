@@ -5,7 +5,7 @@ import { Shield } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "user" | "admin" | "executive";
+  requiredRole?: "user" | "admin" | "staff";
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -15,14 +15,29 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/login" />;
   }
 
-  if (requiredRole && user?.role !== "admin" && user?.role !== requiredRole) {
-    return (
-      <PlaceholderPage
-        title="Access Denied"
-        description="You don't have permission to access this page"
-        icon={<Shield className="w-16 h-16 text-destructive" />}
-      />
-    );
+  // Admin has access to all routes
+  if (requiredRole && user?.role !== "admin") {
+    // Staff role check
+    if (requiredRole === "staff" && user?.role !== "staff") {
+      return (
+        <PlaceholderPage
+          title="Access Denied"
+          description="You don't have permission to access this page. Staff access required."
+          icon={<Shield className="w-16 h-16 text-destructive" />}
+        />
+      );
+    }
+    
+    // Other role checks
+    if (user?.role !== requiredRole) {
+      return (
+        <PlaceholderPage
+          title="Access Denied"
+          description="You don't have permission to access this page"
+          icon={<Shield className="w-16 h-16 text-destructive" />}
+        />
+      );
+    }
   }
 
   return <>{children}</>;
