@@ -56,6 +56,13 @@ import {
   handleUpdateService,
   handleDeleteService,
 } from "./routes/service";
+import {
+  handleRecordPayment,
+  handleGetPayments,
+  handleGetPaymentById,
+  handleGetPaymentByApplicationId,
+  handleUpdatePaymentStatus,
+} from "./routes/payments";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { requireStaff } from "./middleware/staff";
@@ -187,6 +194,13 @@ export function createServer() {
   app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);
   app.get("/api/gst/documents/download", authenticateToken, handleDownloadGSTDocument);
   app.delete("/api/gst/documents", authenticateToken, handleDeleteGSTDocument);
+
+  // Payment Management Routes (admin/staff only)
+  app.post("/api/payments/record", authenticateToken, requireAdmin, handleRecordPayment);
+  app.get("/api/payments", authenticateToken, requireStaff, handleGetPayments);
+  app.get("/api/payments/:id", authenticateToken, requireStaff, handleGetPaymentById);
+  app.get("/api/payments/application/:applicationId", authenticateToken, requireStaff, handleGetPaymentByApplicationId);
+  app.patch("/api/payments/:id/status", authenticateToken, requireAdmin, handleUpdatePaymentStatus);
 
   // Global error handler (must be last)
   app.use(errorHandler);
