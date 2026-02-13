@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   CheckCircle,
@@ -15,8 +16,12 @@ import {
   Users,
   Calendar,
   BadgeCheck,
+  Plus,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { RecordPaymentRequest } from "@shared/api";
 
 interface Document {
   id: string;
@@ -137,12 +142,22 @@ const executives = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Neha Sharma"];
 export default function AdminApplicationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { token } = useAuth();
+  const { toast } = useToast();
   const [application, setApplication] = useState<ApplicationDetail | null>(
     id ? mockApplicationDetails[id] : null
   );
   const [assignedExecutive, setAssignedExecutive] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [showRecordPaymentDialog, setShowRecordPaymentDialog] = useState(false);
+  const [recordingPayment, setRecordingPayment] = useState(false);
+  
+  // Payment form state
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<RecordPaymentRequest["method"]>("manual");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
 
   if (!application) {
     return (
@@ -178,6 +193,70 @@ export default function AdminApplicationDetail() {
     if (assignedExecutive) {
       setApplication({ ...application, executiveAssigned: assignedExecutive });
       setAssignedExecutive("");
+    }
+  };
+
+  const handleRecordPayment = async () => {
+    if (!application || !paymentAmount || !transactionId) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRecordingPayment(true);
+    try {
+      const paymentData: RecordPaymentRequest = {
+        applicationId: application.id,
+        amount: parseFloat(paymentAmount),
+        method: paymentMethod,
+        transactionId: transactionId,
+        notes: paymentNotes || undefined,
+      };
+
+      const response = await fetch("/api/payments/record", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(paymentData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Payment recorded successfully",
+        });
+        
+        // Update local application state
+        setApplication({ ...application, paymentStatus: "paid" });
+        
+        // Reset form
+        setPaymentAmount("");
+        setTransactionId("");
+        setPaymentNotes("");
+        setShowRecordPaymentDialog(false);
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to record payment",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error recording payment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to record payment",
+        variant: "destructive",
+      });
+    } finally {
+      setRecordingPayment(false);
     }
   };
 
@@ -242,7 +321,7 @@ export default function AdminApplicationDetail() {
         </div>
 
         {/* Status and Payment Badges */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span
             className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${getStatusColor(
               application.status
@@ -260,6 +339,19 @@ export default function AdminApplicationDetail() {
           >
             {application.paymentStatus === "paid" ? "✓ Paid" : "⏱ Pending Payment"}
           </span>
+          {application.paymentStatus === "pending" && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setPaymentAmount(application.amount.toString());
+                setShowRecordPaymentDialog(true);
+              }}
+              className="bg-primary hover:bg-primary/90 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Record Payment
+            </Button>
+          )}
         </div>
 
         {/* Status Tracking Timeline */}
@@ -609,6 +701,100 @@ export default function AdminApplicationDetail() {
             </CardContent>
           </Card>
         )}
+        
+        {/* Record Payment Dialog */}
+        <Dialog open={showRecordPaymentDialog} onOpenChange={setShowRecordPaymentDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Record Payment for {application.service}</DialogTitle>
+              <DialogDescription>
+                Record a payment that was received for this application
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              {/* Amount */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Amount (₹) *</label>
+                <input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  disabled={recordingPayment}
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Payment Method *</label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as RecordPaymentRequest["method"])}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  disabled={recordingPayment}
+                >
+                  <option value="manual">Manual Entry</option>
+                  <option value="cash">Cash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="razorpay">Razorpay (Manual)</option>
+                </select>
+              </div>
+
+              {/* Transaction ID */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Transaction ID / Reference *</label>
+                <input
+                  type="text"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder="Enter transaction ID or reference number"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  disabled={recordingPayment}
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Notes (Optional)</label>
+                <textarea
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="Add any additional notes about this payment"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  disabled={recordingPayment}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowRecordPaymentDialog(false)}
+                disabled={recordingPayment}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRecordPayment}
+                disabled={recordingPayment || !paymentAmount || !transactionId}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {recordingPayment ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Recording...
+                  </>
+                ) : (
+                  "Record Payment"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

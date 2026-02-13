@@ -71,3 +71,47 @@ export interface AdminDocumentsResponse {
   message?: string;
   users: UserDocumentsHierarchical[];
 }
+
+/**
+ * Payment Management types
+ */
+export interface PaymentRecord {
+  id: string;
+  applicationId: string;
+  applicantName: string;
+  applicantEmail: string;
+  service: string;
+  amount: number;
+  status: "pending" | "completed" | "failed" | "refunded";
+  method: "razorpay" | "bank_transfer" | "cash" | "cheque" | "manual";
+  transactionId: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+  date: string;
+  notes?: string;
+  recordedBy?: string; // User ID who recorded the payment (for manual entries)
+  recordedAt?: string; // Timestamp when payment was recorded
+}
+
+export interface RecordPaymentRequest {
+  applicationId: string;
+  amount: number;
+  method: "razorpay" | "bank_transfer" | "cash" | "cheque" | "manual";
+  transactionId: string;
+  notes?: string;
+  date?: string; // Optional, defaults to now
+}
+
+export interface PaymentResponse {
+  success: boolean;
+  message: string;
+  payment?: PaymentRecord;
+}
+
+export interface PaymentsListResponse {
+  success: boolean;
+  message?: string;
+  payments: PaymentRecord[];
+  total: number;
+}
