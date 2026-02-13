@@ -390,7 +390,7 @@ export default function AdminPayments() {
                     setSelectedApplicationId(e.target.value);
                     // Auto-fill amount from application
                     const app = applications.find(a => a.id === e.target.value);
-                    if (app) {
+                    if (app && app.paymentAmount) {
                       setPaymentAmount(app.paymentAmount.toString());
                     }
                   }}

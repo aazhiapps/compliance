@@ -68,7 +68,7 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
 
     // Create payment record
     const paymentRecord: PaymentRecord = {
-      id: `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       applicationId: paymentData.applicationId,
       applicantName: `${user.firstName} ${user.lastName}`,
       applicantEmail: user.email,
