@@ -118,19 +118,23 @@ export default function AdminApplications() {
         console.error("Failed to fetch services:", error);
       }
       
-      // Fallback to mock data if API call fails
-      // Extract unique services from applications for filtering
-      const uniqueServices = Array.from(
-        new Set(applications.map((app) => app.service))
-      ).map((serviceName) => ({
-        id: serviceName.toLowerCase().replace(/\s+/g, '-'),
-        name: serviceName,
-      })) as Service[];
-      setServices(uniqueServices);
+      // Fallback to deriving services from applications for demo/mock data
+      deriveServicesFromApplications();
     };
     fetchServices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only fetch services once on mount
+
+  // Helper to derive unique services from applications for demo mode
+  const deriveServicesFromApplications = () => {
+    const uniqueServices = Array.from(
+      new Set(applications.map((app) => app.service))
+    ).map((serviceName) => ({
+      id: serviceName.toLowerCase().replace(/\s+/g, '-'),
+      name: serviceName,
+    })) as Service[];
+    setServices(uniqueServices);
+  };
 
   const handleApprove = (appId: string) => {
     setApplications((prev) =>
