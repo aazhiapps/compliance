@@ -64,7 +64,7 @@ export default function AdminServices() {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch("/api/admin/services", {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -140,7 +140,7 @@ export default function AdminServices() {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const url = editingService
         ? `/api/admin/services/${editingService.id}`
         : "/api/admin/services";
@@ -196,7 +196,7 @@ export default function AdminServices() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/admin/services/${deletingService.id}`, {
         method: "DELETE",
         headers: {

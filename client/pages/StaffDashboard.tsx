@@ -48,7 +48,7 @@ export default function StaffDashboard() {
 
   const fetchStaffData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
 
       // Fetch applications
       const appsResponse = await fetch("/api/staff/applications", {
@@ -76,7 +76,7 @@ export default function StaffDashboard() {
 
   const handleUpdateStatus = async (appId: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`/api/staff/applications/${appId}`, {
         method: "PATCH",
         headers: {

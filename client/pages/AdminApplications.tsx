@@ -104,7 +104,7 @@ export default function AdminApplications() {
       try {
         const response = await fetch("/api/admin/services", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
         if (response.ok) {
