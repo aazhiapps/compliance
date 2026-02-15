@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Download, Eye, MoreVertical, DollarSign, CheckCircle2, AlertCircle, Plus } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
-import { PaymentRecord, RecordPaymentRequest, Application } from "@shared/api";
+import { PaymentRecord, RecordPaymentRequest } from "@shared/api";
+import { Application } from "@shared/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
