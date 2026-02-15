@@ -15,6 +15,17 @@ import {
 } from "@shared/gst";
 import { userRepository } from "../repositories/userRepository";
 import { deleteGSTFile } from "../utils/fileStorage";
+import { 
+  validateGSTIN, 
+  validatePAN, 
+  validateARN,
+  calculateDueDates,
+  calculateLateFee,
+  calculateInterest,
+  getFilingStatus,
+  validateGSTINState
+} from "../utils/gstValidation";
+import { gstNotificationService } from "../services/gstNotificationService";
 
 /**
  * Create a new GST client
@@ -32,6 +43,35 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
     
     const data = req.body as CreateGSTClientRequest;
 
+    // Validate GSTIN
+    const gstinValidation = validateGSTIN(data.gstin);
+    if (!gstinValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid GSTIN",
+        errors: gstinValidation.errors,
+        warnings: gstinValidation.warnings,
+      });
+    }
+
+    // Validate PAN
+    const panValidation = validatePAN(data.panNumber);
+    if (!panValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid PAN",
+        errors: panValidation.errors,
+      });
+    }
+
+    // Validate GSTIN state matches provided state
+    if (!validateGSTINState(data.gstin, data.state)) {
+      return res.status(400).json({
+        success: false,
+        message: "GSTIN state code does not match the provided state",
+      });
+    }
+
     // Check if GSTIN already exists
     const existing = gstRepository.findClientByGSTIN(data.gstin);
     if (existing) {
@@ -41,10 +81,12 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
       });
     }
 
-    // Create new client
+    // Create new client with default status
     const client: GSTClient = {
       id: `gst_client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: user.id,
+      status: data.status || "active",
+      assignedStaff: data.assignedStaff || [],
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -250,6 +292,15 @@ export const handleCreatePurchaseInvoice: RequestHandler = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Access denied",
+      });
+    }
+
+    // Check if the month is locked
+    const isLocked = gstRepository.isMonthLocked(data.clientId, data.month);
+    if (isLocked) {
+      return res.status(403).json({
+        success: false,
+        message: "This month is locked. Cannot add invoices after filing is completed.",
       });
     }
 

@@ -4,6 +4,9 @@ import {
   SalesInvoice,
   GSTReturnFiling,
   GSTAuditLog,
+  StaffAssignment,
+  ClientFilingStatusReport,
+  AnnualComplianceSummary,
 } from "@shared/gst";
 
 /**
@@ -16,6 +19,7 @@ class GSTRepository {
   private salesInvoices: Map<string, SalesInvoice>;
   private filings: Map<string, GSTReturnFiling>;
   private auditLogs: GSTAuditLog[];
+  private staffAssignments: Map<string, StaffAssignment>;
 
   constructor() {
     this.clients = new Map();
@@ -23,6 +27,7 @@ class GSTRepository {
     this.salesInvoices = new Map();
     this.filings = new Map();
     this.auditLogs = [];
+    this.staffAssignments = new Map();
   }
 
   // ============ CLIENT OPERATIONS ============
@@ -31,6 +36,10 @@ class GSTRepository {
    * Create a new GST client
    */
   createClient(client: GSTClient): GSTClient {
+    // Set default status if not provided
+    if (!client.status) {
+      client.status = "active";
+    }
     this.clients.set(client.id, client);
     return client;
   }
@@ -285,6 +294,321 @@ class GSTRepository {
    */
   getRecentAuditLogs(limit: number = 100): GSTAuditLog[] {
     return this.auditLogs.slice(-limit);
+  }
+
+  // ============ ADDITIONAL OPERATIONS FOR ENHANCED FEATURES ============
+
+  /**
+   * Find active clients only
+   */
+  findActiveClients(): GSTClient[] {
+    return Array.from(this.clients.values()).filter(
+      (client) => client.status === "active"
+    );
+  }
+
+  /**
+   * Find active clients for a user
+   */
+  findActiveClientsByUserId(userId: string): GSTClient[] {
+    return Array.from(this.clients.values()).filter(
+      (client) => client.userId === userId && client.status === "active"
+    );
+  }
+
+  /**
+   * Deactivate a client
+   */
+  deactivateClient(clientId: string, userId: string): GSTClient | undefined {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      return undefined;
+    }
+    client.status = "inactive";
+    client.deactivatedAt = new Date().toISOString();
+    client.updatedAt = new Date().toISOString();
+    this.clients.set(clientId, client);
+    return client;
+  }
+
+  /**
+   * Reactivate a client
+   */
+  reactivateClient(clientId: string): GSTClient | undefined {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      return undefined;
+    }
+    client.status = "active";
+    client.deactivatedAt = undefined;
+    client.updatedAt = new Date().toISOString();
+    this.clients.set(clientId, client);
+    return client;
+  }
+
+  /**
+   * Check if month is locked for a client
+   */
+  isMonthLocked(clientId: string, month: string): boolean {
+    const filing = this.findFilingByClientAndMonth(clientId, month);
+    return filing?.isLocked || false;
+  }
+
+  /**
+   * Lock a month to prevent further edits
+   */
+  lockMonth(clientId: string, month: string, userId: string): GSTReturnFiling | undefined {
+    const filing = this.findFilingByClientAndMonth(clientId, month);
+    if (!filing) {
+      return undefined;
+    }
+    filing.isLocked = true;
+    filing.lockedAt = new Date().toISOString();
+    filing.lockedBy = userId;
+    filing.updatedAt = new Date().toISOString();
+    this.filings.set(filing.id, filing);
+    return filing;
+  }
+
+  /**
+   * Unlock a month to allow edits (admin only, for amendments)
+   */
+  unlockMonth(clientId: string, month: string): GSTReturnFiling | undefined {
+    const filing = this.findFilingByClientAndMonth(clientId, month);
+    if (!filing) {
+      return undefined;
+    }
+    filing.isLocked = false;
+    filing.lockedAt = undefined;
+    filing.lockedBy = undefined;
+    filing.updatedAt = new Date().toISOString();
+    this.filings.set(filing.id, filing);
+    return filing;
+  }
+
+  /**
+   * Assign staff to a client
+   */
+  assignStaffToClient(clientId: string, staffUserId: string): boolean {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      return false;
+    }
+    if (!client.assignedStaff) {
+      client.assignedStaff = [];
+    }
+    if (!client.assignedStaff.includes(staffUserId)) {
+      client.assignedStaff.push(staffUserId);
+      client.updatedAt = new Date().toISOString();
+      this.clients.set(clientId, client);
+    }
+    return true;
+  }
+
+  /**
+   * Remove staff assignment from a client
+   */
+  removeStaffFromClient(clientId: string, staffUserId: string): boolean {
+    const client = this.clients.get(clientId);
+    if (!client || !client.assignedStaff) {
+      return false;
+    }
+    client.assignedStaff = client.assignedStaff.filter(id => id !== staffUserId);
+    client.updatedAt = new Date().toISOString();
+    this.clients.set(clientId, client);
+    return true;
+  }
+
+  /**
+   * Get clients assigned to a staff member
+   */
+  findClientsByStaffUserId(staffUserId: string): GSTClient[] {
+    return Array.from(this.clients.values()).filter(
+      (client) => client.assignedStaff?.includes(staffUserId)
+    );
+  }
+
+  /**
+   * Get all staff assignments
+   */
+  getAllStaffAssignments(): StaffAssignment[] {
+    return Array.from(this.staffAssignments.values());
+  }
+
+  /**
+   * Create a staff assignment record
+   */
+  createStaffAssignment(assignment: StaffAssignment): StaffAssignment {
+    this.staffAssignments.set(assignment.id, assignment);
+    return assignment;
+  }
+
+  /**
+   * Find staff assignment by ID
+   */
+  findStaffAssignmentById(id: string): StaffAssignment | undefined {
+    return this.staffAssignments.get(id);
+  }
+
+  /**
+   * Find staff assignment by staff user ID
+   */
+  findStaffAssignmentByUserId(staffUserId: string): StaffAssignment | undefined {
+    return Array.from(this.staffAssignments.values()).find(
+      (assignment) => assignment.staffUserId === staffUserId
+    );
+  }
+
+  /**
+   * Update staff assignment
+   */
+  updateStaffAssignment(id: string, updates: Partial<StaffAssignment>): StaffAssignment | undefined {
+    const assignment = this.staffAssignments.get(id);
+    if (!assignment) {
+      return undefined;
+    }
+    const updated = { ...assignment, ...updates };
+    this.staffAssignments.set(id, updated);
+    return updated;
+  }
+
+  /**
+   * Delete staff assignment
+   */
+  deleteStaffAssignment(id: string): boolean {
+    return this.staffAssignments.delete(id);
+  }
+
+  /**
+   * Get client filing status report
+   */
+  getClientFilingStatusReport(clientId: string): ClientFilingStatusReport | undefined {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      return undefined;
+    }
+
+    const filings = Array.from(this.filings.values()).filter(
+      f => f.clientId === clientId
+    );
+
+    const today = new Date();
+    const pendingMonths: string[] = [];
+    const overdueMonths: string[] = [];
+    let totalPendingAmount = 0;
+    let lastFiledMonth: string | undefined;
+
+    filings.forEach(filing => {
+      // Check if fully filed
+      const isFullyFiled = filing.gstr1Filed && filing.gstr3bFiled;
+      
+      if (isFullyFiled) {
+        if (!lastFiledMonth || filing.month > lastFiledMonth) {
+          lastFiledMonth = filing.month;
+        }
+      } else {
+        pendingMonths.push(filing.month);
+        
+        // Check if overdue
+        if (filing.gstr3bDueDate) {
+          const dueDate = new Date(filing.gstr3bDueDate);
+          if (today > dueDate) {
+            overdueMonths.push(filing.month);
+            totalPendingAmount += filing.taxPaid + filing.lateFee + filing.interest;
+          }
+        }
+      }
+    });
+
+    // Calculate compliance score (on-time filings / total filings)
+    const totalFilings = filings.length;
+    const onTimeFilings = filings.filter(f => 
+      f.gstr1Filed && f.gstr3bFiled && f.filingStatus === "filed"
+    ).length;
+    const complianceScore = totalFilings > 0 ? Math.round((onTimeFilings / totalFilings) * 100) : 0;
+
+    // Get current period based on filing frequency
+    const currentDate = new Date();
+    const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+
+    return {
+      clientId: client.id,
+      clientName: client.clientName,
+      gstin: client.gstin,
+      status: client.status,
+      filingFrequency: client.filingFrequency,
+      currentPeriod: currentMonth,
+      lastFiledMonth,
+      pendingMonths,
+      overdueMonths,
+      totalPendingAmount,
+      complianceScore
+    };
+  }
+
+  /**
+   * Get annual compliance summary
+   */
+  getAnnualComplianceSummary(clientId: string, financialYear: string): AnnualComplianceSummary | undefined {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      return undefined;
+    }
+
+    const filings = Array.from(this.filings.values()).filter(
+      f => f.clientId === clientId && f.financialYear === financialYear
+    );
+
+    const purchases = Array.from(this.purchaseInvoices.values()).filter(
+      p => p.clientId === clientId && p.financialYear === financialYear
+    );
+
+    const sales = Array.from(this.salesInvoices.values()).filter(
+      s => s.clientId === clientId && s.financialYear === financialYear
+    );
+
+    const totalMonthsTracked = filings.length;
+    const monthsFiled = filings.filter(f => f.gstr1Filed && f.gstr3bFiled).length;
+    const monthsPending = filings.filter(f => !f.gstr1Filed || !f.gstr3bFiled).length;
+    const monthsLate = filings.filter(f => f.filingStatus === "late" || f.filingStatus === "overdue").length;
+
+    const totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const totalPurchases = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
+    const totalTaxPaid = filings.reduce((sum, f) => sum + f.taxPaid, 0);
+    const totalLateFees = filings.reduce((sum, f) => sum + f.lateFee, 0);
+    const totalInterest = filings.reduce((sum, f) => sum + f.interest, 0);
+
+    const complianceRate = totalMonthsTracked > 0 
+      ? Math.round((monthsFiled / totalMonthsTracked) * 100) 
+      : 0;
+
+    // Check for GSTR-9 (annual return) - this would be a separate filing
+    // For now, we'll assume it's not implemented
+    const gstr9Filed = false;
+
+    return {
+      clientId: client.id,
+      clientName: client.clientName,
+      financialYear,
+      totalMonthsTracked,
+      monthsFiled,
+      monthsPending,
+      monthsLate,
+      totalSales,
+      totalPurchases,
+      totalTaxPaid,
+      totalLateFees,
+      totalInterest,
+      complianceRate,
+      gstr9Filed
+    };
+  }
+
+  /**
+   * Get all filings map (for notification service)
+   */
+  getAllFilingsMap(): Map<string, GSTReturnFiling> {
+    return this.filings;
   }
 }
 
