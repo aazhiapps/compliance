@@ -361,7 +361,7 @@ export default function AdminReports() {
     setCurrentPage(1);
   };
 
-  const isExportDisabled = (_report: Report) => {
+  const isExportDisabled = () => {
     // Optional rule: disable export for draft reports
     // Uncomment to enable this restriction:
     // return report.status === "draft";

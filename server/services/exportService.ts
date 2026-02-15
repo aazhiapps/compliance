@@ -227,7 +227,7 @@ function addHeader(doc: PDFKit.PDFDocument, report: Report) {
     .fontSize(14)
     .font("Helvetica-Bold")
     .fillColor("#000000")
-    .text("ComplianCe Auditor Services", 50, 50);
+    .text("Compliance Auditor Services", 50, 50);
 
   doc
     .fontSize(10)
@@ -430,7 +430,7 @@ function addFooter(doc: PDFKit.PDFDocument) {
 /**
  * Format currency to Indian format with 2 decimal places
  */
-function formatCurrency(amount: number | undefined): string {
+function formatCurrency(amount: number | undefined | null): string {
   if (amount === undefined || amount === null) return "0.00";
   return new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: 2,
