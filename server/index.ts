@@ -63,6 +63,15 @@ import {
   handleGetPaymentByApplicationId,
   handleUpdatePaymentStatus,
 } from "./routes/payments";
+import {
+  handleGetReports,
+  handleGetReport,
+  handleExportCSV,
+  handleExportPDF,
+  handleGetClients,
+  handleGetFinancialYears,
+  handleGetExportLogs,
+} from "./routes/reports";
 import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { requireStaff } from "./middleware/staff";
@@ -201,6 +210,15 @@ export function createServer() {
   app.get("/api/payments/:id", authenticateToken, requireStaff, handleGetPaymentById);
   app.get("/api/payments/application/:applicationId", authenticateToken, requireStaff, handleGetPaymentByApplicationId);
   app.patch("/api/payments/:id/status", authenticateToken, requireAdmin, handleUpdatePaymentStatus);
+
+  // Reports Management Routes (admin only)
+  app.get("/api/reports", authenticateToken, requireAdmin, handleGetReports);
+  app.get("/api/reports/meta/clients", authenticateToken, requireAdmin, handleGetClients);
+  app.get("/api/reports/meta/financial-years", authenticateToken, requireAdmin, handleGetFinancialYears);
+  app.get("/api/reports/:id", authenticateToken, requireAdmin, handleGetReport);
+  app.get("/api/reports/:id/export/csv", authenticateToken, requireAdmin, handleExportCSV);
+  app.get("/api/reports/:id/export/pdf", authenticateToken, requireAdmin, handleExportPDF);
+  app.get("/api/reports/:id/export-logs", authenticateToken, requireAdmin, handleGetExportLogs);
 
   // Global error handler (must be last)
   app.use(errorHandler);
