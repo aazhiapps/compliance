@@ -93,9 +93,9 @@ const seedDemoUsers = async () => {
     },
   ];
 
-  demoUsers.forEach((user) => {
-    userRepository.create(user);
-  });
+  for (const user of demoUsers) {
+    await userRepository.create(user);
+  }
 
   console.log("✓ Demo users seeded successfully");
 };
@@ -107,7 +107,7 @@ seedDemoUsers();
  * Seed demo applications for development/testing
  * WARNING: Remove or disable in production
  */
-const seedDemoApplications = () => {
+const seedDemoApplications = async () => {
   const demoApplications: Application[] = [
     {
       id: "app_demo_1",
@@ -217,9 +217,9 @@ const seedDemoApplications = () => {
     },
   ];
 
-  demoApplications.forEach((app) => {
-    applicationRepository.create(app);
-  });
+  for (const app of demoApplications) {
+    await applicationRepository.create(app);
+  }
 
   console.log("✓ Demo applications seeded successfully");
 };
@@ -239,7 +239,7 @@ export const handleSignup: RequestHandler<
     req.body;
 
   // Check if user already exists
-  if (userRepository.exists(email)) {
+  if (await userRepository.exists(email)) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
       message: "Email already registered",
@@ -262,7 +262,7 @@ export const handleSignup: RequestHandler<
     password: hashedPassword,
   };
 
-  userRepository.create(newUser);
+  await userRepository.create(newUser);
 
   const token = generateToken(userId);
   const { password: _, ...userWithoutPassword } = newUser;
@@ -283,7 +283,7 @@ export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
   async (req, res) => {
     const { email, password } = req.body;
 
-    const user = userRepository.findByEmail(email);
+    const user = await userRepository.findByEmail(email);
     if (!user) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
@@ -314,7 +314,7 @@ export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
  * Get authenticated user profile
  * Requires authentication middleware
  */
-export const handleGetProfile: RequestHandler = (req, res) => {
+export const handleGetProfile: RequestHandler = async (req, res) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -324,7 +324,7 @@ export const handleGetProfile: RequestHandler = (req, res) => {
     });
   }
 
-  const user = userRepository.findById(userId);
+  const user = await userRepository.findById(userId);
 
   if (!user) {
     return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -357,7 +357,7 @@ export const handleLogout: RequestHandler = (_req, res) => {
  * Get applications for authenticated user
  * Requires authentication middleware
  */
-export const handleGetApplications: RequestHandler = (req, res) => {
+export const handleGetApplications: RequestHandler = async (req, res) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -367,7 +367,7 @@ export const handleGetApplications: RequestHandler = (req, res) => {
     });
   }
 
-  const userApplications = applicationRepository.findByUserId(userId);
+  const userApplications = await applicationRepository.findByUserId(userId);
 
   res.json({
     success: true,
@@ -379,7 +379,7 @@ export const handleGetApplications: RequestHandler = (req, res) => {
  * Create a new application
  * Requires authentication middleware
  */
-export const handleCreateApplication: RequestHandler = (req, res) => {
+export const handleCreateApplication: RequestHandler = async (req, res) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -406,7 +406,7 @@ export const handleCreateApplication: RequestHandler = (req, res) => {
     eta: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   };
 
-  applicationRepository.create(newApplication);
+  await applicationRepository.create(newApplication);
 
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
@@ -418,7 +418,7 @@ export const handleCreateApplication: RequestHandler = (req, res) => {
  * Upload a document to an application
  * Requires authentication middleware
  */
-export const handleUploadDocument: RequestHandler = (req, res) => {
+export const handleUploadDocument: RequestHandler = async (req, res) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -430,7 +430,7 @@ export const handleUploadDocument: RequestHandler = (req, res) => {
 
   const { applicationId, fileName, fileType, fileUrl } = req.body;
 
-  const application = applicationRepository.findById(applicationId);
+  const application = await applicationRepository.findById(applicationId);
   if (!application || application.userId !== userId) {
     return res.status(HTTP_STATUS.NOT_FOUND).json({
       success: false,
@@ -449,7 +449,7 @@ export const handleUploadDocument: RequestHandler = (req, res) => {
     uploadedAt: new Date().toISOString(),
   };
 
-  applicationRepository.addDocument(applicationId, newDocument);
+  await applicationRepository.addDocument(applicationId, newDocument);
 
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
@@ -461,7 +461,7 @@ export const handleUploadDocument: RequestHandler = (req, res) => {
  * Get all documents for authenticated user grouped by service
  * Requires authentication middleware
  */
-export const handleGetUserDocuments: RequestHandler = (req, res) => {
+export const handleGetUserDocuments: RequestHandler = async (req, res) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -471,7 +471,7 @@ export const handleGetUserDocuments: RequestHandler = (req, res) => {
     });
   }
 
-  const userApplications = applicationRepository.findByUserId(userId);
+  const userApplications = await applicationRepository.findByUserId(userId);
 
   // Group documents by service
   const serviceDocsMap = new Map<
