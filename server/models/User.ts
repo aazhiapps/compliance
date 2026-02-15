@@ -60,9 +60,11 @@ const UserSchema = new Schema<IUserDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
+      transform: function (_doc, ret) {
         ret.id = ret._id.toString();
-        ret.createdAt = ret.createdAt.toISOString();
+        if (ret.createdAt) {
+          ret.createdAt = ret.createdAt instanceof Date ? ret.createdAt.toISOString() : ret.createdAt;
+        }
         delete ret._id;
         delete ret.__v;
         delete ret.password;

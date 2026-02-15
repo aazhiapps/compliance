@@ -30,7 +30,8 @@ class GSTRepository {
       client.status = "active";
     }
     const newClient = await GSTClientModel.create(client);
-    return newClient.toJSON() as GSTClient;
+    const json = newClient.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
@@ -38,7 +39,9 @@ class GSTRepository {
    */
   async findClientById(id: string): Promise<GSTClient | undefined> {
     const client = await GSTClientModel.findById(id);
-    return client ? (client.toJSON() as GSTClient) : undefined;
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
@@ -46,7 +49,7 @@ class GSTRepository {
    */
   async findClientsByUserId(userId: string): Promise<GSTClient[]> {
     const clients = await GSTClientModel.find({ userId });
-    return clients.map((client) => client.toJSON() as GSTClient);
+    return clients.map((client) => client.toJSON() as unknown as GSTClient);
   }
 
   /**
@@ -54,7 +57,9 @@ class GSTRepository {
    */
   async findClientByGSTIN(gstin: string): Promise<GSTClient | undefined> {
     const client = await GSTClientModel.findOne({ gstin: gstin.toUpperCase() });
-    return client ? (client.toJSON() as GSTClient) : undefined;
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
@@ -62,7 +67,7 @@ class GSTRepository {
    */
   async findAllClients(): Promise<GSTClient[]> {
     const clients = await GSTClientModel.find();
-    return clients.map((client) => client.toJSON() as GSTClient);
+    return clients.map((client) => client.toJSON() as unknown as GSTClient);
   }
 
   /**
@@ -74,7 +79,9 @@ class GSTRepository {
       { ...updates, updatedAt: new Date().toISOString() },
       { new: true }
     );
-    return client ? (client.toJSON() as GSTClient) : undefined;
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
