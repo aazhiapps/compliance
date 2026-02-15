@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,125 +17,20 @@ import {
   Calendar,
   BadgeCheck,
   Plus,
+  Loader2,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { RecordPaymentRequest } from "@shared/api";
+import { Application, User as UserType } from "@shared/auth";
 
-interface Document {
-  id: string;
-  name: string;
-  status: "approved" | "verifying" | "uploaded" | "pending";
-}
-
-interface ApplicationDetail {
-  id: string;
+// Helper interface to combine application and user data for display
+interface ApplicationWithUserDetails extends Application {
   userName: string;
   userEmail: string;
   userPhone: string;
-  service: string;
-  status: "draft" | "submitted" | "under_review" | "approved" | "rejected";
-  submittedDate: string;
-  amount: number;
-  paymentStatus: "pending" | "paid";
-  documents: Document[];
-  remarks: string;
-  executiveAssigned: string | null;
 }
-
-// Mock data - in a real app, this would come from an API
-const mockApplicationDetails: Record<string, ApplicationDetail> = {
-  app_1: {
-    id: "app_1",
-    userName: "Demo User",
-    userEmail: "demo@example.com",
-    userPhone: "+91 98765 43210",
-    service: "GST Registration",
-    status: "approved",
-    submittedDate: "2024-02-01",
-    amount: 499,
-    paymentStatus: "paid",
-    documents: [
-      { id: "doc_1", name: "PAN Card", status: "approved" },
-      { id: "doc_2", name: "Aadhar Card", status: "approved" },
-      { id: "doc_3", name: "Business Address Proof", status: "approved" },
-    ],
-    remarks: "All documents verified. GST number assigned successfully.",
-    executiveAssigned: "Rajesh Kumar",
-  },
-  app_2: {
-    id: "app_2",
-    userName: "Demo User",
-    userEmail: "demo@example.com",
-    userPhone: "+91 98765 43210",
-    service: "Company Registration",
-    status: "under_review",
-    submittedDate: "2024-02-04",
-    amount: 2999,
-    paymentStatus: "paid",
-    documents: [
-      { id: "doc_1", name: "PAN Card", status: "approved" },
-      { id: "doc_2", name: "Aadhar Card", status: "approved" },
-      { id: "doc_3", name: "Business Address Proof", status: "verifying" },
-      { id: "doc_4", name: "Bank Statement", status: "uploaded" },
-    ],
-    remarks: "Verifying business address details with municipality.",
-    executiveAssigned: "Priya Singh",
-  },
-  app_3: {
-    id: "app_3",
-    userName: "Rajesh Kumar",
-    userEmail: "rajesh@example.com",
-    userPhone: "+91 98765 43211",
-    service: "PAN Registration",
-    status: "submitted",
-    submittedDate: "2024-02-05",
-    amount: 299,
-    paymentStatus: "pending",
-    documents: [
-      { id: "doc_1", name: "Aadhar Card", status: "uploaded" },
-      { id: "doc_2", name: "Address Proof", status: "uploaded" },
-    ],
-    remarks: "Pending payment before processing.",
-    executiveAssigned: null,
-  },
-  app_4: {
-    id: "app_4",
-    userName: "Priya Singh",
-    userEmail: "priya@example.com",
-    userPhone: "+91 98765 43212",
-    service: "Trademark Registration",
-    status: "draft",
-    submittedDate: "2024-02-06",
-    amount: 5999,
-    paymentStatus: "pending",
-    documents: [
-      { id: "doc_1", name: "Business Name", status: "pending" },
-      { id: "doc_2", name: "Logo Design", status: "pending" },
-    ],
-    remarks: "Draft application - awaiting completion.",
-    executiveAssigned: null,
-  },
-  app_5: {
-    id: "app_5",
-    userName: "Rajesh Kumar",
-    userEmail: "rajesh@example.com",
-    userPhone: "+91 98765 43211",
-    service: "Compliance Audit",
-    status: "under_review",
-    submittedDate: "2024-02-07",
-    amount: 3999,
-    paymentStatus: "paid",
-    documents: [
-      { id: "doc_1", name: "Financial Statements", status: "approved" },
-      { id: "doc_2", name: "Tax Returns", status: "verifying" },
-      { id: "doc_3", name: "Business License", status: "approved" },
-    ],
-    remarks: "Financial statements verified. Tax returns under review.",
-    executiveAssigned: "Amit Patel",
-  },
-};
 
 const executives = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Neha Sharma"];
 
@@ -144,14 +39,17 @@ export default function AdminApplicationDetail() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { toast } = useToast();
-  const [application, setApplication] = useState<ApplicationDetail | null>(
-    id ? mockApplicationDetails[id] : null
-  );
+  
+  const [application, setApplication] = useState<ApplicationWithUserDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [assignedExecutive, setAssignedExecutive] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [showRecordPaymentDialog, setShowRecordPaymentDialog] = useState(false);
   const [recordingPayment, setRecordingPayment] = useState(false);
+  const [updating, setUpdating] = useState(false);
   
   // Payment form state
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -159,13 +57,99 @@ export default function AdminApplicationDetail() {
   const [transactionId, setTransactionId] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
 
-  if (!application) {
+  // Fetch application and user details
+  useEffect(() => {
+    if (!id || !token) return;
+
+    const fetchApplicationDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch application
+        const appResponse = await fetch(`/api/admin/applications/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!appResponse.ok) {
+          throw new Error("Failed to fetch application");
+        }
+
+        const appData = await appResponse.json();
+        if (!appData.success || !appData.data) {
+          throw new Error(appData.message || "Failed to load application");
+        }
+
+        const app: Application = appData.data;
+
+        // Fetch user details
+        const userResponse = await fetch(`/api/admin/users/${app.userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!userResponse.ok) {
+          throw new Error("Failed to fetch user details");
+        }
+
+        const userData = await userResponse.json();
+        if (!userData.success || !userData.data) {
+          throw new Error(userData.message || "Failed to load user details");
+        }
+
+        const user: UserType = userData.data;
+
+        // Combine application and user data
+        const appWithUser: ApplicationWithUserDetails = {
+          ...app,
+          userName: `${user.firstName} ${user.lastName}`,
+          userEmail: user.email,
+          userPhone: user.phone || "N/A",
+        };
+
+        setApplication(appWithUser);
+      } catch (err) {
+        console.error("Error fetching application details:", err);
+        setError(err instanceof Error ? err.message : "Failed to load application");
+        toast({
+          title: "Error",
+          description: "Failed to load application details",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplicationDetails();
+  }, [id, token, toast]);
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="p-6 flex items-center justify-center min-h-screen">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading application details...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error || !application) {
     return (
       <AdminLayout>
         <div className="p-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-lg text-muted-foreground mb-4">Application not found</p>
+              <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+              <p className="text-lg text-muted-foreground mb-4">
+                {error || "Application not found"}
+              </p>
               <Button onClick={() => navigate("/admin/applications")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Applications
@@ -177,22 +161,131 @@ export default function AdminApplicationDetail() {
     );
   }
 
-  const handleApprove = () => {
-    setApplication({ ...application, status: "approved" });
-  };
+  const handleApprove = async () => {
+    if (!application || !token) return;
 
-  const handleReject = () => {
-    if (rejectReason) {
-      setApplication({ ...application, status: "rejected" });
-      setRejectReason("");
-      setShowRejectForm(false);
+    try {
+      setUpdating(true);
+      const response = await fetch(`/api/admin/applications/${application.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "approved" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to approve application");
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || "Failed to approve application");
+      }
+
+      setApplication({ ...application, status: "approved" });
+      toast({
+        title: "Success",
+        description: "Application approved successfully",
+      });
+    } catch (err) {
+      console.error("Error approving application:", err);
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to approve application",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
     }
   };
 
-  const handleAssignExecutive = () => {
-    if (assignedExecutive) {
-      setApplication({ ...application, executiveAssigned: assignedExecutive });
+  const handleReject = async () => {
+    if (!application || !token || !rejectReason) return;
+
+    try {
+      setUpdating(true);
+      const response = await fetch(`/api/admin/applications/${application.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          status: "rejected",
+          notes: rejectReason,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reject application");
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || "Failed to reject application");
+      }
+
+      setApplication({ ...application, status: "rejected", internalNotes: rejectReason });
+      setRejectReason("");
+      setShowRejectForm(false);
+      toast({
+        title: "Success",
+        description: "Application rejected successfully",
+      });
+    } catch (err) {
+      console.error("Error rejecting application:", err);
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to reject application",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAssignExecutive = async () => {
+    if (!application || !token || !assignedExecutive) return;
+
+    try {
+      setUpdating(true);
+      const response = await fetch(`/api/admin/applications/${application.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          assignedStaffName: assignedExecutive,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to assign executive");
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || "Failed to assign executive");
+      }
+
+      setApplication({ ...application, assignedStaffName: assignedExecutive });
       setAssignedExecutive("");
+      toast({
+        title: "Success",
+        description: "Executive assigned successfully",
+      });
+    } catch (err) {
+      console.error("Error assigning executive:", err);
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to assign executive",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -315,7 +408,7 @@ export default function AdminApplicationDetail() {
             Back
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground">{application.service}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{application.serviceName}</h1>
             <p className="text-muted-foreground mt-1">Application ID: {application.id}</p>
           </div>
         </div>
@@ -401,7 +494,7 @@ export default function AdminApplicationDetail() {
                   <div className="flex-1 pt-1">
                     <p className="font-semibold text-foreground">Submitted</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(application.submittedDate).toLocaleDateString("en-US", {
+                      {new Date(application.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -514,14 +607,14 @@ export default function AdminApplicationDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Service</p>
-                <p className="font-semibold text-lg">{application.service}</p>
+                <p className="font-semibold text-lg">{application.serviceName}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
                   <Calendar className="w-4 h-4" /> Submitted Date
                 </p>
                 <p className="font-semibold text-lg">
-                  {new Date(application.submittedDate).toLocaleDateString("en-US", {
+                  {new Date(application.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -548,7 +641,7 @@ export default function AdminApplicationDetail() {
             </div>
             <div className="mt-6">
               <p className="text-sm text-muted-foreground mb-1">Remarks</p>
-              <p className="font-medium">{application.remarks}</p>
+              <p className="font-medium">{application.internalNotes || "No notes available"}</p>
             </div>
           </CardContent>
         </Card>
@@ -598,10 +691,10 @@ export default function AdminApplicationDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
-            {application.executiveAssigned ? (
+            {application.assignedStaffName ? (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900">
-                  <strong>Currently assigned to:</strong> {application.executiveAssigned}
+                  <strong>Currently assigned to:</strong> {application.assignedStaffName}
                 </p>
               </div>
             ) : (
@@ -624,10 +717,17 @@ export default function AdminApplicationDetail() {
               </select>
               <Button
                 onClick={handleAssignExecutive}
-                disabled={!assignedExecutive}
+                disabled={!assignedExecutive || updating}
                 className="bg-primary hover:bg-primary/90"
               >
-                Assign
+                {updating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Assigning...
+                  </>
+                ) : (
+                  "Assign"
+                )}
               </Button>
             </div>
           </CardContent>
@@ -644,14 +744,25 @@ export default function AdminApplicationDetail() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleApprove}
+                  disabled={updating}
                   className="flex-1 bg-success hover:bg-success/90 flex items-center justify-center gap-2"
                 >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve Application
+                  {updating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Approve Application
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={() => setShowRejectForm(!showRejectForm)}
                   variant="outline"
+                  disabled={updating}
                   className="flex-1 text-red-600 border-red-200 hover:bg-red-50 flex items-center justify-center gap-2"
                 >
                   <XCircle className="w-4 h-4" />
@@ -682,10 +793,17 @@ export default function AdminApplicationDetail() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleReject}
-                  disabled={!rejectReason}
+                  disabled={!rejectReason || updating}
                   className="flex-1 bg-red-600 hover:bg-red-700"
                 >
-                  Confirm Rejection
+                  {updating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    "Confirm Rejection"
+                  )}
                 </Button>
                 <Button
                   onClick={() => {
@@ -693,6 +811,7 @@ export default function AdminApplicationDetail() {
                     setRejectReason("");
                   }}
                   variant="outline"
+                  disabled={updating}
                   className="flex-1"
                 >
                   Cancel
@@ -706,7 +825,7 @@ export default function AdminApplicationDetail() {
         <Dialog open={showRecordPaymentDialog} onOpenChange={setShowRecordPaymentDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Record Payment for {application.service}</DialogTitle>
+              <DialogTitle>Record Payment for {application.serviceName}</DialogTitle>
               <DialogDescription>
                 Record a payment that was received for this application
               </DialogDescription>
