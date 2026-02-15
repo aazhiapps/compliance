@@ -4,7 +4,7 @@
  */
 
 import { GSTReminder, GSTNotification, GSTClient, GSTReturnFiling } from "@shared/gst";
-import { calculateDueDates, isMonthOverdue } from "./gstValidation";
+import { calculateDueDates, isMonthOverdue } from "../utils/gstValidation";
 
 /**
  * Notification Service for GST reminders and alerts

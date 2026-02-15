@@ -48,12 +48,12 @@ export function validateGSTIN(gstin: string): GSTValidationResult {
     errors.push("Invalid PAN format within GSTIN");
   }
 
-  // Check 13th character is Z
-  if (gstin.charAt(12) !== 'Z') {
-    warnings.push("13th character should be 'Z' for regular taxpayers");
+  // Check 14th character (index 13) is Z
+  if (gstin.charAt(13) !== 'Z') {
+    warnings.push("14th character should be 'Z' for regular taxpayers");
   }
 
-  // Validate checksum (14th character)
+  // Validate checksum (15th character, index 14)
   const checksumChar = gstin.charAt(14);
   const calculatedChecksum = calculateGSTINChecksum(gstin.substring(0, 14));
   
