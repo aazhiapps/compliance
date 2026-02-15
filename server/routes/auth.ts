@@ -11,7 +11,7 @@ import { AuthRequest } from "../middleware/auth";
  * Seed demo users for development/testing
  * WARNING: Remove or disable in production
  */
-const seedDemoUsers = async () => {
+export const seedDemoUsers = async () => {
   const demoUsers: Array<User & { password: string }> = [
     {
       id: "user_demo_1",
@@ -100,14 +100,11 @@ const seedDemoUsers = async () => {
   console.log("✓ Demo users seeded successfully");
 };
 
-// Seed demo data on startup
-seedDemoUsers();
-
 /**
  * Seed demo applications for development/testing
  * WARNING: Remove or disable in production
  */
-const seedDemoApplications = async () => {
+export const seedDemoApplications = async () => {
   const demoApplications: Application[] = [
     {
       id: "app_demo_1",
@@ -223,8 +220,6 @@ const seedDemoApplications = async () => {
 
   console.log("✓ Demo applications seeded successfully");
 };
-
-seedDemoApplications();
 
 /**
  * Handle user signup
