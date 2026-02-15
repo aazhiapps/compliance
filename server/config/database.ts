@@ -7,7 +7,13 @@ export class DatabaseConnection {
   private static instance: DatabaseConnection;
   private isConnected = false;
 
-  private constructor() {}
+  private constructor() {
+    // Register shutdown handlers only once during construction
+    process.on("SIGINT", async () => {
+      await this.disconnect();
+      process.exit(0);
+    });
+  }
 
   static getInstance(): DatabaseConnection {
     if (!DatabaseConnection.instance) {
@@ -42,12 +48,6 @@ export class DatabaseConnection {
       mongoose.connection.on("disconnected", () => {
         console.log("MongoDB disconnected");
         this.isConnected = false;
-      });
-
-      // Graceful shutdown
-      process.on("SIGINT", async () => {
-        await this.disconnect();
-        process.exit(0);
       });
     } catch (error) {
       console.error("MongoDB connection failed:", error);

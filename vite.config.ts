@@ -28,14 +28,14 @@ export default defineConfig(() => ({
 }));
 
 function expressPlugin(): Plugin {
-  let serverInitialized = false;
+  let databaseInitialized = false;
 
   return {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
     async configureServer(server) {
-      if (serverInitialized) return;
-      serverInitialized = true;
+      if (databaseInitialized) return;
+      databaseInitialized = true;
 
       // Connect to MongoDB before starting the server
       try {
