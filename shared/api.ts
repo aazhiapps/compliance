@@ -128,3 +128,69 @@ export interface CustomerCompliance {
   lastUpdated: string;
   applicationId?: string;
 }
+
+/**
+ * Reports Management types
+ */
+export type ReportType =
+  | "Financial Statements"
+  | "Income Tax Computation"
+  | "GST Summary"
+  | "Tax Audit Summary"
+  | "ROC Filing Summary";
+
+export type ReportStatus = "draft" | "final" | "filed";
+
+export type ExportFormat = "csv" | "pdf";
+
+export interface ExportLog {
+  exportedBy: string; // User ID
+  exportedByName?: string; // User name for display
+  format: ExportFormat;
+  exportedAt: string;
+}
+
+export interface Report {
+  id: string;
+  clientId: string;
+  clientName: string;
+  financialYear: string; // e.g., "2023-24" (April to March)
+  reportType: ReportType;
+  status: ReportStatus;
+  preparedBy: string; // User ID
+  preparedByName?: string; // User name for display
+  generatedOn: string;
+  data: Record<string, any>; // Flexible data structure for report content
+  exportLogs: ExportLog[];
+}
+
+export interface ReportFilters {
+  clientId?: string;
+  financialYear?: string;
+  reportType?: ReportType;
+  status?: ReportStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface ReportResponse {
+  success: boolean;
+  message?: string;
+  report?: Report;
+}
+
+export interface ReportsListResponse {
+  success: boolean;
+  message?: string;
+  reports: Report[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ExportResponse {
+  success: boolean;
+  message?: string;
+  data?: string | Buffer; // CSV as string, PDF as Buffer
+  filename?: string;
+}
