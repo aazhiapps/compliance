@@ -397,7 +397,6 @@ export default function ApplicationTracking() {
                             {doc.status === "approved" && "Approved"}
                             {doc.status === "rejected" && "Rejected"}
                             {doc.status === "uploaded" && "Uploaded"}
-                            {doc.status === "pending" && "Pending"}
                           </span>
                           <button 
                             className="p-2 hover:bg-gray-100 rounded transition-colors"
