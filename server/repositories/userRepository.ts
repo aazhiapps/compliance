@@ -1,58 +1,69 @@
 import { User } from "@shared/auth";
+import { UserModel, IUserDocument } from "../models/User";
 
 /**
- * User repository - abstracts user data storage
- * In a real application, this would interact with a database
+ * User repository - abstracts user data storage using MongoDB
  */
 class UserRepository {
-  private users: Map<string, User & { password: string }>;
-
-  constructor() {
-    this.users = new Map();
+  /**
+   * Convert MongoDB document to User type (with password)
+   */
+  private toUserWithPassword(doc: IUserDocument): User & { password: string } {
+    const userObj = doc.toJSON() as User;
+    return {
+      ...userObj,
+      password: doc.password,
+    };
   }
 
   /**
    * Find a user by email
    */
-  findByEmail(email: string): (User & { password: string }) | undefined {
-    return this.users.get(email);
+  async findByEmail(email: string): Promise<(User & { password: string }) | undefined> {
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    return user ? this.toUserWithPassword(user) : undefined;
   }
 
   /**
    * Find a user by ID
    */
-  findById(id: string): (User & { password: string }) | undefined {
-    for (const user of this.users.values()) {
-      if (user.id === id) {
-        return user;
-      }
-    }
-    return undefined;
+  async findById(id: string): Promise<(User & { password: string }) | undefined> {
+    const user = await UserModel.findById(id);
+    return user ? this.toUserWithPassword(user) : undefined;
   }
 
   /**
    * Create a new user
    */
-  create(user: User & { password: string }): User & { password: string } {
-    this.users.set(user.email, user);
-    return user;
+  async create(user: User & { password: string }): Promise<User & { password: string }> {
+    const newUser = await UserModel.create({
+      email: user.email,
+      password: user.password,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+      businessType: user.businessType,
+      language: user.language,
+      isEmailVerified: user.isEmailVerified,
+    });
+    return this.toUserWithPassword(newUser);
   }
 
   /**
    * Check if a user exists by email
    */
-  exists(email: string): boolean {
-    return this.users.has(email);
+  async exists(email: string): Promise<boolean> {
+    const count = await UserModel.countDocuments({ email: email.toLowerCase() });
+    return count > 0;
   }
 
   /**
    * Get all users (for admin purposes)
    */
-  findAll(): User[] {
-    return Array.from(this.users.values()).map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+  async findAll(): Promise<User[]> {
+    const users = await UserModel.find();
+    return users.map((user) => user.toJSON() as User);
   }
 }
 
