@@ -12,7 +12,7 @@ import { generateCSV, generatePDF } from "../services/exportService";
  * GET /api/reports
  * Get all reports with optional filters
  */
-export const handleGetReports: RequestHandler = (req, res) => {
+export const handleGetReports: RequestHandler = async (req, res) => {
   try {
     const filters: ReportFilters = {
       clientId: req.query.clientId as string | undefined,
@@ -23,8 +23,8 @@ export const handleGetReports: RequestHandler = (req, res) => {
       limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
     };
 
-    const reports = reportRepository.findAll(filters);
-    const total = reportRepository.count(filters);
+    const reports = await reportRepository.findAll(filters);
+    const total = await reportRepository.count(filters);
 
     const response: ReportsListResponse = {
       success: true,
@@ -48,10 +48,10 @@ export const handleGetReports: RequestHandler = (req, res) => {
  * GET /api/reports/:id
  * Get a single report by ID
  */
-export const handleGetReport: RequestHandler = (req, res) => {
+export const handleGetReport: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id as string;
-    const report = reportRepository.findById(id);
+    const report = await reportRepository.findById(id);
 
     if (!report) {
       return res.status(404).json({
@@ -82,7 +82,7 @@ export const handleGetReport: RequestHandler = (req, res) => {
 export const handleExportCSV: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id as string;
-    const report = reportRepository.findById(id);
+    const report = await reportRepository.findById(id);
 
     if (!report) {
       return res.status(404).json({
@@ -110,7 +110,7 @@ export const handleExportCSV: RequestHandler = async (req, res) => {
       format: "csv",
       exportedAt: new Date().toISOString(),
     };
-    reportRepository.logExport(id as string, exportLog);
+    await reportRepository.logExport(id as string, exportLog);
 
     // Generate filename
     const filename = `${report.clientName.replace(/\s+/g, "_")}_${report.reportType.replace(/\s+/g, "_")}_${report.financialYear}.csv`;
@@ -135,7 +135,7 @@ export const handleExportCSV: RequestHandler = async (req, res) => {
 export const handleExportPDF: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id as string;
-    const report = reportRepository.findById(id);
+    const report = await reportRepository.findById(id);
 
     if (!report) {
       return res.status(404).json({
@@ -162,7 +162,7 @@ export const handleExportPDF: RequestHandler = async (req, res) => {
       format: "pdf",
       exportedAt: new Date().toISOString(),
     };
-    reportRepository.logExport(id as string, exportLog);
+    await reportRepository.logExport(id as string, exportLog);
 
     // Generate filename
     const filename = `${report.clientName.replace(/\s+/g, "_")}_${report.reportType.replace(/\s+/g, "_")}_${report.financialYear}.pdf`;
@@ -184,9 +184,9 @@ export const handleExportPDF: RequestHandler = async (req, res) => {
  * GET /api/reports/meta/clients
  * Get list of unique clients for filter dropdown
  */
-export const handleGetClients: RequestHandler = (_req, res) => {
+export const handleGetClients: RequestHandler = async (_req, res) => {
   try {
-    const clients = reportRepository.getUniqueClients();
+    const clients = await reportRepository.getUniqueClients();
     res.json({
       success: true,
       clients,
@@ -204,9 +204,9 @@ export const handleGetClients: RequestHandler = (_req, res) => {
  * GET /api/reports/meta/financial-years
  * Get list of unique financial years for filter dropdown
  */
-export const handleGetFinancialYears: RequestHandler = (_req, res) => {
+export const handleGetFinancialYears: RequestHandler = async (_req, res) => {
   try {
-    const years = reportRepository.getUniqueFinancialYears();
+    const years = await reportRepository.getUniqueFinancialYears();
     res.json({
       success: true,
       years,
@@ -224,10 +224,10 @@ export const handleGetFinancialYears: RequestHandler = (_req, res) => {
  * GET /api/reports/:id/export-logs
  * Get export audit logs for a report
  */
-export const handleGetExportLogs: RequestHandler = (req, res) => {
+export const handleGetExportLogs: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id as string;
-    const logs = reportRepository.getExportLogs(id);
+    const logs = await reportRepository.getExportLogs(id);
 
     res.json({
       success: true,
