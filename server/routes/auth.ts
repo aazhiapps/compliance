@@ -93,9 +93,13 @@ export const seedDemoUsers = async () => {
     },
   ];
 
-  await Promise.all(demoUsers.map(user => userRepository.create(user)));
-
-  console.log("✓ Demo users seeded successfully");
+  const results = await Promise.allSettled(demoUsers.map(user => userRepository.create(user)));
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed > 0) {
+    console.warn(`⚠ ${failed} user(s) failed to seed`);
+  }
+  console.log(`✓ Demo users seeded successfully (${succeeded}/${demoUsers.length})`);
 };
 
 /**
@@ -212,9 +216,13 @@ export const seedDemoApplications = async () => {
     },
   ];
 
-  await Promise.all(demoApplications.map(app => applicationRepository.create(app)));
-
-  console.log("✓ Demo applications seeded successfully");
+  const results = await Promise.allSettled(demoApplications.map(app => applicationRepository.create(app)));
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed > 0) {
+    console.warn(`⚠ ${failed} application(s) failed to seed`);
+  }
+  console.log(`✓ Demo applications seeded successfully (${succeeded}/${demoApplications.length})`);
 };
 
 /**

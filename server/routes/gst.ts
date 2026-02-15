@@ -1068,6 +1068,7 @@ export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
     }
 
     // Calculate summary for each client (in parallel)
+    // Note: For large numbers of clients (>50), consider batching to avoid overwhelming the database
     const summaries: MonthlyGSTSummary[] = await Promise.all(
       clients.map(async (client) => {
         // Get purchases for the month
