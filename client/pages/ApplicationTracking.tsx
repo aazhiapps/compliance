@@ -151,12 +151,28 @@ export default function ApplicationTracking() {
   };
 
   const handleDownloadDocument = (doc: Document) => {
-    toast({
-      title: "Download Started",
-      description: `Downloading ${doc.name}...`,
-    });
-    // In a real app, this would trigger an actual download
-    // For now, we just show a toast
+    try {
+      // Create a temporary link and trigger download
+      const link = document.createElement("a");
+      link.href = doc.fileUrl;
+      link.download = doc.fileName || doc.name || "document";
+      link.target = "_blank"; // Open in new tab as fallback
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Download Started",
+        description: `Downloading ${doc.name || doc.fileName}...`,
+      });
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download document. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSendMessage = () => {

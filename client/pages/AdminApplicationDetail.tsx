@@ -436,7 +436,7 @@ export default function AdminApplicationDetail() {
             <Button
               size="sm"
               onClick={() => {
-                setPaymentAmount(application.amount.toString());
+                setPaymentAmount(application.paymentAmount.toString());
                 setShowRecordPaymentDialog(true);
               }}
               className="bg-primary hover:bg-primary/90 flex items-center gap-2"
@@ -625,7 +625,7 @@ export default function AdminApplicationDetail() {
                 <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
                   <DollarSign className="w-4 h-4" /> Amount
                 </p>
-                <p className="font-semibold text-lg">₹{application.amount}</p>
+                <p className="font-semibold text-lg">₹{application.paymentAmount}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Status</p>
@@ -665,7 +665,7 @@ export default function AdminApplicationDetail() {
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium text-foreground">{doc.name}</p>
+                      <p className="font-medium text-foreground">{doc.fileName}</p>
                       <p className="text-xs text-muted-foreground">ID: {doc.id}</p>
                     </div>
                   </div>
