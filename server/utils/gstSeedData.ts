@@ -15,7 +15,7 @@ import { gstRepository } from "../repositories/gstRepository";
 /**
  * Seed demo GST clients
  */
-export const seedGSTClients = () => {
+export const seedGSTClients = async () => {
   const demoClients: GSTClient[] = [
     {
       id: "gst_client_1",
@@ -70,9 +70,9 @@ export const seedGSTClients = () => {
     },
   ];
 
-  demoClients.forEach((client) => {
-    gstRepository.createClient(client);
-  });
+  for (const client of demoClients) {
+    await gstRepository.createClient(client);
+  }
 
   console.log(`✓ Seeded ${demoClients.length} GST demo clients`);
 };
@@ -80,7 +80,7 @@ export const seedGSTClients = () => {
 /**
  * Seed demo purchase invoices with data across multiple months
  */
-export const seedPurchaseInvoices = () => {
+export const seedPurchaseInvoices = async () => {
   const demoPurchases: PurchaseInvoice[] = [
     // Tech Solutions - April 2024
     {
@@ -260,9 +260,9 @@ export const seedPurchaseInvoices = () => {
     },
   ];
 
-  demoPurchases.forEach((purchase) => {
-    gstRepository.createPurchaseInvoice(purchase);
-  });
+  for (const purchase of demoPurchases) {
+    await gstRepository.createPurchaseInvoice(purchase);
+  }
 
   console.log(`✓ Seeded ${demoPurchases.length} demo purchase invoices`);
 };
@@ -270,7 +270,7 @@ export const seedPurchaseInvoices = () => {
 /**
  * Seed demo sales invoices with data across multiple months
  */
-export const seedSalesInvoices = () => {
+export const seedSalesInvoices = async () => {
   const demoSales: SalesInvoice[] = [
     // Tech Solutions - April 2024
     {
@@ -469,9 +469,9 @@ export const seedSalesInvoices = () => {
     },
   ];
 
-  demoSales.forEach((sale) => {
-    gstRepository.createSalesInvoice(sale);
-  });
+  for (const sale of demoSales) {
+    await gstRepository.createSalesInvoice(sale);
+  }
 
   console.log(`✓ Seeded ${demoSales.length} demo sales invoices`);
 };
@@ -479,7 +479,7 @@ export const seedSalesInvoices = () => {
 /**
  * Seed demo GST return filings
  */
-export const seedGSTFilings = () => {
+export const seedGSTFilings = async () => {
   const demoFilings: GSTReturnFiling[] = [
     // Tech Solutions - April 2024 (Filed)
     {
@@ -590,9 +590,9 @@ export const seedGSTFilings = () => {
     },
   ];
 
-  demoFilings.forEach((filing) => {
-    gstRepository.upsertGSTFiling(filing);
-  });
+  for (const filing of demoFilings) {
+    await gstRepository.upsertGSTFiling(filing);
+  }
 
   console.log(`✓ Seeded ${demoFilings.length} demo GST return filings`);
 };
@@ -600,11 +600,11 @@ export const seedGSTFilings = () => {
 /**
  * Master function to seed all GST demo data
  */
-export const seedGSTData = () => {
+export const seedGSTData = async () => {
   console.log("Seeding GST demo data...");
-  seedGSTClients();
-  seedPurchaseInvoices();
-  seedSalesInvoices();
-  seedGSTFilings();
+  await seedGSTClients();
+  await seedPurchaseInvoices();
+  await seedSalesInvoices();
+  await seedGSTFilings();
   console.log("✓ All GST demo data seeded successfully");
 };

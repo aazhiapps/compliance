@@ -7,7 +7,7 @@ import { userRepository } from "../repositories/userRepository";
  * Must be used after authenticateToken middleware
  * @throws 403 if user is not an admin
  */
-export const requireAdmin: RequestHandler = (req, res, next) => {
+export const requireAdmin: RequestHandler = async (req, res, next) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -17,7 +17,7 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
     });
   }
 
-  const user = userRepository.findById(userId);
+  const user = await userRepository.findById(userId);
 
   if (!user || user.role !== "admin") {
     return res.status(403).json({

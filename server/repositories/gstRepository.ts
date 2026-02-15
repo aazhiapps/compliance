@@ -8,92 +8,88 @@ import {
   ClientFilingStatusReport,
   AnnualComplianceSummary,
 } from "@shared/gst";
+import { GSTClientModel } from "../models/GSTClient";
+import { PurchaseInvoiceModel } from "../models/PurchaseInvoice";
+import { SalesInvoiceModel } from "../models/SalesInvoice";
+import { GSTReturnFilingModel } from "../models/GSTReturnFiling";
+import { GSTAuditLogModel } from "../models/GSTAuditLog";
+import { StaffAssignmentModel } from "../models/StaffAssignment";
 
 /**
- * GST Repository - abstracts GST data storage
- * In a real application, this would interact with a database
+ * GST Repository - abstracts GST data storage using MongoDB
  */
 class GSTRepository {
-  private clients: Map<string, GSTClient>;
-  private purchaseInvoices: Map<string, PurchaseInvoice>;
-  private salesInvoices: Map<string, SalesInvoice>;
-  private filings: Map<string, GSTReturnFiling>;
-  private auditLogs: GSTAuditLog[];
-  private staffAssignments: Map<string, StaffAssignment>;
-
-  constructor() {
-    this.clients = new Map();
-    this.purchaseInvoices = new Map();
-    this.salesInvoices = new Map();
-    this.filings = new Map();
-    this.auditLogs = [];
-    this.staffAssignments = new Map();
-  }
-
   // ============ CLIENT OPERATIONS ============
 
   /**
    * Create a new GST client
    */
-  createClient(client: GSTClient): GSTClient {
+  async createClient(client: GSTClient): Promise<GSTClient> {
     // Set default status if not provided
     if (!client.status) {
       client.status = "active";
     }
-    this.clients.set(client.id, client);
-    return client;
+    const newClient = await GSTClientModel.create(client);
+    const json = newClient.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
    * Find a client by ID
    */
-  findClientById(id: string): GSTClient | undefined {
-    return this.clients.get(id);
+  async findClientById(id: string): Promise<GSTClient | undefined> {
+    const client = await GSTClientModel.findById(id);
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
    * Find all clients for a user
    */
-  findClientsByUserId(userId: string): GSTClient[] {
-    return Array.from(this.clients.values()).filter(
-      (client) => client.userId === userId
-    );
+  async findClientsByUserId(userId: string): Promise<GSTClient[]> {
+    const clients = await GSTClientModel.find({ userId });
+    return clients.map((client) => client.toJSON() as unknown as GSTClient);
   }
 
   /**
    * Find client by GSTIN
    */
-  findClientByGSTIN(gstin: string): GSTClient | undefined {
-    return Array.from(this.clients.values()).find(
-      (client) => client.gstin === gstin
-    );
+  async findClientByGSTIN(gstin: string): Promise<GSTClient | undefined> {
+    const client = await GSTClientModel.findOne({ gstin: gstin.toUpperCase() });
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
    * Get all clients (admin only)
    */
-  findAllClients(): GSTClient[] {
-    return Array.from(this.clients.values());
+  async findAllClients(): Promise<GSTClient[]> {
+    const clients = await GSTClientModel.find();
+    return clients.map((client) => client.toJSON() as unknown as GSTClient);
   }
 
   /**
    * Update a client
    */
-  updateClient(id: string, updates: Partial<GSTClient>): GSTClient | undefined {
-    const client = this.clients.get(id);
-    if (!client) {
-      return undefined;
-    }
-    const updated = { ...client, ...updates, updatedAt: new Date().toISOString() };
-    this.clients.set(id, updated);
-    return updated;
+  async updateClient(id: string, updates: Partial<GSTClient>): Promise<GSTClient | undefined> {
+    const client = await GSTClientModel.findByIdAndUpdate(
+      id,
+      { ...updates, updatedAt: new Date().toISOString() },
+      { new: true }
+    );
+    if (!client) return undefined;
+    const json = client.toJSON();
+    return json as unknown as GSTClient;
   }
 
   /**
    * Delete a client
    */
-  deleteClient(id: string): boolean {
-    return this.clients.delete(id);
+  async deleteClient(id: string): Promise<boolean> {
+    const result = await GSTClientModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
   // ============ PURCHASE INVOICE OPERATIONS ============
@@ -101,60 +97,59 @@ class GSTRepository {
   /**
    * Create a purchase invoice
    */
-  createPurchaseInvoice(invoice: PurchaseInvoice): PurchaseInvoice {
-    this.purchaseInvoices.set(invoice.id, invoice);
-    return invoice;
+  async createPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+    const newInvoice = await PurchaseInvoiceModel.create(invoice);
+    return newInvoice.toJSON() as PurchaseInvoice;
   }
 
   /**
    * Find purchase invoice by ID
    */
-  findPurchaseInvoiceById(id: string): PurchaseInvoice | undefined {
-    return this.purchaseInvoices.get(id);
+  async findPurchaseInvoiceById(id: string): Promise<PurchaseInvoice | undefined> {
+    const invoice = await PurchaseInvoiceModel.findById(id);
+    return invoice ? (invoice.toJSON() as PurchaseInvoice) : undefined;
   }
 
   /**
    * Find all purchase invoices for a client
    */
-  findPurchaseInvoicesByClientId(clientId: string): PurchaseInvoice[] {
-    return Array.from(this.purchaseInvoices.values()).filter(
-      (invoice) => invoice.clientId === clientId
-    );
+  async findPurchaseInvoicesByClientId(clientId: string): Promise<PurchaseInvoice[]> {
+    const invoices = await PurchaseInvoiceModel.find({ clientId }).sort({ invoiceDate: -1 });
+    return invoices.map((invoice) => invoice.toJSON() as PurchaseInvoice);
   }
 
   /**
    * Find purchase invoices by client and month
    */
-  findPurchaseInvoicesByMonth(
+  async findPurchaseInvoicesByMonth(
     clientId: string,
     month: string
-  ): PurchaseInvoice[] {
-    return Array.from(this.purchaseInvoices.values()).filter(
-      (invoice) => invoice.clientId === clientId && invoice.month === month
-    );
+  ): Promise<PurchaseInvoice[]> {
+    const invoices = await PurchaseInvoiceModel.find({ clientId, month });
+    return invoices.map((invoice) => invoice.toJSON() as PurchaseInvoice);
   }
 
   /**
    * Update a purchase invoice
    */
-  updatePurchaseInvoice(
+  async updatePurchaseInvoice(
     id: string,
     updates: Partial<PurchaseInvoice>
-  ): PurchaseInvoice | undefined {
-    const invoice = this.purchaseInvoices.get(id);
-    if (!invoice) {
-      return undefined;
-    }
-    const updated = { ...invoice, ...updates, updatedAt: new Date().toISOString() };
-    this.purchaseInvoices.set(id, updated);
-    return updated;
+  ): Promise<PurchaseInvoice | undefined> {
+    const invoice = await PurchaseInvoiceModel.findByIdAndUpdate(
+      id,
+      { ...updates, updatedAt: new Date().toISOString() },
+      { new: true }
+    );
+    return invoice ? (invoice.toJSON() as PurchaseInvoice) : undefined;
   }
 
   /**
    * Delete a purchase invoice
    */
-  deletePurchaseInvoice(id: string): boolean {
-    return this.purchaseInvoices.delete(id);
+  async deletePurchaseInvoice(id: string): Promise<boolean> {
+    const result = await PurchaseInvoiceModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
   // ============ SALES INVOICE OPERATIONS ============
@@ -162,57 +157,56 @@ class GSTRepository {
   /**
    * Create a sales invoice
    */
-  createSalesInvoice(invoice: SalesInvoice): SalesInvoice {
-    this.salesInvoices.set(invoice.id, invoice);
-    return invoice;
+  async createSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
+    const newInvoice = await SalesInvoiceModel.create(invoice);
+    return newInvoice.toJSON() as SalesInvoice;
   }
 
   /**
    * Find sales invoice by ID
    */
-  findSalesInvoiceById(id: string): SalesInvoice | undefined {
-    return this.salesInvoices.get(id);
+  async findSalesInvoiceById(id: string): Promise<SalesInvoice | undefined> {
+    const invoice = await SalesInvoiceModel.findById(id);
+    return invoice ? (invoice.toJSON() as SalesInvoice) : undefined;
   }
 
   /**
    * Find all sales invoices for a client
    */
-  findSalesInvoicesByClientId(clientId: string): SalesInvoice[] {
-    return Array.from(this.salesInvoices.values()).filter(
-      (invoice) => invoice.clientId === clientId
-    );
+  async findSalesInvoicesByClientId(clientId: string): Promise<SalesInvoice[]> {
+    const invoices = await SalesInvoiceModel.find({ clientId }).sort({ invoiceDate: -1 });
+    return invoices.map((invoice) => invoice.toJSON() as SalesInvoice);
   }
 
   /**
    * Find sales invoices by client and month
    */
-  findSalesInvoicesByMonth(clientId: string, month: string): SalesInvoice[] {
-    return Array.from(this.salesInvoices.values()).filter(
-      (invoice) => invoice.clientId === clientId && invoice.month === month
-    );
+  async findSalesInvoicesByMonth(clientId: string, month: string): Promise<SalesInvoice[]> {
+    const invoices = await SalesInvoiceModel.find({ clientId, month });
+    return invoices.map((invoice) => invoice.toJSON() as SalesInvoice);
   }
 
   /**
    * Update a sales invoice
    */
-  updateSalesInvoice(
+  async updateSalesInvoice(
     id: string,
     updates: Partial<SalesInvoice>
-  ): SalesInvoice | undefined {
-    const invoice = this.salesInvoices.get(id);
-    if (!invoice) {
-      return undefined;
-    }
-    const updated = { ...invoice, ...updates, updatedAt: new Date().toISOString() };
-    this.salesInvoices.set(id, updated);
-    return updated;
+  ): Promise<SalesInvoice | undefined> {
+    const invoice = await SalesInvoiceModel.findByIdAndUpdate(
+      id,
+      { ...updates, updatedAt: new Date().toISOString() },
+      { new: true }
+    );
+    return invoice ? (invoice.toJSON() as SalesInvoice) : undefined;
   }
 
   /**
    * Delete a sales invoice
    */
-  deleteSalesInvoice(id: string): boolean {
-    return this.salesInvoices.delete(id);
+  async deleteSalesInvoice(id: string): Promise<boolean> {
+    const result = await SalesInvoiceModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
   // ============ GST FILING OPERATIONS ============
@@ -220,55 +214,55 @@ class GSTRepository {
   /**
    * Create or update GST filing record
    */
-  upsertGSTFiling(filing: GSTReturnFiling): GSTReturnFiling {
-    const existing = Array.from(this.filings.values()).find(
-      (f) => f.clientId === filing.clientId && f.month === filing.month
-    );
+  async upsertGSTFiling(filing: GSTReturnFiling): Promise<GSTReturnFiling> {
+    const existing = await GSTReturnFilingModel.findOne({
+      clientId: filing.clientId,
+      month: filing.month,
+    });
     
     if (existing) {
       // Update existing
-      const updated = { ...existing, ...filing, updatedAt: new Date().toISOString() };
-      this.filings.set(updated.id, updated);
-      return updated;
+      const updated = await GSTReturnFilingModel.findByIdAndUpdate(
+        existing._id,
+        { ...filing, updatedAt: new Date().toISOString() },
+        { new: true }
+      );
+      return updated!.toJSON() as GSTReturnFiling;
     } else {
       // Create new
-      this.filings.set(filing.id, filing);
-      return filing;
+      const newFiling = await GSTReturnFilingModel.create(filing);
+      return newFiling.toJSON() as GSTReturnFiling;
     }
   }
 
   /**
    * Find GST filing by client and month
    */
-  findGSTFilingByMonth(
+  async findGSTFilingByMonth(
     clientId: string,
     month: string
-  ): GSTReturnFiling | undefined {
-    return Array.from(this.filings.values()).find(
-      (filing) => filing.clientId === clientId && filing.month === month
-    );
+  ): Promise<GSTReturnFiling | undefined> {
+    const filing = await GSTReturnFilingModel.findOne({ clientId, month });
+    return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
 
   /**
    * Find all GST filings for a client
    */
-  findGSTFilingsByClientId(clientId: string): GSTReturnFiling[] {
-    return Array.from(this.filings.values()).filter(
-      (filing) => filing.clientId === clientId
-    );
+  async findGSTFilingsByClientId(clientId: string): Promise<GSTReturnFiling[]> {
+    const filings = await GSTReturnFilingModel.find({ clientId }).sort({ month: -1 });
+    return filings.map((filing) => filing.toJSON() as GSTReturnFiling);
   }
 
   /**
    * Find GST filings by financial year
    */
-  findGSTFilingsByYear(
+  async findGSTFilingsByYear(
     clientId: string,
     financialYear: string
-  ): GSTReturnFiling[] {
-    return Array.from(this.filings.values()).filter(
-      (filing) =>
-        filing.clientId === clientId && filing.financialYear === financialYear
-    );
+  ): Promise<GSTReturnFiling[]> {
+    const filings = await GSTReturnFilingModel.find({ clientId, financialYear }).sort({ month: 1 });
+    return filings.map((filing) => filing.toJSON() as GSTReturnFiling);
   }
 
   // ============ AUDIT LOG OPERATIONS ============
@@ -276,24 +270,24 @@ class GSTRepository {
   /**
    * Add an audit log entry
    */
-  addAuditLog(log: GSTAuditLog): void {
-    this.auditLogs.push(log);
+  async addAuditLog(log: GSTAuditLog): Promise<void> {
+    await GSTAuditLogModel.create(log);
   }
 
   /**
    * Get audit logs for an entity
    */
-  getAuditLogs(entityType: string, entityId: string): GSTAuditLog[] {
-    return this.auditLogs.filter(
-      (log) => log.entityType === entityType && log.entityId === entityId
-    );
+  async getAuditLogs(entityType: string, entityId: string): Promise<GSTAuditLog[]> {
+    const logs = await GSTAuditLogModel.find({ entityType, entityId }).sort({ performedAt: -1 });
+    return logs.map((log) => log.toJSON() as GSTAuditLog);
   }
 
   /**
    * Get recent audit logs
    */
-  getRecentAuditLogs(limit: number = 100): GSTAuditLog[] {
-    return this.auditLogs.slice(-limit);
+  async getRecentAuditLogs(limit: number = 100): Promise<GSTAuditLog[]> {
+    const logs = await GSTAuditLogModel.find().sort({ performedAt: -1 }).limit(limit);
+    return logs.map((log) => log.toJSON() as GSTAuditLog);
   }
 
   // ============ ADDITIONAL OPERATIONS FOR ENHANCED FEATURES ============
@@ -301,96 +295,97 @@ class GSTRepository {
   /**
    * Find active clients only
    */
-  findActiveClients(): GSTClient[] {
-    return Array.from(this.clients.values()).filter(
-      (client) => client.status === "active"
-    );
+  async findActiveClients(): Promise<GSTClient[]> {
+    const clients = await GSTClientModel.find({ status: "active" });
+    return clients.map((client) => client.toJSON() as GSTClient);
   }
 
   /**
    * Find active clients for a user
    */
-  findActiveClientsByUserId(userId: string): GSTClient[] {
-    return Array.from(this.clients.values()).filter(
-      (client) => client.userId === userId && client.status === "active"
-    );
+  async findActiveClientsByUserId(userId: string): Promise<GSTClient[]> {
+    const clients = await GSTClientModel.find({ userId, status: "active" });
+    return clients.map((client) => client.toJSON() as GSTClient);
   }
 
   /**
    * Deactivate a client
    */
-  deactivateClient(clientId: string, userId: string): GSTClient | undefined {
-    const client = this.clients.get(clientId);
-    if (!client) {
-      return undefined;
-    }
-    client.status = "inactive";
-    client.deactivatedAt = new Date().toISOString();
-    client.updatedAt = new Date().toISOString();
-    this.clients.set(clientId, client);
-    return client;
+  async deactivateClient(clientId: string, userId: string): Promise<GSTClient | undefined> {
+    const client = await GSTClientModel.findByIdAndUpdate(
+      clientId,
+      {
+        status: "inactive",
+        deactivatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return client ? (client.toJSON() as GSTClient) : undefined;
   }
 
   /**
    * Reactivate a client
    */
-  reactivateClient(clientId: string): GSTClient | undefined {
-    const client = this.clients.get(clientId);
-    if (!client) {
-      return undefined;
-    }
-    client.status = "active";
-    client.deactivatedAt = undefined;
-    client.updatedAt = new Date().toISOString();
-    this.clients.set(clientId, client);
-    return client;
+  async reactivateClient(clientId: string): Promise<GSTClient | undefined> {
+    const client = await GSTClientModel.findByIdAndUpdate(
+      clientId,
+      {
+        status: "active",
+        $unset: { deactivatedAt: "" },
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return client ? (client.toJSON() as GSTClient) : undefined;
   }
 
   /**
    * Check if month is locked for a client
    */
-  isMonthLocked(clientId: string, month: string): boolean {
-    const filing = this.findFilingByClientAndMonth(clientId, month);
+  async isMonthLocked(clientId: string, month: string): Promise<boolean> {
+    const filing = await this.findGSTFilingByMonth(clientId, month);
     return filing?.isLocked || false;
   }
 
   /**
    * Lock a month to prevent further edits
    */
-  lockMonth(clientId: string, month: string, userId: string): GSTReturnFiling | undefined {
-    const filing = this.findFilingByClientAndMonth(clientId, month);
-    if (!filing) {
-      return undefined;
-    }
-    filing.isLocked = true;
-    filing.lockedAt = new Date().toISOString();
-    filing.lockedBy = userId;
-    filing.updatedAt = new Date().toISOString();
-    this.filings.set(filing.id, filing);
-    return filing;
+  async lockMonth(clientId: string, month: string, userId: string): Promise<GSTReturnFiling | undefined> {
+    const filing = await GSTReturnFilingModel.findOneAndUpdate(
+      { clientId, month },
+      {
+        isLocked: true,
+        lockedAt: new Date().toISOString(),
+        lockedBy: userId,
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
 
   /**
    * Unlock a month to allow edits (admin only, for amendments)
    */
-  unlockMonth(clientId: string, month: string): GSTReturnFiling | undefined {
-    const filing = this.findFilingByClientAndMonth(clientId, month);
-    if (!filing) {
-      return undefined;
-    }
-    filing.isLocked = false;
-    filing.lockedAt = undefined;
-    filing.lockedBy = undefined;
-    filing.updatedAt = new Date().toISOString();
-    this.filings.set(filing.id, filing);
-    return filing;
+  async unlockMonth(clientId: string, month: string): Promise<GSTReturnFiling | undefined> {
+    const filing = await GSTReturnFilingModel.findOneAndUpdate(
+      { clientId, month },
+      {
+        isLocked: false,
+        $unset: { lockedAt: "", lockedBy: "" },
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
 
   /**
    * Assign staff to a client
    */
-  assignStaffToClient(clientId: string, staffUserId: string): boolean {
-    const client = this.clients.get(clientId);
+  async assignStaffToClient(clientId: string, staffUserId: string): Promise<boolean> {
+    const client = await GSTClientModel.findById(clientId);
     if (!client) {
       return false;
     }
@@ -400,7 +395,7 @@ class GSTRepository {
     if (!client.assignedStaff.includes(staffUserId)) {
       client.assignedStaff.push(staffUserId);
       client.updatedAt = new Date().toISOString();
-      this.clients.set(clientId, client);
+      await client.save();
     }
     return true;
   }
@@ -408,89 +403,88 @@ class GSTRepository {
   /**
    * Remove staff assignment from a client
    */
-  removeStaffFromClient(clientId: string, staffUserId: string): boolean {
-    const client = this.clients.get(clientId);
-    if (!client || !client.assignedStaff) {
-      return false;
-    }
-    client.assignedStaff = client.assignedStaff.filter(id => id !== staffUserId);
-    client.updatedAt = new Date().toISOString();
-    this.clients.set(clientId, client);
-    return true;
+  async removeStaffFromClient(clientId: string, staffUserId: string): Promise<boolean> {
+    const client = await GSTClientModel.findByIdAndUpdate(
+      clientId,
+      {
+        $pull: { assignedStaff: staffUserId },
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return client !== null;
   }
 
   /**
    * Get clients assigned to a staff member
    */
-  findClientsByStaffUserId(staffUserId: string): GSTClient[] {
-    return Array.from(this.clients.values()).filter(
-      (client) => client.assignedStaff?.includes(staffUserId)
-    );
+  async findClientsByStaffUserId(staffUserId: string): Promise<GSTClient[]> {
+    const clients = await GSTClientModel.find({ assignedStaff: staffUserId });
+    return clients.map((client) => client.toJSON() as GSTClient);
   }
 
   /**
    * Get all staff assignments
    */
-  getAllStaffAssignments(): StaffAssignment[] {
-    return Array.from(this.staffAssignments.values());
+  async getAllStaffAssignments(): Promise<StaffAssignment[]> {
+    const assignments = await StaffAssignmentModel.find();
+    return assignments.map((assignment) => assignment.toJSON() as StaffAssignment);
   }
 
   /**
    * Create a staff assignment record
    */
-  createStaffAssignment(assignment: StaffAssignment): StaffAssignment {
-    this.staffAssignments.set(assignment.id, assignment);
-    return assignment;
+  async createStaffAssignment(assignment: StaffAssignment): Promise<StaffAssignment> {
+    const newAssignment = await StaffAssignmentModel.create(assignment);
+    return newAssignment.toJSON() as StaffAssignment;
   }
 
   /**
    * Find staff assignment by ID
    */
-  findStaffAssignmentById(id: string): StaffAssignment | undefined {
-    return this.staffAssignments.get(id);
+  async findStaffAssignmentById(id: string): Promise<StaffAssignment | undefined> {
+    const assignment = await StaffAssignmentModel.findById(id);
+    return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
 
   /**
    * Find staff assignment by staff user ID
    */
-  findStaffAssignmentByUserId(staffUserId: string): StaffAssignment | undefined {
-    return Array.from(this.staffAssignments.values()).find(
-      (assignment) => assignment.staffUserId === staffUserId
-    );
+  async findStaffAssignmentByUserId(staffUserId: string): Promise<StaffAssignment | undefined> {
+    const assignment = await StaffAssignmentModel.findOne({ staffUserId });
+    return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
 
   /**
    * Update staff assignment
    */
-  updateStaffAssignment(id: string, updates: Partial<StaffAssignment>): StaffAssignment | undefined {
-    const assignment = this.staffAssignments.get(id);
-    if (!assignment) {
-      return undefined;
-    }
-    const updated = { ...assignment, ...updates };
-    this.staffAssignments.set(id, updated);
-    return updated;
+  async updateStaffAssignment(id: string, updates: Partial<StaffAssignment>): Promise<StaffAssignment | undefined> {
+    const assignment = await StaffAssignmentModel.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true }
+    );
+    return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
 
   /**
    * Delete staff assignment
    */
-  deleteStaffAssignment(id: string): boolean {
-    return this.staffAssignments.delete(id);
+  async deleteStaffAssignment(id: string): Promise<boolean> {
+    const result = await StaffAssignmentModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
   /**
    * Get client filing status report
    */
-  getClientFilingStatusReport(clientId: string): ClientFilingStatusReport | undefined {
-    const client = this.clients.get(clientId);
+  async getClientFilingStatusReport(clientId: string): Promise<ClientFilingStatusReport | undefined> {
+    const client = await this.findClientById(clientId);
     if (!client) {
       return undefined;
     }
 
-    const filings = Array.from(this.filings.values()).filter(
-      f => f.clientId === clientId
-    );
+    const filings = await this.findGSTFilingsByClientId(clientId);
 
     const today = new Date();
     const pendingMonths: string[] = [];
@@ -549,23 +543,16 @@ class GSTRepository {
   /**
    * Get annual compliance summary
    */
-  getAnnualComplianceSummary(clientId: string, financialYear: string): AnnualComplianceSummary | undefined {
-    const client = this.clients.get(clientId);
+  async getAnnualComplianceSummary(clientId: string, financialYear: string): Promise<AnnualComplianceSummary | undefined> {
+    const client = await this.findClientById(clientId);
     if (!client) {
       return undefined;
     }
 
-    const filings = Array.from(this.filings.values()).filter(
-      f => f.clientId === clientId && f.financialYear === financialYear
-    );
+    const filings = await this.findGSTFilingsByYear(clientId, financialYear);
 
-    const purchases = Array.from(this.purchaseInvoices.values()).filter(
-      p => p.clientId === clientId && p.financialYear === financialYear
-    );
-
-    const sales = Array.from(this.salesInvoices.values()).filter(
-      s => s.clientId === clientId && s.financialYear === financialYear
-    );
+    const purchases = await PurchaseInvoiceModel.find({ clientId, financialYear });
+    const sales = await SalesInvoiceModel.find({ clientId, financialYear });
 
     const totalMonthsTracked = filings.length;
     const monthsFiled = filings.filter(f => f.gstr1Filed && f.gstr3bFiled).length;
@@ -605,10 +592,11 @@ class GSTRepository {
   }
 
   /**
-   * Get all filings map (for notification service)
+   * Get all filings (for notification service)
    */
-  getAllFilingsMap(): Map<string, GSTReturnFiling> {
-    return this.filings;
+  async getAllFilings(): Promise<GSTReturnFiling[]> {
+    const filings = await GSTReturnFilingModel.find();
+    return filings.map((filing) => filing.toJSON() as GSTReturnFiling);
   }
 }
 

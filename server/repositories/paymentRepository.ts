@@ -1,92 +1,91 @@
 import { PaymentRecord } from "@shared/api";
+import { PaymentModel, IPaymentDocument } from "../models/Payment";
 
 /**
- * Payment repository - abstracts payment data storage
- * In a real application, this would interact with a database
+ * Payment repository - abstracts payment data storage using MongoDB
  */
 class PaymentRepository {
-  private payments: Map<string, PaymentRecord>;
-
-  constructor() {
-    this.payments = new Map();
+  /**
+   * Convert MongoDB document to PaymentRecord type
+   */
+  private toPaymentRecord(doc: IPaymentDocument): PaymentRecord {
+    return doc.toJSON() as PaymentRecord;
   }
 
   /**
    * Find a payment by ID
    */
-  findById(id: string): PaymentRecord | undefined {
-    return this.payments.get(id);
+  async findById(id: string): Promise<PaymentRecord | undefined> {
+    const payment = await PaymentModel.findById(id);
+    return payment ? this.toPaymentRecord(payment) : undefined;
   }
 
   /**
    * Find payment by application ID
    */
-  findByApplicationId(applicationId: string): PaymentRecord | undefined {
-    return Array.from(this.payments.values()).find(
-      (payment) => payment.applicationId === applicationId,
-    );
+  async findByApplicationId(applicationId: string): Promise<PaymentRecord | undefined> {
+    const payment = await PaymentModel.findOne({ applicationId });
+    return payment ? this.toPaymentRecord(payment) : undefined;
   }
 
   /**
    * Find all payments for a specific applicant email
    */
-  findByApplicantEmail(email: string): PaymentRecord[] {
-    return Array.from(this.payments.values()).filter(
-      (payment) => payment.applicantEmail === email,
-    );
+  async findByApplicantEmail(email: string): Promise<PaymentRecord[]> {
+    const payments = await PaymentModel.find({ applicantEmail: email });
+    return payments.map((payment) => this.toPaymentRecord(payment));
   }
 
   /**
    * Find payment by transaction ID
    */
-  findByTransactionId(transactionId: string): PaymentRecord | undefined {
-    return Array.from(this.payments.values()).find(
-      (payment) => payment.transactionId === transactionId,
-    );
+  async findByTransactionId(transactionId: string): Promise<PaymentRecord | undefined> {
+    const payment = await PaymentModel.findOne({ transactionId });
+    return payment ? this.toPaymentRecord(payment) : undefined;
   }
 
   /**
    * Create a new payment record
    */
-  create(payment: PaymentRecord): PaymentRecord {
-    this.payments.set(payment.id, payment);
-    return payment;
+  async create(payment: PaymentRecord): Promise<PaymentRecord> {
+    const newPayment = await PaymentModel.create(payment);
+    return this.toPaymentRecord(newPayment);
   }
 
   /**
    * Update a payment record
    */
-  update(id: string, updates: Partial<PaymentRecord>): PaymentRecord | undefined {
-    const payment = this.payments.get(id);
-    if (!payment) {
-      return undefined;
-    }
-    const updated = { ...payment, ...updates };
-    this.payments.set(id, updated);
-    return updated;
+  async update(id: string, updates: Partial<PaymentRecord>): Promise<PaymentRecord | undefined> {
+    const payment = await PaymentModel.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true }
+    );
+    return payment ? this.toPaymentRecord(payment) : undefined;
   }
 
   /**
    * Get all payments (for admin purposes)
    */
-  findAll(): PaymentRecord[] {
-    return Array.from(this.payments.values());
+  async findAll(): Promise<PaymentRecord[]> {
+    const payments = await PaymentModel.find().sort({ date: -1 });
+    return payments.map((payment) => this.toPaymentRecord(payment));
   }
 
   /**
    * Find payments by status
    */
-  findByStatus(status: PaymentRecord["status"]): PaymentRecord[] {
-    return Array.from(this.payments.values()).filter(
-      (payment) => payment.status === status,
-    );
+  async findByStatus(status: PaymentRecord["status"]): Promise<PaymentRecord[]> {
+    const payments = await PaymentModel.find({ status });
+    return payments.map((payment) => this.toPaymentRecord(payment));
   }
 
   /**
    * Delete a payment record (rarely used, for testing/cleanup)
    */
-  delete(id: string): boolean {
-    return this.payments.delete(id);
+  async delete(id: string): Promise<boolean> {
+    const result = await PaymentModel.findByIdAndDelete(id);
+    return result !== null;
   }
 }
 

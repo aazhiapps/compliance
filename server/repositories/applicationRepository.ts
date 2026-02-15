@@ -1,71 +1,74 @@
 import { Application, Document } from "@shared/auth";
+import { ApplicationModel, IApplicationDocument } from "../models/Application";
 
 /**
- * Application repository - abstracts application data storage
- * In a real application, this would interact with a database
+ * Application repository - abstracts application data storage using MongoDB
  */
 class ApplicationRepository {
-  private applications: Map<string, Application>;
-
-  constructor() {
-    this.applications = new Map();
+  /**
+   * Convert MongoDB document to Application type
+   */
+  private toApplication(doc: IApplicationDocument): Application {
+    return doc.toJSON() as Application;
   }
 
   /**
    * Find an application by ID
    */
-  findById(id: string): Application | undefined {
-    return this.applications.get(id);
+  async findById(id: string): Promise<Application | undefined> {
+    const app = await ApplicationModel.findById(id);
+    return app ? this.toApplication(app) : undefined;
   }
 
   /**
    * Find all applications for a user
    */
-  findByUserId(userId: string): Application[] {
-    return Array.from(this.applications.values()).filter(
-      (app) => app.userId === userId,
-    );
+  async findByUserId(userId: string): Promise<Application[]> {
+    const apps = await ApplicationModel.find({ userId }).sort({ createdAt: -1 });
+    return apps.map((app) => this.toApplication(app));
   }
 
   /**
    * Create a new application
    */
-  create(application: Application): Application {
-    this.applications.set(application.id, application);
-    return application;
+  async create(application: Application): Promise<Application> {
+    const newApp = await ApplicationModel.create(application);
+    return this.toApplication(newApp);
   }
 
   /**
    * Update an application
    */
-  update(id: string, updates: Partial<Application>): Application | undefined {
-    const app = this.applications.get(id);
-    if (!app) {
-      return undefined;
-    }
-    const updated = { ...app, ...updates, updatedAt: new Date().toISOString() };
-    this.applications.set(id, updated);
-    return updated;
+  async update(id: string, updates: Partial<Application>): Promise<Application | undefined> {
+    const app = await ApplicationModel.findByIdAndUpdate(
+      id,
+      { ...updates, updatedAt: new Date().toISOString() },
+      { new: true }
+    );
+    return app ? this.toApplication(app) : undefined;
   }
 
   /**
    * Add a document to an application
    */
-  addDocument(applicationId: string, document: Document): Application | undefined {
-    const app = this.applications.get(applicationId);
-    if (!app) {
-      return undefined;
-    }
-    app.documents.push(document);
-    app.updatedAt = new Date().toISOString();
-    return app;
+  async addDocument(applicationId: string, document: Document): Promise<Application | undefined> {
+    const app = await ApplicationModel.findByIdAndUpdate(
+      applicationId,
+      {
+        $push: { documents: document },
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true }
+    );
+    return app ? this.toApplication(app) : undefined;
   }
 
   /**
    * Get all applications (for admin purposes)
    */
-  findAll(): Application[] {
-    return Array.from(this.applications.values());
+  async findAll(): Promise<Application[]> {
+    const apps = await ApplicationModel.find().sort({ createdAt: -1 });
+    return apps.map((app) => this.toApplication(app));
   }
 }
 

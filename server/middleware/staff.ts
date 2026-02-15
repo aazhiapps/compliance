@@ -7,7 +7,7 @@ import { userRepository } from "../repositories/userRepository";
  * Must be used after authenticateToken middleware
  * @throws 403 if user is not staff or admin
  */
-export const requireStaff: RequestHandler = (req, res, next) => {
+export const requireStaff: RequestHandler = async (req, res, next) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -17,7 +17,7 @@ export const requireStaff: RequestHandler = (req, res, next) => {
     });
   }
 
-  const user = userRepository.findById(userId);
+  const user = await userRepository.findById(userId);
 
   if (!user || (user.role !== "staff" && user.role !== "admin")) {
     return res.status(403).json({
@@ -34,7 +34,7 @@ export const requireStaff: RequestHandler = (req, res, next) => {
  * Must be used after authenticateToken middleware
  * @throws 403 if user is not staff
  */
-export const requireStaffOnly: RequestHandler = (req, res, next) => {
+export const requireStaffOnly: RequestHandler = async (req, res, next) => {
   const userId = (req as AuthRequest).userId;
 
   if (!userId) {
@@ -44,7 +44,7 @@ export const requireStaffOnly: RequestHandler = (req, res, next) => {
     });
   }
 
-  const user = userRepository.findById(userId);
+  const user = await userRepository.findById(userId);
 
   if (!user || user.role !== "staff") {
     return res.status(403).json({
