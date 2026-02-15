@@ -93,9 +93,7 @@ export const seedDemoUsers = async () => {
     },
   ];
 
-  for (const user of demoUsers) {
-    await userRepository.create(user);
-  }
+  await Promise.all(demoUsers.map(user => userRepository.create(user)));
 
   console.log("✓ Demo users seeded successfully");
 };
@@ -214,9 +212,7 @@ export const seedDemoApplications = async () => {
     },
   ];
 
-  for (const app of demoApplications) {
-    await applicationRepository.create(app);
-  }
+  await Promise.all(demoApplications.map(app => applicationRepository.create(app)));
 
   console.log("✓ Demo applications seeded successfully");
 };

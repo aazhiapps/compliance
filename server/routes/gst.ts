@@ -1067,57 +1067,58 @@ export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
       clients = await gstRepository.findClientsByUserId(user.id);
     }
 
-    // Calculate summary for each client
-    const summaries: MonthlyGSTSummary[] = [];
-    for (const client of clients) {
-      // Get purchases for the month
-      const purchases = await gstRepository.findPurchaseInvoicesByMonth(client.id, month);
-      const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
-      const itcAvailable = purchases.reduce(
-        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
-        0
-      );
+    // Calculate summary for each client (in parallel)
+    const summaries: MonthlyGSTSummary[] = await Promise.all(
+      clients.map(async (client) => {
+        // Get purchases for the month
+        const purchases = await gstRepository.findPurchaseInvoicesByMonth(client.id, month);
+        const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
+        const itcAvailable = purchases.reduce(
+          (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+          0
+        );
 
-      // Get sales for the month
-      const sales = await gstRepository.findSalesInvoicesByMonth(client.id, month);
-      const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
-      const outputTax = sales.reduce(
-        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
-        0
-      );
+        // Get sales for the month
+        const sales = await gstRepository.findSalesInvoicesByMonth(client.id, month);
+        const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
+        const outputTax = sales.reduce(
+          (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+          0
+        );
 
-      // Calculate net tax payable
-      const netTaxPayable = outputTax - itcAvailable;
+        // Calculate net tax payable
+        const netTaxPayable = outputTax - itcAvailable;
 
-      // Get filing status
-      const filing = await gstRepository.findGSTFilingByMonth(client.id, month);
+        // Get filing status
+        const filing = await gstRepository.findGSTFilingByMonth(client.id, month);
 
-      // Derive financial year from month if not available from invoices
-      let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
-      if (!financialYear) {
-        const [year, monthNum] = month.split('-').map(Number);
-        // Financial year starts in April (month 4)
-        const fyStartYear = monthNum >= 4 ? year : year - 1;
-        financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
-      }
+        // Derive financial year from month if not available from invoices
+        let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
+        if (!financialYear) {
+          const [year, monthNum] = month.split('-').map(Number);
+          // Financial year starts in April (month 4)
+          const fyStartYear = monthNum >= 4 ? year : year - 1;
+          financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
+        }
 
-      const summary: MonthlyGSTSummary = {
-        clientId: client.id,
-        clientName: client.clientName,
-        month,
-        financialYear,
-        totalPurchases,
-        totalSales,
-        itcAvailable,
-        outputTax,
-        netTaxPayable,
-        filingStatus: filing?.filingStatus || "pending",
-        gstr1Filed: filing?.gstr1Filed || false,
-        gstr3bFiled: filing?.gstr3bFiled || false,
-      };
+        const summary: MonthlyGSTSummary = {
+          clientId: client.id,
+          clientName: client.clientName,
+          month,
+          financialYear,
+          totalPurchases,
+          totalSales,
+          itcAvailable,
+          outputTax,
+          netTaxPayable,
+          filingStatus: filing?.filingStatus || "pending",
+          gstr1Filed: filing?.gstr1Filed || false,
+          gstr3bFiled: filing?.gstr3bFiled || false,
+        };
 
-      summaries.push(summary);
-    }
+        return summary;
+      })
+    );
 
     res.json({
       success: true,
