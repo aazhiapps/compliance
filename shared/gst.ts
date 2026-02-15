@@ -18,6 +18,9 @@ export interface GSTClient {
   contactPerson: string;
   contactEmail: string;
   contactPhone: string;
+  status: "active" | "inactive"; // Client status for filtering reminders
+  deactivatedAt?: string; // When client was deactivated
+  assignedStaff?: string[]; // Staff user IDs assigned to this client
   createdAt: string;
   updatedAt: string;
 }
@@ -73,13 +76,20 @@ export interface GSTReturnFiling {
   gstr1Filed: boolean;
   gstr1FiledDate?: string; // YYYY-MM-DD
   gstr1ARN?: string;
+  gstr1DueDate?: string; // YYYY-MM-DD (calculated based on filing frequency)
   gstr3bFiled: boolean;
   gstr3bFiledDate?: string; // YYYY-MM-DD
   gstr3bARN?: string;
+  gstr3bDueDate?: string; // YYYY-MM-DD (calculated based on filing frequency)
   taxPaid: number;
   lateFee: number;
+  lateFeeCalculated: boolean; // Whether late fee was auto-calculated
   interest: number;
-  filingStatus: "pending" | "filed" | "late";
+  interestCalculated: boolean; // Whether interest was auto-calculated
+  filingStatus: "pending" | "filed" | "late" | "overdue";
+  isLocked: boolean; // Prevents editing invoices after filing
+  lockedAt?: string; // When the month was locked
+  lockedBy?: string; // User who locked the month
   returnDocuments: string[]; // Filed return PDFs
   challanDocuments: string[]; // Challan copies
   workingSheets: string[]; // Working sheets
@@ -117,6 +127,8 @@ export interface CreateGSTClientRequest {
   contactPerson: string;
   contactEmail: string;
   contactPhone: string;
+  status?: "active" | "inactive"; // Optional, defaults to active
+  assignedStaff?: string[]; // Optional staff assignment
 }
 
 export interface CreatePurchaseInvoiceRequest {
@@ -215,4 +227,109 @@ export interface GSTAuditLog {
   performedBy: string;
   performedAt: string;
   ipAddress?: string;
+}
+
+// GST Filing Reminder/Notification
+export interface GSTReminder {
+  id: string;
+  clientId: string;
+  clientName: string;
+  month: string; // YYYY-MM
+  returnType: "GSTR-1" | "GSTR-3B" | "GSTR-9";
+  dueDate: string; // YYYY-MM-DD
+  reminderDate: string; // YYYY-MM-DD (typically 5 days before)
+  status: "pending" | "sent" | "overdue";
+  notificationChannels: ("email" | "sms" | "dashboard")[];
+  sentAt?: string;
+  createdAt: string;
+}
+
+// Notification record
+export interface GSTNotification {
+  id: string;
+  clientId: string;
+  userId: string;
+  type: "due_date_reminder" | "overdue_alert" | "filing_success" | "escalation";
+  title: string;
+  message: string;
+  priority: "low" | "medium" | "high";
+  isRead: boolean;
+  readAt?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+// Client-wise filing status report
+export interface ClientFilingStatusReport {
+  clientId: string;
+  clientName: string;
+  gstin: string;
+  status: "active" | "inactive";
+  filingFrequency: "monthly" | "quarterly" | "annual";
+  currentPeriod: string; // Current month/quarter/year being tracked
+  lastFiledMonth?: string; // Last successfully filed month
+  pendingMonths: string[]; // Months with pending filings
+  overdueMonths: string[]; // Months past due date
+  totalPendingAmount: number; // Total tax + late fees + interest
+  complianceScore: number; // 0-100, based on timely filings
+}
+
+// Annual compliance summary
+export interface AnnualComplianceSummary {
+  clientId: string;
+  clientName: string;
+  financialYear: string; // e.g., "2024-25"
+  totalMonthsTracked: number;
+  monthsFiled: number;
+  monthsPending: number;
+  monthsLate: number;
+  totalSales: number;
+  totalPurchases: number;
+  totalTaxPaid: number;
+  totalLateFees: number;
+  totalInterest: number;
+  complianceRate: number; // Percentage of on-time filings
+  gstr9Filed: boolean; // Annual return
+  gstr9FiledDate?: string;
+  gstr9ARN?: string;
+}
+
+// Validation utilities
+export interface GSTValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Due date calculation result
+export interface DueDateInfo {
+  month: string; // YYYY-MM
+  filingFrequency: "monthly" | "quarterly" | "annual";
+  gstr1DueDate: string; // YYYY-MM-DD
+  gstr3bDueDate: string; // YYYY-MM-DD
+  gstr9DueDate?: string; // For annual returns
+  isQuarterEnd: boolean;
+  quarterEndMonth?: string;
+  reminderDate: string; // 5 days before GSTR-3B due
+}
+
+// Staff assignment
+export interface StaffAssignment {
+  id: string;
+  staffUserId: string;
+  staffName: string;
+  clientIds: string[];
+  assignedAt: string;
+  assignedBy: string;
+  permissions: ("view" | "edit" | "file" | "upload")[];
+}
+
+// Report filters
+export interface GSTReportFilter {
+  clientIds?: string[];
+  startMonth?: string; // YYYY-MM
+  endMonth?: string; // YYYY-MM
+  financialYear?: string;
+  status?: ("pending" | "filed" | "late" | "overdue")[];
+  filingFrequency?: ("monthly" | "quarterly" | "annual")[];
 }
