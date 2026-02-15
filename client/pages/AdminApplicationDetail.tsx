@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,74 +58,74 @@ export default function AdminApplicationDetail() {
   const [paymentNotes, setPaymentNotes] = useState("");
 
   // Fetch application and user details
-  useEffect(() => {
+  const fetchApplicationDetails = useCallback(async () => {
     if (!id || !token) return;
 
-    const fetchApplicationDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Fetch application
-        const appResponse = await fetch(`/api/admin/applications/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      // Fetch application
+      const appResponse = await fetch(`/api/admin/applications/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (!appResponse.ok) {
-          throw new Error("Failed to fetch application");
-        }
-
-        const appData = await appResponse.json();
-        if (!appData.success || !appData.data) {
-          throw new Error(appData.message || "Failed to load application");
-        }
-
-        const app: Application = appData.data;
-
-        // Fetch user details
-        const userResponse = await fetch(`/api/admin/users/${app.userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!userResponse.ok) {
-          throw new Error("Failed to fetch user details");
-        }
-
-        const userData = await userResponse.json();
-        if (!userData.success || !userData.data) {
-          throw new Error(userData.message || "Failed to load user details");
-        }
-
-        const user: UserType = userData.data;
-
-        // Combine application and user data
-        const appWithUser: ApplicationWithUserDetails = {
-          ...app,
-          userName: `${user.firstName} ${user.lastName}`,
-          userEmail: user.email,
-          userPhone: user.phone || "N/A",
-        };
-
-        setApplication(appWithUser);
-      } catch (err) {
-        console.error("Error fetching application details:", err);
-        setError(err instanceof Error ? err.message : "Failed to load application");
-        toast({
-          title: "Error",
-          description: "Failed to load application details",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      if (!appResponse.ok) {
+        throw new Error("Failed to fetch application");
       }
-    };
 
-    fetchApplicationDetails();
+      const appData = await appResponse.json();
+      if (!appData.success || !appData.data) {
+        throw new Error(appData.message || "Failed to load application");
+      }
+
+      const app: Application = appData.data;
+
+      // Fetch user details
+      const userResponse = await fetch(`/api/admin/users/${app.userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user details");
+      }
+
+      const userData = await userResponse.json();
+      if (!userData.success || !userData.data) {
+        throw new Error(userData.message || "Failed to load user details");
+      }
+
+      const user: UserType = userData.data;
+
+      // Combine application and user data
+      const appWithUser: ApplicationWithUserDetails = {
+        ...app,
+        userName: `${user.firstName} ${user.lastName}`,
+        userEmail: user.email,
+        userPhone: user.phone || "N/A",
+      };
+
+      setApplication(appWithUser);
+    } catch (err) {
+      console.error("Error fetching application details:", err);
+      setError(err instanceof Error ? err.message : "Failed to load application");
+      toast({
+        title: "Error",
+        description: "Failed to load application details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [id, token, toast]);
+
+  useEffect(() => {
+    fetchApplicationDetails();
+  }, [fetchApplicationDetails]);
 
   if (loading) {
     return (
@@ -184,11 +184,13 @@ export default function AdminApplicationDetail() {
         throw new Error(data.message || "Failed to approve application");
       }
 
-      setApplication({ ...application, status: "approved" });
       toast({
         title: "Success",
         description: "Application approved successfully",
       });
+
+      // Refetch application data to ensure UI reflects backend state
+      await fetchApplicationDetails();
     } catch (err) {
       console.error("Error approving application:", err);
       toast({
@@ -227,13 +229,16 @@ export default function AdminApplicationDetail() {
         throw new Error(data.message || "Failed to reject application");
       }
 
-      setApplication({ ...application, status: "rejected", internalNotes: rejectReason });
-      setRejectReason("");
-      setShowRejectForm(false);
       toast({
         title: "Success",
         description: "Application rejected successfully",
       });
+
+      setRejectReason("");
+      setShowRejectForm(false);
+
+      // Refetch application data to ensure UI reflects backend state
+      await fetchApplicationDetails();
     } catch (err) {
       console.error("Error rejecting application:", err);
       toast({
@@ -271,12 +276,15 @@ export default function AdminApplicationDetail() {
         throw new Error(data.message || "Failed to assign executive");
       }
 
-      setApplication({ ...application, assignedStaffName: assignedExecutive });
-      setAssignedExecutive("");
       toast({
         title: "Success",
         description: "Executive assigned successfully",
       });
+
+      setAssignedExecutive("");
+
+      // Refetch application data to ensure UI reflects backend state
+      await fetchApplicationDetails();
     } catch (err) {
       console.error("Error assigning executive:", err);
       toast({
@@ -326,14 +334,14 @@ export default function AdminApplicationDetail() {
           description: "Payment recorded successfully",
         });
         
-        // Update local application state
-        setApplication({ ...application, paymentStatus: "paid" });
-        
         // Reset form
         setPaymentAmount("");
         setTransactionId("");
         setPaymentNotes("");
         setShowRecordPaymentDialog(false);
+
+        // Refetch application data to ensure UI reflects backend state
+        await fetchApplicationDetails();
       } else {
         toast({
           title: "Error",

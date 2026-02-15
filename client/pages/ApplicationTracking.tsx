@@ -14,6 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Document } from "@shared/auth";
 
 interface TimelineEvent {
   id: string;
@@ -22,14 +23,6 @@ interface TimelineEvent {
   description: string;
   timestamp: string;
   updatedBy: string;
-  remarks?: string;
-}
-
-interface Document {
-  id: string;
-  name: string;
-  status: "pending" | "uploaded" | "verifying" | "approved" | "rejected";
-  uploadDate?: string;
   remarks?: string;
 }
 
@@ -72,10 +65,42 @@ export default function ApplicationTracking() {
       avatar: "RK",
     },
     documents: [
-      { id: "doc_1", name: "PAN Card", status: "approved" as const, uploadDate: "2024-02-01" },
-      { id: "doc_2", name: "Aadhar Card", status: "approved" as const, uploadDate: "2024-02-01" },
-      { id: "doc_3", name: "Business Address Proof", status: "verifying" as const, uploadDate: "2024-02-02" },
-      { id: "doc_4", name: "Bank Statement", status: "uploaded" as const, uploadDate: "2024-02-02" },
+      { 
+        id: "doc_1", 
+        applicationId: id || "app_1",
+        fileName: "PAN Card",
+        fileUrl: "/api/documents/pan-card.pdf",
+        fileType: "application/pdf",
+        status: "approved" as const,
+        uploadedAt: "2024-02-01T10:00:00Z",
+      },
+      { 
+        id: "doc_2", 
+        applicationId: id || "app_1",
+        fileName: "Aadhar Card",
+        fileUrl: "/api/documents/aadhar-card.pdf",
+        fileType: "application/pdf",
+        status: "approved" as const,
+        uploadedAt: "2024-02-01T10:05:00Z",
+      },
+      { 
+        id: "doc_3", 
+        applicationId: id || "app_1",
+        fileName: "Business Address Proof",
+        fileUrl: "/api/documents/address-proof.pdf",
+        fileType: "application/pdf",
+        status: "verifying" as const,
+        uploadedAt: "2024-02-02T11:00:00Z",
+      },
+      { 
+        id: "doc_4", 
+        applicationId: id || "app_1",
+        fileName: "Bank Statement",
+        fileUrl: "/api/documents/bank-statement.pdf",
+        fileType: "application/pdf",
+        status: "uploaded" as const,
+        uploadedAt: "2024-02-02T14:30:00Z",
+      },
     ] as Document[],
     timeline: [
       {
@@ -155,7 +180,7 @@ export default function ApplicationTracking() {
       // Create a temporary link and trigger download
       const link = document.createElement("a");
       link.href = doc.fileUrl;
-      link.download = doc.fileName || doc.name || "document";
+      link.download = doc.fileName;
       link.target = "_blank"; // Open in new tab as fallback
       document.body.appendChild(link);
       link.click();
@@ -163,7 +188,7 @@ export default function ApplicationTracking() {
       
       toast({
         title: "Download Started",
-        description: `Downloading ${doc.name || doc.fileName}...`,
+        description: `Downloading ${doc.fileName}...`,
       });
     } catch (error) {
       console.error("Download failed:", error);
@@ -351,10 +376,10 @@ export default function ApplicationTracking() {
                         <div className="flex items-start gap-4 flex-1">
                           <FileText className="w-10 h-10 text-muted-foreground flex-shrink-0 mt-1" />
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-foreground mb-1">{doc.name}</h3>
-                            {doc.uploadDate && (
+                            <h3 className="font-semibold text-foreground mb-1">{doc.fileName}</h3>
+                            {doc.uploadedAt && (
                               <p className="text-sm text-muted-foreground">
-                                Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}
+                                Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
                               </p>
                             )}
                             {doc.remarks && (
