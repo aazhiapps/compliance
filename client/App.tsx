@@ -27,6 +27,7 @@ import AdminServices from "./pages/AdminServices";
 import AdminCompliance from "./pages/AdminCompliance";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminGST from "./pages/AdminGST";
+import AdminReports from "./pages/AdminReports";
 import StaffDashboard from "./pages/StaffDashboard";
 import UserGST from "./pages/UserGST";
 import GSTSummary from "./pages/GSTSummary";
@@ -169,6 +170,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute requiredRole="admin">
           <AdminGST />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/reports"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminReports />
         </ProtectedRoute>
       }
     />

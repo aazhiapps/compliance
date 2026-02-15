@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, LogOut, Home, Users, FileText, DollarSign, Settings, BarChart3, Package, CheckCircle2, File, Receipt } from "lucide-react";
+import { Menu, X, LogOut, Home, Users, FileText, DollarSign, Settings, BarChart3, Package, CheckCircle2, File, Receipt, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AdminLayoutProps {
@@ -27,6 +27,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { icon: <Receipt className="w-5 h-5" />, label: "GST Filing", href: "/admin/gst", id: "gst" },
     { icon: <File className="w-5 h-5" />, label: "Documents", href: "/admin/documents", id: "documents" },
     { icon: <DollarSign className="w-5 h-5" />, label: "Payments", href: "/admin/payments", id: "payments" },
+    { icon: <BarChart2 className="w-5 h-5" />, label: "Reports", href: "/admin/reports", id: "reports" },
     { icon: <Settings className="w-5 h-5" />, label: "Settings", href: "/admin/settings", id: "settings" },
   ];
 
