@@ -8,10 +8,10 @@ import { HTTP_STATUS } from "../utils/constants";
  * Get all applications for staff member
  * Staff can see all applications (or only assigned ones if needed)
  */
-export const getStaffApplications: RequestHandler = (req, res) => {
+export const getStaffApplications: RequestHandler = async (req, res) => {
   try {
     const userId = (req as AuthRequest).userId!;
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
 
     if (!user) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -21,7 +21,7 @@ export const getStaffApplications: RequestHandler = (req, res) => {
     }
 
     // Get all applications
-    const allApplications = applicationRepository.findAll();
+    const allApplications = await applicationRepository.findAll();
 
     // Filter by staff member if they're not admin
     const applications =
@@ -47,12 +47,12 @@ export const getStaffApplications: RequestHandler = (req, res) => {
 /**
  * Update application status (staff can update status and add notes)
  */
-export const updateApplicationStatus: RequestHandler = (req, res) => {
+export const updateApplicationStatus: RequestHandler = async (req, res) => {
   try {
     const { applicationId } = req.params;
     const { status, internalNotes } = req.body;
 
-    const application = applicationRepository.findById(applicationId as string);
+    const application = await applicationRepository.findById(applicationId as string);
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -69,7 +69,7 @@ export const updateApplicationStatus: RequestHandler = (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    applicationRepository.update(applicationId as string, updatedApplication);
+    await applicationRepository.update(applicationId as string, updatedApplication);
 
     return res.json({
       success: true,
@@ -88,12 +88,12 @@ export const updateApplicationStatus: RequestHandler = (req, res) => {
 /**
  * Assign application to staff member
  */
-export const assignApplicationToStaff: RequestHandler = (req, res) => {
+export const assignApplicationToStaff: RequestHandler = async (req, res) => {
   try {
     const { applicationId } = req.params;
     const { staffId } = req.body;
 
-    const application = applicationRepository.findById(applicationId as string);
+    const application = await applicationRepository.findById(applicationId as string);
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -102,7 +102,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
       });
     }
 
-    const staff = userRepository.findById(staffId as string);
+    const staff = await userRepository.findById(staffId as string);
 
     if (!staff || (staff.role !== "staff" && staff.role !== "admin")) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -119,7 +119,7 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    applicationRepository.update(applicationId as string, updatedApplication);
+    await applicationRepository.update(applicationId as string, updatedApplication);
 
     return res.json({
       success: true,
@@ -138,10 +138,10 @@ export const assignApplicationToStaff: RequestHandler = (req, res) => {
 /**
  * Get staff statistics
  */
-export const getStaffStats: RequestHandler = (req, res) => {
+export const getStaffStats: RequestHandler = async (req, res) => {
   try {
     const userId = (req as AuthRequest).userId!;
-    const allApplications = applicationRepository.findAll();
+    const allApplications = await applicationRepository.findAll();
 
     // Get applications assigned to this staff member
     const myApplications = allApplications.filter(
@@ -176,9 +176,9 @@ export const getStaffStats: RequestHandler = (req, res) => {
 /**
  * Get all staff members (for admin to view and assign)
  */
-export const getAllStaff: RequestHandler = (_req, res) => {
+export const getAllStaff: RequestHandler = async (_req, res) => {
   try {
-    const allUsers = userRepository.findAll();
+    const allUsers = await userRepository.findAll();
     const staffMembers = allUsers.filter(
       (user) => user.role === "staff" || user.role === "admin"
     );

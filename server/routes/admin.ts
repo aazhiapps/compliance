@@ -10,9 +10,9 @@ import { UserDocumentsHierarchical } from "@shared/api";
  * Get all users (admin only)
  * GET /api/admin/users
  */
-export const handleGetAllUsers: RequestHandler = (_req, res) => {
+export const handleGetAllUsers: RequestHandler = async (_req, res) => {
   try {
-    const users = userRepository.findAll();
+    const users = await userRepository.findAll();
     res.json({
       success: true,
       data: users,
@@ -29,9 +29,9 @@ export const handleGetAllUsers: RequestHandler = (_req, res) => {
  * Get all applications (admin only)
  * GET /api/admin/applications
  */
-export const handleGetAllApplications: RequestHandler = (_req, res) => {
+export const handleGetAllApplications: RequestHandler = async (_req, res) => {
   try {
-    const applications = applicationRepository.findAll();
+    const applications = await applicationRepository.findAll();
     res.json({
       success: true,
       data: applications,
@@ -48,7 +48,7 @@ export const handleGetAllApplications: RequestHandler = (_req, res) => {
  * Update application status (admin only)
  * PATCH /api/admin/applications/:id
  */
-export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
+export const handleUpdateApplicationStatus: RequestHandler = async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const { status, notes } = req.body;
@@ -60,7 +60,7 @@ export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
       });
     }
 
-    const application = applicationRepository.update(id, { 
+    const application = await applicationRepository.update(id, { 
       status, 
       ...(notes && { notes }),
     });
@@ -76,11 +76,11 @@ export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
     if (status === "approved" && application.serviceId === 1) {
       try {
         // Check if user already has a GST client
-        const existingClients = gstRepository.findClientsByUserId(application.userId);
+        const existingClients = await gstRepository.findClientsByUserId(application.userId);
         
         if (existingClients.length === 0) {
           // Get user details
-          const user = userRepository.findById(application.userId);
+          const user = await userRepository.findById(application.userId);
           
           if (user) {
             // Get current financial year (April to March in India)
@@ -109,7 +109,7 @@ export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
               updatedAt: new Date().toISOString(),
             };
             
-            gstRepository.createClient(gstClient);
+            await gstRepository.createClient(gstClient);
             console.log(`✓ Auto-created GST client for user ${user.email} (Application: ${application.id})`);
           } else {
             console.warn(`⚠ User not found for GST auto-enrollment (Application: ${application.id})`);
@@ -139,10 +139,10 @@ export const handleUpdateApplicationStatus: RequestHandler = (req, res) => {
  * Get application by ID (admin only)
  * GET /api/admin/applications/:id
  */
-export const handleGetApplicationById: RequestHandler = (req, res) => {
+export const handleGetApplicationById: RequestHandler = async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const application = applicationRepository.findById(id);
+    const application = await applicationRepository.findById(id);
 
     if (!application) {
       return res.status(404).json({
@@ -167,10 +167,10 @@ export const handleGetApplicationById: RequestHandler = (req, res) => {
  * Get user by ID (admin only)
  * GET /api/admin/users/:id
  */
-export const handleGetUserById: RequestHandler = (req, res) => {
+export const handleGetUserById: RequestHandler = async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const user = userRepository.findById(id);
+    const user = await userRepository.findById(id);
 
     if (!user) {
       return res.status(404).json({
@@ -198,10 +198,10 @@ export const handleGetUserById: RequestHandler = (req, res) => {
  * Get admin dashboard statistics
  * GET /api/admin/stats
  */
-export const handleGetAdminStats: RequestHandler = (_req, res) => {
+export const handleGetAdminStats: RequestHandler = async (_req, res) => {
   try {
-    const users = userRepository.findAll();
-    const applications = applicationRepository.findAll();
+    const users = await userRepository.findAll();
+    const applications = await applicationRepository.findAll();
 
     const stats = {
       totalUsers: users.length,
@@ -231,10 +231,10 @@ export const handleGetAdminStats: RequestHandler = (_req, res) => {
  * GET /api/admin/documents
  * Returns: Users -> Services -> Year/Month -> Documents
  */
-export const handleGetAllDocuments: RequestHandler = (_req, res) => {
+export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
   try {
-    const users = userRepository.findAll();
-    const applications = applicationRepository.findAll();
+    const users = await userRepository.findAll();
+    const applications = await applicationRepository.findAll();
 
     // Helper function to get month name
     const getMonthName = (month: number): string => {

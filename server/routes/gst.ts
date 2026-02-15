@@ -36,7 +36,7 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -73,7 +73,7 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
     }
 
     // Check if GSTIN already exists
-    const existing = gstRepository.findClientByGSTIN(data.gstin);
+    const existing = await gstRepository.findClientByGSTIN(data.gstin);
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -92,7 +92,7 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const created = gstRepository.createClient(client);
+    const created = await gstRepository.createClient(client);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -104,7 +104,7 @@ export const handleCreateGSTClient: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -129,16 +129,16 @@ export const handleGetGSTClients: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
     
     let clients: GSTClient[];
     if (user.role === "admin") {
-      clients = gstRepository.findAllClients();
+      clients = await gstRepository.findAllClients();
     } else {
-      clients = gstRepository.findClientsByUserId(user.id);
+      clients = await gstRepository.findClientsByUserId(user.id);
     }
 
     res.json({
@@ -163,7 +163,7 @@ export const handleGetGSTClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -172,7 +172,7 @@ export const handleGetGSTClient: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid ID" });
     }
 
-    const client = gstRepository.findClientById(id);
+    const client = await gstRepository.findClientById(id);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -210,7 +210,7 @@ export const handleUpdateGSTClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -220,7 +220,7 @@ export const handleUpdateGSTClient: RequestHandler = async (req, res) => {
     }
     const updates = req.body;
 
-    const client = gstRepository.findClientById(id);
+    const client = await gstRepository.findClientById(id);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -236,7 +236,7 @@ export const handleUpdateGSTClient: RequestHandler = async (req, res) => {
       });
     }
 
-    const updated = gstRepository.updateClient(id, updates);
+    const updated = await gstRepository.updateClient(id, updates);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -248,7 +248,7 @@ export const handleUpdateGSTClient: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -273,14 +273,14 @@ export const handleCreatePurchaseInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
     const data = req.body as CreatePurchaseInvoiceRequest;
 
     // Verify client exists and user has access
-    const client = gstRepository.findClientById(data.clientId);
+    const client = await gstRepository.findClientById(data.clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -296,7 +296,7 @@ export const handleCreatePurchaseInvoice: RequestHandler = async (req, res) => {
     }
 
     // Check if the month is locked
-    const isLocked = gstRepository.isMonthLocked(data.clientId, data.month);
+    const isLocked = await gstRepository.isMonthLocked(data.clientId, data.month);
     if (isLocked) {
       return res.status(403).json({
         success: false,
@@ -317,7 +317,7 @@ export const handleCreatePurchaseInvoice: RequestHandler = async (req, res) => {
       createdBy: user.id,
     };
 
-    const created = gstRepository.createPurchaseInvoice(invoice);
+    const created = await gstRepository.createPurchaseInvoice(invoice);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -329,7 +329,7 @@ export const handleCreatePurchaseInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -354,7 +354,7 @@ export const handleGetPurchaseInvoices: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -365,7 +365,7 @@ export const handleGetPurchaseInvoices: RequestHandler = async (req, res) => {
     const monthParam = req.query.month;
     const month = typeof monthParam === "string" ? monthParam : undefined;
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -382,9 +382,9 @@ export const handleGetPurchaseInvoices: RequestHandler = async (req, res) => {
 
     let invoices: PurchaseInvoice[];
     if (month && !Array.isArray(month)) {
-      invoices = gstRepository.findPurchaseInvoicesByMonth(clientId, month);
+      invoices = await gstRepository.findPurchaseInvoicesByMonth(clientId, month);
     } else {
-      invoices = gstRepository.findPurchaseInvoicesByClientId(clientId);
+      invoices = await gstRepository.findPurchaseInvoicesByClientId(clientId);
     }
 
     res.json({
@@ -409,7 +409,7 @@ export const handleUpdatePurchaseInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -419,7 +419,7 @@ export const handleUpdatePurchaseInvoice: RequestHandler = async (req, res) => {
     }
     const updates = req.body;
 
-    const invoice = gstRepository.findPurchaseInvoiceById(id);
+    const invoice = await gstRepository.findPurchaseInvoiceById(id);
     if (!invoice) {
       return res.status(404).json({
         success: false,
@@ -427,7 +427,7 @@ export const handleUpdatePurchaseInvoice: RequestHandler = async (req, res) => {
       });
     }
 
-    const client = gstRepository.findClientById(invoice.clientId);
+    const client = await gstRepository.findClientById(invoice.clientId);
     if (!client || (user.role !== "admin" && client.userId !== user.id)) {
       return res.status(403).json({
         success: false,
@@ -444,7 +444,7 @@ export const handleUpdatePurchaseInvoice: RequestHandler = async (req, res) => {
       updates.totalAmount = taxableAmount + cgst + sgst + igst;
     }
 
-    const updated = gstRepository.updatePurchaseInvoice(id, updates);
+    const updated = await gstRepository.updatePurchaseInvoice(id, updates);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -456,7 +456,7 @@ export const handleUpdatePurchaseInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -481,7 +481,7 @@ export const handleDeletePurchaseInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -498,7 +498,7 @@ export const handleDeletePurchaseInvoice: RequestHandler = async (req, res) => {
       });
     }
 
-    const invoice = gstRepository.findPurchaseInvoiceById(id);
+    const invoice = await gstRepository.findPurchaseInvoiceById(id);
     if (!invoice) {
       return res.status(404).json({
         success: false,
@@ -515,7 +515,7 @@ export const handleDeletePurchaseInvoice: RequestHandler = async (req, res) => {
       }
     }
 
-    gstRepository.deletePurchaseInvoice(id);
+    await gstRepository.deletePurchaseInvoice(id);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -527,7 +527,7 @@ export const handleDeletePurchaseInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -551,13 +551,13 @@ export const handleCreateSalesInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
     const data = req.body as CreateSalesInvoiceRequest;
 
-    const client = gstRepository.findClientById(data.clientId);
+    const client = await gstRepository.findClientById(data.clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -584,7 +584,7 @@ export const handleCreateSalesInvoice: RequestHandler = async (req, res) => {
       createdBy: user.id,
     };
 
-    const created = gstRepository.createSalesInvoice(invoice);
+    const created = await gstRepository.createSalesInvoice(invoice);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -596,7 +596,7 @@ export const handleCreateSalesInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -621,7 +621,7 @@ export const handleGetSalesInvoices: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -632,7 +632,7 @@ export const handleGetSalesInvoices: RequestHandler = async (req, res) => {
     const monthParam = req.query.month;
     const month = typeof monthParam === "string" ? monthParam : undefined;
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -649,9 +649,9 @@ export const handleGetSalesInvoices: RequestHandler = async (req, res) => {
 
     let invoices: SalesInvoice[];
     if (month && !Array.isArray(month)) {
-      invoices = gstRepository.findSalesInvoicesByMonth(clientId, month);
+      invoices = await gstRepository.findSalesInvoicesByMonth(clientId, month);
     } else {
-      invoices = gstRepository.findSalesInvoicesByClientId(clientId);
+      invoices = await gstRepository.findSalesInvoicesByClientId(clientId);
     }
 
     res.json({
@@ -676,7 +676,7 @@ export const handleUpdateSalesInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -686,7 +686,7 @@ export const handleUpdateSalesInvoice: RequestHandler = async (req, res) => {
     }
     const updates = req.body;
 
-    const invoice = gstRepository.findSalesInvoiceById(id);
+    const invoice = await gstRepository.findSalesInvoiceById(id);
     if (!invoice) {
       return res.status(404).json({
         success: false,
@@ -694,7 +694,7 @@ export const handleUpdateSalesInvoice: RequestHandler = async (req, res) => {
       });
     }
 
-    const client = gstRepository.findClientById(invoice.clientId);
+    const client = await gstRepository.findClientById(invoice.clientId);
     if (!client || (user.role !== "admin" && client.userId !== user.id)) {
       return res.status(403).json({
         success: false,
@@ -711,7 +711,7 @@ export const handleUpdateSalesInvoice: RequestHandler = async (req, res) => {
       updates.totalAmount = taxableAmount + cgst + sgst + igst;
     }
 
-    const updated = gstRepository.updateSalesInvoice(id, updates);
+    const updated = await gstRepository.updateSalesInvoice(id, updates);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -723,7 +723,7 @@ export const handleUpdateSalesInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -748,7 +748,7 @@ export const handleDeleteSalesInvoice: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -764,7 +764,7 @@ export const handleDeleteSalesInvoice: RequestHandler = async (req, res) => {
       });
     }
 
-    const invoice = gstRepository.findSalesInvoiceById(id);
+    const invoice = await gstRepository.findSalesInvoiceById(id);
     if (!invoice) {
       return res.status(404).json({
         success: false,
@@ -781,7 +781,7 @@ export const handleDeleteSalesInvoice: RequestHandler = async (req, res) => {
       }
     }
 
-    gstRepository.deleteSalesInvoice(id);
+    await gstRepository.deleteSalesInvoice(id);
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -793,7 +793,7 @@ export const handleDeleteSalesInvoice: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -817,13 +817,13 @@ export const handleUpdateGSTFiling: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
     const data = req.body as UpdateGSTFilingRequest;
 
-    const client = gstRepository.findClientById(data.clientId);
+    const client = await gstRepository.findClientById(data.clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -839,7 +839,7 @@ export const handleUpdateGSTFiling: RequestHandler = async (req, res) => {
     }
 
     // Get or create filing record
-    let filing = gstRepository.findGSTFilingByMonth(
+    let filing = await gstRepository.findGSTFilingByMonth(
       data.clientId,
       data.month
     );
@@ -872,7 +872,7 @@ export const handleUpdateGSTFiling: RequestHandler = async (req, res) => {
       updatedBy: user.id,
     };
 
-    const updated = gstRepository.upsertGSTFiling({ ...filing, ...updates });
+    const updated = await gstRepository.upsertGSTFiling({ ...filing, ...updates });
 
     // Add audit log
     const auditLog: GSTAuditLog = {
@@ -884,7 +884,7 @@ export const handleUpdateGSTFiling: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -909,7 +909,7 @@ export const handleGetGSTFilings: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -920,7 +920,7 @@ export const handleGetGSTFilings: RequestHandler = async (req, res) => {
     const fyParam = req.query.financialYear;
     const financialYear = typeof fyParam === "string" ? fyParam : undefined;
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -937,9 +937,9 @@ export const handleGetGSTFilings: RequestHandler = async (req, res) => {
 
     let filings: GSTReturnFiling[];
     if (financialYear && !Array.isArray(financialYear)) {
-      filings = gstRepository.findGSTFilingsByYear(clientId, financialYear);
+      filings = await gstRepository.findGSTFilingsByYear(clientId, financialYear);
     } else {
-      filings = gstRepository.findGSTFilingsByClientId(clientId);
+      filings = await gstRepository.findGSTFilingsByClientId(clientId);
     }
 
     res.json({
@@ -964,7 +964,7 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -976,7 +976,7 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid month" });
     }
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -992,7 +992,7 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
     }
 
     // Get purchases for the month
-    const purchases = gstRepository.findPurchaseInvoicesByMonth(clientId, month);
+    const purchases = await gstRepository.findPurchaseInvoicesByMonth(clientId, month);
     const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
     const itcAvailable = purchases.reduce(
       (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
@@ -1000,7 +1000,7 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
     );
 
     // Get sales for the month
-    const sales = gstRepository.findSalesInvoicesByMonth(clientId, month);
+    const sales = await gstRepository.findSalesInvoicesByMonth(clientId, month);
     const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
     const outputTax = sales.reduce(
       (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
@@ -1011,7 +1011,7 @@ export const handleGetMonthlySummary: RequestHandler = async (req, res) => {
     const netTaxPayable = outputTax - itcAvailable;
 
     // Get filing status
-    const filing = gstRepository.findGSTFilingByMonth(clientId, month);
+    const filing = await gstRepository.findGSTFilingByMonth(clientId, month);
 
     const summary: MonthlyGSTSummary = {
       clientId,
@@ -1050,7 +1050,7 @@ export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -1062,62 +1062,64 @@ export const handleGetAllClientsSummary: RequestHandler = async (req, res) => {
     // Get all clients based on user role
     let clients: GSTClient[];
     if (user.role === "admin") {
-      clients = gstRepository.findAllClients();
+      clients = await gstRepository.findAllClients();
     } else {
-      clients = gstRepository.findClientsByUserId(user.id);
+      clients = await gstRepository.findClientsByUserId(user.id);
     }
 
-    // Calculate summary for each client
-    const summaries: MonthlyGSTSummary[] = [];
-    for (const client of clients) {
-      // Get purchases for the month
-      const purchases = gstRepository.findPurchaseInvoicesByMonth(client.id, month);
-      const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
-      const itcAvailable = purchases.reduce(
-        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
-        0
-      );
+    // Calculate summary for each client (in parallel)
+    // Note: For large numbers of clients (>50), consider batching to avoid overwhelming the database
+    const summaries: MonthlyGSTSummary[] = await Promise.all(
+      clients.map(async (client) => {
+        // Get purchases for the month
+        const purchases = await gstRepository.findPurchaseInvoicesByMonth(client.id, month);
+        const totalPurchases = purchases.reduce((sum, inv) => sum + inv.totalAmount, 0);
+        const itcAvailable = purchases.reduce(
+          (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+          0
+        );
 
-      // Get sales for the month
-      const sales = gstRepository.findSalesInvoicesByMonth(client.id, month);
-      const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
-      const outputTax = sales.reduce(
-        (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
-        0
-      );
+        // Get sales for the month
+        const sales = await gstRepository.findSalesInvoicesByMonth(client.id, month);
+        const totalSales = sales.reduce((sum, inv) => sum + inv.totalAmount, 0);
+        const outputTax = sales.reduce(
+          (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+          0
+        );
 
-      // Calculate net tax payable
-      const netTaxPayable = outputTax - itcAvailable;
+        // Calculate net tax payable
+        const netTaxPayable = outputTax - itcAvailable;
 
-      // Get filing status
-      const filing = gstRepository.findGSTFilingByMonth(client.id, month);
+        // Get filing status
+        const filing = await gstRepository.findGSTFilingByMonth(client.id, month);
 
-      // Derive financial year from month if not available from invoices
-      let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
-      if (!financialYear) {
-        const [year, monthNum] = month.split('-').map(Number);
-        // Financial year starts in April (month 4)
-        const fyStartYear = monthNum >= 4 ? year : year - 1;
-        financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
-      }
+        // Derive financial year from month if not available from invoices
+        let financialYear = purchases[0]?.financialYear || sales[0]?.financialYear;
+        if (!financialYear) {
+          const [year, monthNum] = month.split('-').map(Number);
+          // Financial year starts in April (month 4)
+          const fyStartYear = monthNum >= 4 ? year : year - 1;
+          financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(-2)}`;
+        }
 
-      const summary: MonthlyGSTSummary = {
-        clientId: client.id,
-        clientName: client.clientName,
-        month,
-        financialYear,
-        totalPurchases,
-        totalSales,
-        itcAvailable,
-        outputTax,
-        netTaxPayable,
-        filingStatus: filing?.filingStatus || "pending",
-        gstr1Filed: filing?.gstr1Filed || false,
-        gstr3bFiled: filing?.gstr3bFiled || false,
-      };
+        const summary: MonthlyGSTSummary = {
+          clientId: client.id,
+          clientName: client.clientName,
+          month,
+          financialYear,
+          totalPurchases,
+          totalSales,
+          itcAvailable,
+          outputTax,
+          netTaxPayable,
+          filingStatus: filing?.filingStatus || "pending",
+          gstr1Filed: filing?.gstr1Filed || false,
+          gstr3bFiled: filing?.gstr3bFiled || false,
+        };
 
-      summaries.push(summary);
-    }
+        return summary;
+      })
+    );
 
     res.json({
       success: true,
@@ -1141,7 +1143,7 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -1155,7 +1157,7 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
     }
 
     // Verify access to client
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({
         success: false,
@@ -1176,13 +1178,13 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
     let invoiceNumber = "UNKNOWN";
 
     if (type === "purchase") {
-      invoice = gstRepository.findPurchaseInvoiceById(entityId);
+      invoice = await gstRepository.findPurchaseInvoiceById(entityId);
       subfolder = "Purchases";
       if (invoice) {
         invoiceNumber = invoice.invoiceNumber;
       }
     } else if (type === "sales") {
-      invoice = gstRepository.findSalesInvoiceById(entityId);
+      invoice = await gstRepository.findSalesInvoiceById(entityId);
       subfolder = "Sales";
       if (invoice) {
         invoiceNumber = invoice.invoiceNumber;
@@ -1218,11 +1220,11 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
     const updatedDocuments = [...currentDocuments, filePath];
 
     if (type === "purchase") {
-      gstRepository.updatePurchaseInvoice(entityId, {
+      await gstRepository.updatePurchaseInvoice(entityId, {
         documents: updatedDocuments,
       });
     } else if (type === "sales") {
-      gstRepository.updateSalesInvoice(entityId, {
+      await gstRepository.updateSalesInvoice(entityId, {
         documents: updatedDocuments,
       });
     }
@@ -1237,7 +1239,7 @@ export const handleUploadGSTDocument: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,
@@ -1263,7 +1265,7 @@ export const handleDownloadGSTDocument: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -1293,7 +1295,7 @@ export const handleDownloadGSTDocument: RequestHandler = async (req, res) => {
     if (user.role === "admin") {
       hasAccess = true; // Admins can download all files
     } else {
-      const userClients = gstRepository.findClientsByUserId(user.id);
+      const userClients = await gstRepository.findClientsByUserId(user.id);
       // Check if any of user's clients match the file path
       const clientNameFromPath = pathParts[0].replace(/_/g, " "); // Sanitized names use underscores
       hasAccess = userClients.some(client => {
@@ -1352,7 +1354,7 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -1370,9 +1372,9 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
     let invoice: PurchaseInvoice | SalesInvoice | undefined;
     
     if (type === "purchase") {
-      invoice = gstRepository.findPurchaseInvoiceById(entityId);
+      invoice = await gstRepository.findPurchaseInvoiceById(entityId);
     } else if (type === "sales") {
-      invoice = gstRepository.findSalesInvoiceById(entityId);
+      invoice = await gstRepository.findSalesInvoiceById(entityId);
     }
 
     if (!invoice) {
@@ -1382,7 +1384,7 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
       });
     }
 
-    const client = gstRepository.findClientById(invoice.clientId);
+    const client = await gstRepository.findClientById(invoice.clientId);
     if (!client || (user.role !== "admin" && client.userId !== user.id)) {
       return res.status(403).json({
         success: false,
@@ -1398,11 +1400,11 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
     const updatedDocuments = (invoice.documents || []).filter(doc => doc !== filePath);
 
     if (type === "purchase") {
-      gstRepository.updatePurchaseInvoice(entityId, {
+      await gstRepository.updatePurchaseInvoice(entityId, {
         documents: updatedDocuments,
       });
     } else if (type === "sales") {
-      gstRepository.updateSalesInvoice(entityId, {
+      await gstRepository.updateSalesInvoice(entityId, {
         documents: updatedDocuments,
       });
     }
@@ -1417,7 +1419,7 @@ export const handleDeleteGSTDocument: RequestHandler = async (req, res) => {
       performedBy: user.id,
       performedAt: new Date().toISOString(),
     };
-    gstRepository.addAuditLog(auditLog);
+    await gstRepository.addAuditLog(auditLog);
 
     res.json({
       success: true,

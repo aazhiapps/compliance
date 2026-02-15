@@ -6,9 +6,9 @@ import { CreateServiceRequest, UpdateServiceRequest } from "@shared/service";
  * Get all services
  * GET /api/admin/services
  */
-export const handleGetAllServices: RequestHandler = (_req, res) => {
+export const handleGetAllServices: RequestHandler = async (_req, res) => {
   try {
-    const services = serviceRepository.findAll();
+    const services = await serviceRepository.findAll();
     res.json({
       success: true,
       services,
@@ -26,10 +26,10 @@ export const handleGetAllServices: RequestHandler = (_req, res) => {
  * Get a single service by ID
  * GET /api/admin/services/:id
  */
-export const handleGetServiceById: RequestHandler = (req, res) => {
+export const handleGetServiceById: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const service = serviceRepository.findById(id);
+    const service = await serviceRepository.findById(id);
 
     if (!service) {
       return res.status(404).json({
@@ -55,7 +55,7 @@ export const handleGetServiceById: RequestHandler = (req, res) => {
  * Create a new service
  * POST /api/admin/services
  */
-export const handleCreateService: RequestHandler = (req, res) => {
+export const handleCreateService: RequestHandler = async (req, res) => {
   try {
     const serviceData: CreateServiceRequest = req.body;
 
@@ -75,7 +75,7 @@ export const handleCreateService: RequestHandler = (req, res) => {
       });
     }
 
-    const service = serviceRepository.create(serviceData);
+    const service = await serviceRepository.create(serviceData);
 
     res.status(201).json({
       success: true,
@@ -95,13 +95,13 @@ export const handleCreateService: RequestHandler = (req, res) => {
  * Update a service
  * PATCH /api/admin/services/:id
  */
-export const handleUpdateService: RequestHandler = (req, res) => {
+export const handleUpdateService: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const updates: UpdateServiceRequest = req.body;
 
     // Check if service exists
-    const existingService = serviceRepository.findById(id);
+    const existingService = await serviceRepository.findById(id);
     if (!existingService) {
       return res.status(404).json({
         success: false,
@@ -117,7 +117,7 @@ export const handleUpdateService: RequestHandler = (req, res) => {
       });
     }
 
-    const service = serviceRepository.update(id, updates);
+    const service = await serviceRepository.update(id, updates);
 
     res.json({
       success: true,
@@ -137,12 +137,12 @@ export const handleUpdateService: RequestHandler = (req, res) => {
  * Delete a service
  * DELETE /api/admin/services/:id
  */
-export const handleDeleteService: RequestHandler = (req, res) => {
+export const handleDeleteService: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
     // Check if service exists
-    const existingService = serviceRepository.findById(id);
+    const existingService = await serviceRepository.findById(id);
     if (!existingService) {
       return res.status(404).json({
         success: false,
@@ -150,7 +150,7 @@ export const handleDeleteService: RequestHandler = (req, res) => {
       });
     }
 
-    const deleted = serviceRepository.delete(id);
+    const deleted = await serviceRepository.delete(id);
 
     if (deleted) {
       res.json({

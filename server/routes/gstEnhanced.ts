@@ -21,7 +21,7 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -31,7 +31,7 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid client ID" });
     }
 
-    const client = gstRepository.findClientById(id);
+    const client = await gstRepository.findClientById(id);
     if (!client) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -41,13 +41,13 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const updated = gstRepository.deactivateClient(id, userId);
+    const updated = await gstRepository.deactivateClient(id, userId);
     if (!updated) {
       return res.status(500).json({ success: false, message: "Failed to deactivate client" });
     }
 
     // Add audit log
-    gstRepository.addAuditLog({
+    await gstRepository.addAuditLog({
       id: `audit_${Date.now()}`,
       entityType: "client",
       entityId: id,
@@ -77,7 +77,7 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -87,7 +87,7 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid client ID" });
     }
 
-    const client = gstRepository.findClientById(id);
+    const client = await gstRepository.findClientById(id);
     if (!client) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -97,13 +97,13 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const updated = gstRepository.reactivateClient(id);
+    const updated = await gstRepository.reactivateClient(id);
     if (!updated) {
       return res.status(500).json({ success: false, message: "Failed to reactivate client" });
     }
 
     // Add audit log
-    gstRepository.addAuditLog({
+    await gstRepository.addAuditLog({
       id: `audit_${Date.now()}`,
       entityType: "client",
       entityId: id,
@@ -133,16 +133,16 @@ export const handleGetActiveClients: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
 
     let clients;
     if (user.role === "admin") {
-      clients = gstRepository.findActiveClients();
+      clients = await gstRepository.findActiveClients();
     } else {
-      clients = gstRepository.findActiveClientsByUserId(user.id);
+      clients = await gstRepository.findActiveClientsByUserId(user.id);
     }
 
     res.json({
@@ -167,7 +167,7 @@ export const handleLockMonth: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -177,7 +177,7 @@ export const handleLockMonth: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid parameters" });
     }
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -187,13 +187,13 @@ export const handleLockMonth: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const filing = gstRepository.lockMonth(clientId, month, userId);
+    const filing = await gstRepository.lockMonth(clientId, month, userId);
     if (!filing) {
       return res.status(404).json({ success: false, message: "Filing record not found" });
     }
 
     // Add audit log
-    gstRepository.addAuditLog({
+    await gstRepository.addAuditLog({
       id: `audit_${Date.now()}`,
       entityType: "filing",
       entityId: filing.id,
@@ -223,7 +223,7 @@ export const handleUnlockMonth: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -241,13 +241,13 @@ export const handleUnlockMonth: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid parameters" });
     }
 
-    const filing = gstRepository.unlockMonth(clientId, month);
+    const filing = await gstRepository.unlockMonth(clientId, month);
     if (!filing) {
       return res.status(404).json({ success: false, message: "Filing record not found" });
     }
 
     // Add audit log
-    gstRepository.addAuditLog({
+    await gstRepository.addAuditLog({
       id: `audit_${Date.now()}`,
       entityType: "filing",
       entityId: filing.id,
@@ -283,7 +283,7 @@ export const handleCheckMonthLock: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid parameters" });
     }
 
-    const isLocked = gstRepository.isMonthLocked(clientId, month);
+    const isLocked = await gstRepository.isMonthLocked(clientId, month);
 
     res.json({
       success: true,
@@ -431,7 +431,7 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -441,7 +441,7 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid client ID" });
     }
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -451,7 +451,7 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const report = gstRepository.getClientFilingStatusReport(clientId);
+    const report = await gstRepository.getClientFilingStatusReport(clientId);
     if (!report) {
       return res.status(404).json({ success: false, message: "Report not available" });
     }
@@ -475,7 +475,7 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -485,7 +485,7 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid parameters" });
     }
 
-    const client = gstRepository.findClientById(clientId);
+    const client = await gstRepository.findClientById(clientId);
     if (!client) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -495,7 +495,7 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const summary = gstRepository.getAnnualComplianceSummary(clientId, fy);
+    const summary = await gstRepository.getAnnualComplianceSummary(clientId, fy);
     if (!summary) {
       return res.status(404).json({ success: false, message: "Summary not available" });
     }
@@ -595,7 +595,7 @@ export const handleAssignStaffToClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user || user.role !== "admin") {
       return res.status(403).json({ success: false, message: "Admin access required" });
     }
@@ -606,12 +606,12 @@ export const handleAssignStaffToClient: RequestHandler = async (req, res) => {
     }
 
     // Verify staff user exists
-    const staffUser = userRepository.findById(staffUserId);
+    const staffUser = await userRepository.findById(staffUserId);
     if (!staffUser) {
       return res.status(404).json({ success: false, message: "Staff user not found" });
     }
 
-    const success = gstRepository.assignStaffToClient(clientId, staffUserId);
+    const success = await gstRepository.assignStaffToClient(clientId, staffUserId);
     if (!success) {
       return res.status(404).json({ success: false, message: "Client not found" });
     }
@@ -635,7 +635,7 @@ export const handleRemoveStaffFromClient: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user || user.role !== "admin") {
       return res.status(403).json({ success: false, message: "Admin access required" });
     }
@@ -645,7 +645,7 @@ export const handleRemoveStaffFromClient: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "clientId and staffUserId are required" });
     }
 
-    const success = gstRepository.removeStaffFromClient(clientId, staffUserId);
+    const success = await gstRepository.removeStaffFromClient(clientId, staffUserId);
     if (!success) {
       return res.status(404).json({ success: false, message: "Client not found or staff not assigned" });
     }
@@ -669,7 +669,7 @@ export const handleGetStaffClients: RequestHandler = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const user = userRepository.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -684,7 +684,7 @@ export const handleGetStaffClients: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const clients = gstRepository.findClientsByStaffUserId(staffId);
+    const clients = await gstRepository.findClientsByStaffUserId(staffId);
 
     res.json({
       success: true,

@@ -3,6 +3,7 @@ import { reportRepository } from "../repositories/reportRepository";
 import { initialServices } from "./seeds/serviceSeeds";
 import { demoReports } from "./seeds/reportSeeds";
 import { seedGSTData } from "./gstSeedData";
+import { seedDemoUsers, seedDemoApplications } from "../routes/auth";
 
 /**
  * Seed demo services
@@ -32,7 +33,9 @@ export const seedReports = async () => {
 export const seedAllData = async () => {
   console.log("Starting data seeding...");
   try {
+    await seedDemoUsers();
     await seedServices();
+    await seedDemoApplications();
     await seedReports();
     await seedGSTData();
     console.log("✓ All demo data seeded successfully");

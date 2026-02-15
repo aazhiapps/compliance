@@ -21,7 +21,7 @@ const RecordPaymentSchema = z.object({
  * POST /api/payments/record
  * Record a new payment manually (admin/staff only)
  */
-export const handleRecordPayment: RequestHandler = (req, res) => {
+export const handleRecordPayment: RequestHandler = async (req, res) => {
   try {
     // Validate request body
     const validation = RecordPaymentSchema.safeParse(req.body);
@@ -37,7 +37,7 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
     const currentUser = (req as any).user;
 
     // Check if application exists
-    const application = applicationRepository.findById(paymentData.applicationId);
+    const application = await applicationRepository.findById(paymentData.applicationId);
     if (!application) {
       res.status(404).json({
         success: false,
@@ -47,7 +47,7 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
     }
 
     // Check if payment already exists for this application
-    const existingPayment = paymentRepository.findByApplicationId(paymentData.applicationId);
+    const existingPayment = await paymentRepository.findByApplicationId(paymentData.applicationId);
     if (existingPayment) {
       res.status(400).json({
         success: false,
@@ -57,7 +57,7 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
     }
 
     // Get user details
-    const user = userRepository.findById(application.userId);
+    const user = await userRepository.findById(application.userId);
     if (!user) {
       res.status(404).json({
         success: false,
@@ -84,10 +84,10 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
     };
 
     // Save payment
-    const savedPayment = paymentRepository.create(paymentRecord);
+    const savedPayment = await paymentRepository.create(paymentRecord);
 
     // Update application payment status
-    applicationRepository.update(paymentData.applicationId, {
+    await applicationRepository.update(paymentData.applicationId, {
       paymentStatus: "paid",
       paymentAmount: paymentData.amount,
     });
@@ -112,11 +112,11 @@ export const handleRecordPayment: RequestHandler = (req, res) => {
  * GET /api/payments
  * Get all payment records (admin/staff only)
  */
-export const handleGetPayments: RequestHandler = (req, res) => {
+export const handleGetPayments: RequestHandler = async (req, res) => {
   try {
     const { status, email } = req.query;
 
-    let payments = paymentRepository.findAll();
+    let payments = await paymentRepository.findAll();
 
     // Filter by status if provided
     if (status && typeof status === "string") {
@@ -155,11 +155,11 @@ export const handleGetPayments: RequestHandler = (req, res) => {
  * GET /api/payments/:id
  * Get a specific payment by ID
  */
-export const handleGetPaymentById: RequestHandler = (req, res) => {
+export const handleGetPaymentById: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const payment = paymentRepository.findById(id);
+    const payment = await paymentRepository.findById(id);
     if (!payment) {
       res.status(404).json({
         success: false,
@@ -188,11 +188,11 @@ export const handleGetPaymentById: RequestHandler = (req, res) => {
  * GET /api/payments/application/:applicationId
  * Get payment for a specific application
  */
-export const handleGetPaymentByApplicationId: RequestHandler = (req, res) => {
+export const handleGetPaymentByApplicationId: RequestHandler = async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const payment = paymentRepository.findByApplicationId(applicationId);
+    const payment = await paymentRepository.findByApplicationId(applicationId);
     if (!payment) {
       res.status(404).json({
         success: false,
@@ -221,7 +221,7 @@ export const handleGetPaymentByApplicationId: RequestHandler = (req, res) => {
  * PATCH /api/payments/:id/status
  * Update payment status (admin only)
  */
-export const handleUpdatePaymentStatus: RequestHandler = (req, res) => {
+export const handleUpdatePaymentStatus: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -236,7 +236,7 @@ export const handleUpdatePaymentStatus: RequestHandler = (req, res) => {
       return;
     }
 
-    const payment = paymentRepository.findById(id);
+    const payment = await paymentRepository.findById(id);
     if (!payment) {
       res.status(404).json({
         success: false,
@@ -246,14 +246,14 @@ export const handleUpdatePaymentStatus: RequestHandler = (req, res) => {
     }
 
     // Update payment
-    const updatedPayment = paymentRepository.update(id, {
+    const updatedPayment = await paymentRepository.update(id, {
       status,
       notes: notes || payment.notes,
     });
 
     // Update application payment status if refunded
     if (status === "refunded") {
-      applicationRepository.update(payment.applicationId, {
+      await applicationRepository.update(payment.applicationId, {
         paymentStatus: "refunded",
       });
     }
