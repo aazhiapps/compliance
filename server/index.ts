@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import filingRoutes from "./routes/filings";
 import documentRoutes from "./routes/documents";
+import itcReconciliationRoutes from "./routes/itc-reconciliation";
 import {
   handleSignup,
   handleLogin,
@@ -173,6 +174,9 @@ export function createServer() {
 
   // Document Management Routes (Phase 2)
   app.use("/api/documents", documentRoutes);
+
+  // ITC Reconciliation Routes (Phase 3)
+  app.use("/api/itc-reconciliation", itcReconciliationRoutes);
 
   // GST Management Routes (protected)
   // Client management
