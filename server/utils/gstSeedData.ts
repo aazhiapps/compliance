@@ -71,7 +71,7 @@ export const seedGSTClients = async () => {
   ];
 
   for (const client of demoClients) {
-    await gstRepository.createClient(client);
+    await gstRepository.upsertClient(client);
   }
 
   console.log(`✓ Seeded ${demoClients.length} GST demo clients`);
@@ -261,7 +261,7 @@ export const seedPurchaseInvoices = async () => {
   ];
 
   for (const purchase of demoPurchases) {
-    await gstRepository.createPurchaseInvoice(purchase);
+    await gstRepository.upsertPurchaseInvoice(purchase);
   }
 
   console.log(`✓ Seeded ${demoPurchases.length} demo purchase invoices`);
@@ -470,7 +470,7 @@ export const seedSalesInvoices = async () => {
   ];
 
   for (const sale of demoSales) {
-    await gstRepository.createSalesInvoice(sale);
+    await gstRepository.upsertSalesInvoice(sale);
   }
 
   console.log(`✓ Seeded ${demoSales.length} demo sales invoices`);

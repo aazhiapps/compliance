@@ -35,6 +35,31 @@ class GSTRepository {
   }
 
   /**
+   * Upsert a GST client (create or update based on ID)
+   */
+  async upsertClient(client: GSTClient): Promise<GSTClient> {
+    // Set default status if not provided
+    if (!client.status) {
+      client.status = "active";
+    }
+    const existing = await GSTClientModel.findById(client.id);
+    
+    if (existing) {
+      // Update existing
+      const updated = await GSTClientModel.findByIdAndUpdate(
+        client.id,
+        { ...client, updatedAt: new Date().toISOString() },
+        { new: true }
+      );
+      return updated!.toJSON() as unknown as GSTClient;
+    } else {
+      // Create new
+      const newClient = await GSTClientModel.create(client);
+      return newClient.toJSON() as unknown as GSTClient;
+    }
+  }
+
+  /**
    * Find a client by ID
    */
   async findClientById(id: string): Promise<GSTClient | undefined> {
@@ -103,6 +128,27 @@ class GSTRepository {
   }
 
   /**
+   * Upsert a purchase invoice (create or update based on ID)
+   */
+  async upsertPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+    const existing = await PurchaseInvoiceModel.findById(invoice.id);
+    
+    if (existing) {
+      // Update existing
+      const updated = await PurchaseInvoiceModel.findByIdAndUpdate(
+        invoice.id,
+        { ...invoice, updatedAt: new Date().toISOString() },
+        { new: true }
+      );
+      return updated!.toJSON() as PurchaseInvoice;
+    } else {
+      // Create new
+      const newInvoice = await PurchaseInvoiceModel.create(invoice);
+      return newInvoice.toJSON() as PurchaseInvoice;
+    }
+  }
+
+  /**
    * Find purchase invoice by ID
    */
   async findPurchaseInvoiceById(id: string): Promise<PurchaseInvoice | undefined> {
@@ -160,6 +206,27 @@ class GSTRepository {
   async createSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
     const newInvoice = await SalesInvoiceModel.create(invoice);
     return newInvoice.toJSON() as SalesInvoice;
+  }
+
+  /**
+   * Upsert a sales invoice (create or update based on ID)
+   */
+  async upsertSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
+    const existing = await SalesInvoiceModel.findById(invoice.id);
+    
+    if (existing) {
+      // Update existing
+      const updated = await SalesInvoiceModel.findByIdAndUpdate(
+        invoice.id,
+        { ...invoice, updatedAt: new Date().toISOString() },
+        { new: true }
+      );
+      return updated!.toJSON() as SalesInvoice;
+    } else {
+      // Create new
+      const newInvoice = await SalesInvoiceModel.create(invoice);
+      return newInvoice.toJSON() as SalesInvoice;
+    }
   }
 
   /**
