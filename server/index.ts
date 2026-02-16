@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import filingRoutes from "./routes/filings";
 import {
   handleSignup,
   handleLogin,
@@ -165,6 +166,9 @@ export function createServer() {
   app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
   app.get("/api/staff/members", authenticateToken, requireAdmin, getAllStaff);
   app.post("/api/staff/assign/:applicationId", authenticateToken, requireAdmin, assignApplicationToStaff);
+
+  // Filing Workflow Routes (Phase 1)
+  app.use("/api/filings", filingRoutes);
 
   // GST Management Routes (protected)
   // Client management
