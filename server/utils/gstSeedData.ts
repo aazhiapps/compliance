@@ -13,7 +13,8 @@ import mongoose from "mongoose";
  * The server/index.ts file includes a check to prevent running in production
  */
 
-// Generate ObjectIds for seed data to maintain consistency across runs
+// Generate ObjectIds for seed data
+// Note: New ObjectIds are generated on each run, so IDs will be different each time
 const clientIds = {
   client1: new mongoose.Types.ObjectId().toString(),
   client2: new mongoose.Types.ObjectId().toString(),
@@ -514,9 +515,9 @@ export const seedGSTFilings = async () => {
       gstr3bARN: "AB290520241234568",
       taxPaid: 129600, // Net tax payable from April
       lateFee: 0,
-      lateFeeCalculated: false,
+      lateFeeCalculated: true, // Calculated and no late fee applied (filed on time)
       interest: 0,
-      interestCalculated: false,
+      interestCalculated: true, // Calculated and no interest applied (filed on time)
       filingStatus: "filed",
       isLocked: true,
       returnDocuments: [],
@@ -585,9 +586,9 @@ export const seedGSTFilings = async () => {
       gstr3bARN: "AB070520241234572",
       taxPaid: 252000, // Net tax from April
       lateFee: 0,
-      lateFeeCalculated: false,
+      lateFeeCalculated: true, // Calculated and no late fee applied (filed on time)
       interest: 0,
-      interestCalculated: false,
+      interestCalculated: true, // Calculated and no interest applied (filed on time)
       filingStatus: "filed",
       isLocked: true,
       returnDocuments: [],
