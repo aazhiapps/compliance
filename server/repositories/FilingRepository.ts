@@ -39,6 +39,8 @@ export interface CreateFilingStepInput {
   comments?: string;
   changes?: Record<string, any>;
   attachments?: Array<{ name: string; url: string; type: string }>;
+  completedAt?: Date;
+  completedBy?: ObjectId;
 }
 
 export class FilingRepository {

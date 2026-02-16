@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { authenticateToken } from "../middleware/auth";
-import { requireAdmin, requireStaff } from "../middleware/admin";
+import { requireAdmin } from "../middleware/admin";
+import { requireStaff } from "../middleware/staff";
 import FilingWorkflowService from "../services/FilingWorkflowService";
 import FilingRepository from "../repositories/FilingRepository";
 import gstRepository from "../repositories/gstRepository";
