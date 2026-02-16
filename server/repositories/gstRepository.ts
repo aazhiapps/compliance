@@ -35,6 +35,28 @@ class GSTRepository {
   }
 
   /**
+   * Upsert a GST client (create or update based on ID)
+   */
+  async upsertClient(client: GSTClient): Promise<GSTClient> {
+    // Set default status if not provided
+    if (!client.status) {
+      client.status = "active";
+    }
+    
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...clientData } = client;
+    
+    // Use findOneAndUpdate with upsert option for atomic operation
+    const result = await GSTClientModel.findOneAndUpdate(
+      { _id: id },
+      { ...clientData, updatedAt: new Date().toISOString() },
+      { new: true, upsert: true }
+    );
+    
+    return result.toJSON() as unknown as GSTClient;
+  }
+
+  /**
    * Find a client by ID
    */
   async findClientById(id: string): Promise<GSTClient | undefined> {
@@ -103,6 +125,23 @@ class GSTRepository {
   }
 
   /**
+   * Upsert a purchase invoice (create or update based on ID)
+   */
+  async upsertPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...invoiceData } = invoice;
+    
+    // Use findOneAndUpdate with upsert option for atomic operation
+    const result = await PurchaseInvoiceModel.findOneAndUpdate(
+      { _id: id },
+      { ...invoiceData, updatedAt: new Date().toISOString() },
+      { new: true, upsert: true }
+    );
+    
+    return result.toJSON() as PurchaseInvoice;
+  }
+
+  /**
    * Find purchase invoice by ID
    */
   async findPurchaseInvoiceById(id: string): Promise<PurchaseInvoice | undefined> {
@@ -160,6 +199,23 @@ class GSTRepository {
   async createSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
     const newInvoice = await SalesInvoiceModel.create(invoice);
     return newInvoice.toJSON() as SalesInvoice;
+  }
+
+  /**
+   * Upsert a sales invoice (create or update based on ID)
+   */
+  async upsertSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...invoiceData } = invoice;
+    
+    // Use findOneAndUpdate with upsert option for atomic operation
+    const result = await SalesInvoiceModel.findOneAndUpdate(
+      { _id: id },
+      { ...invoiceData, updatedAt: new Date().toISOString() },
+      { new: true, upsert: true }
+    );
+    
+    return result.toJSON() as SalesInvoice;
   }
 
   /**
