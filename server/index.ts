@@ -5,6 +5,8 @@ import { handleDemo } from "./routes/demo";
 import filingRoutes from "./routes/filings";
 import documentRoutes from "./routes/documents";
 import itcReconciliationRoutes from "./routes/itc-reconciliation";
+import notificationRoutes from "./routes/notifications";
+import jobRoutes from "./routes/jobs";
 import {
   handleSignup,
   handleLogin,
@@ -177,6 +179,12 @@ export function createServer() {
 
   // ITC Reconciliation Routes (Phase 3)
   app.use("/api/itc-reconciliation", itcReconciliationRoutes);
+
+  // Notification Routes (Phase 4)
+  app.use("/api/notifications", notificationRoutes);
+
+  // Background Jobs Routes (Phase 4)
+  app.use("/api/jobs", jobRoutes);
 
   // GST Management Routes (protected)
   // Client management
