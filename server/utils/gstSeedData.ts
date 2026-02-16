@@ -91,7 +91,23 @@ export const seedGSTClients = async () => {
   ];
 
   for (const client of demoClients) {
-    await gstRepository.upsertClient(client);
+    try {
+      // Check if client with same GSTIN already exists
+      const existingClient = await gstRepository.findClientByGSTIN(client.gstin);
+      if (!existingClient) {
+        // Only upsert if client doesn't already exist
+        await gstRepository.upsertClient(client);
+      } else {
+        console.log(`⚠ Skipping GST client ${client.clientName} (GSTIN ${client.gstin} already exists)`);
+      }
+    } catch (error) {
+      // Silently skip if error is duplicate key (client already exists)
+      if ((error as any).code === 11000) {
+        console.log(`⚠ Skipping GST client ${client.clientName} (already exists)`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   console.log(`✓ Seeded ${demoClients.length} GST demo clients`);
@@ -281,7 +297,16 @@ export const seedPurchaseInvoices = async () => {
   ];
 
   for (const purchase of demoPurchases) {
-    await gstRepository.upsertPurchaseInvoice(purchase);
+    try {
+      await gstRepository.upsertPurchaseInvoice(purchase);
+    } catch (error) {
+      // Silently skip if error is duplicate key (invoice already exists)
+      if ((error as any).code === 11000) {
+        console.log(`⚠ Skipping purchase invoice ${purchase.invoiceNumber} (already exists)`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   console.log(`✓ Seeded ${demoPurchases.length} demo purchase invoices`);
@@ -490,7 +515,16 @@ export const seedSalesInvoices = async () => {
   ];
 
   for (const sale of demoSales) {
-    await gstRepository.upsertSalesInvoice(sale);
+    try {
+      await gstRepository.upsertSalesInvoice(sale);
+    } catch (error) {
+      // Silently skip if error is duplicate key (invoice already exists)
+      if ((error as any).code === 11000) {
+        console.log(`⚠ Skipping sales invoice ${sale.invoiceNumber} (already exists)`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   console.log(`✓ Seeded ${demoSales.length} demo sales invoices`);
@@ -623,7 +657,16 @@ export const seedGSTFilings = async () => {
   ];
 
   for (const filing of demoFilings) {
-    await gstRepository.upsertGSTFiling(filing);
+    try {
+      await gstRepository.upsertGSTFiling(filing);
+    } catch (error) {
+      // Silently skip if error is duplicate key (filing already exists)
+      if ((error as any).code === 11000) {
+        console.log(`⚠ Skipping GST filing ${filing.month} for client ${filing.clientId} (already exists)`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   console.log(`✓ Seeded ${demoFilings.length} demo GST return filings`);
