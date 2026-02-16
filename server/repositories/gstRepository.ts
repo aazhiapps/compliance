@@ -43,10 +43,13 @@ class GSTRepository {
       client.status = "active";
     }
     
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...clientData } = client;
+    
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await GSTClientModel.findOneAndUpdate(
-      { _id: client.id },
-      { ...client, updatedAt: new Date().toISOString() },
+      { _id: id },
+      { ...clientData, updatedAt: new Date().toISOString() },
       { new: true, upsert: true }
     );
     
@@ -125,10 +128,13 @@ class GSTRepository {
    * Upsert a purchase invoice (create or update based on ID)
    */
   async upsertPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...invoiceData } = invoice;
+    
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await PurchaseInvoiceModel.findOneAndUpdate(
-      { _id: invoice.id },
-      { ...invoice, updatedAt: new Date().toISOString() },
+      { _id: id },
+      { ...invoiceData, updatedAt: new Date().toISOString() },
       { new: true, upsert: true }
     );
     
@@ -199,10 +205,13 @@ class GSTRepository {
    * Upsert a sales invoice (create or update based on ID)
    */
   async upsertSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
+    // Exclude id from the update data to avoid trying to update immutable _id field
+    const { id, ...invoiceData } = invoice;
+    
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await SalesInvoiceModel.findOneAndUpdate(
-      { _id: invoice.id },
-      { ...invoice, updatedAt: new Date().toISOString() },
+      { _id: id },
+      { ...invoiceData, updatedAt: new Date().toISOString() },
       { new: true, upsert: true }
     );
     
