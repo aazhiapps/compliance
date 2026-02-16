@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import filingRoutes from "./routes/filings";
+import documentRoutes from "./routes/documents";
 import {
   handleSignup,
   handleLogin,
@@ -169,6 +170,9 @@ export function createServer() {
 
   // Filing Workflow Routes (Phase 1)
   app.use("/api/filings", filingRoutes);
+
+  // Document Management Routes (Phase 2)
+  app.use("/api/documents", documentRoutes);
 
   // GST Management Routes (protected)
   // Client management
