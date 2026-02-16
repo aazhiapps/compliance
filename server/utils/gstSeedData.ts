@@ -5,6 +5,7 @@ import {
   GSTReturnFiling,
 } from "@shared/gst";
 import { gstRepository } from "../repositories/gstRepository";
+import mongoose from "mongoose";
 
 /**
  * Seed demo GST data for development/testing
@@ -12,13 +13,28 @@ import { gstRepository } from "../repositories/gstRepository";
  * The server/index.ts file includes a check to prevent running in production
  */
 
+// Generate ObjectIds for seed data to maintain consistency across runs
+const clientIds = {
+  client1: new mongoose.Types.ObjectId().toString(),
+  client2: new mongoose.Types.ObjectId().toString(),
+  client3: new mongoose.Types.ObjectId().toString(),
+};
+
+// Generate ObjectIds for invoices and filings
+const generateObjectIds = (count: number) => 
+  Array.from({ length: count }, () => new mongoose.Types.ObjectId().toString());
+
+const purchaseIds = generateObjectIds(9);
+const salesIds = generateObjectIds(10);
+const filingIds = generateObjectIds(5);
+
 /**
  * Seed demo GST clients
  */
 export const seedGSTClients = async () => {
   const demoClients: GSTClient[] = [
     {
-      id: "gst_client_1",
+      id: clientIds.client1,
       userId: "user_demo_1", // Demo user
       clientName: "Tech Solutions Pvt Ltd",
       gstin: "29AABCT1234C1Z5",
@@ -35,7 +51,7 @@ export const seedGSTClients = async () => {
       updatedAt: "2024-04-01T10:00:00Z",
     },
     {
-      id: "gst_client_2",
+      id: clientIds.client2,
       userId: "user_demo_2", // Rajesh's client
       clientName: "Retail Mart India",
       gstin: "27AACCP1234B1Z0",
@@ -52,7 +68,7 @@ export const seedGSTClients = async () => {
       updatedAt: "2024-04-15T09:30:00Z",
     },
     {
-      id: "gst_client_3",
+      id: clientIds.client3,
       userId: "admin_demo_1", // Admin's client for testing
       clientName: "Manufacturing Industries Ltd",
       gstin: "07AACCM5678D1Z3",
@@ -84,8 +100,8 @@ export const seedPurchaseInvoices = async () => {
   const demoPurchases: PurchaseInvoice[] = [
     // Tech Solutions - April 2024
     {
-      id: "purchase_1",
-      clientId: "gst_client_1",
+      id: purchaseIds[0],
+      clientId: clientIds.client1,
       invoiceNumber: "PI/2024/001",
       vendorName: "Office Supplies Corp",
       vendorGSTIN: "29AABCO1234E1Z6",
@@ -103,8 +119,8 @@ export const seedPurchaseInvoices = async () => {
       createdBy: "user_demo_1",
     },
     {
-      id: "purchase_2",
-      clientId: "gst_client_1",
+      id: purchaseIds[1],
+      clientId: clientIds.client1,
       invoiceNumber: "PI/2024/002",
       vendorName: "Computer Hardware Ltd",
       vendorGSTIN: "29AABCH5678F1Z7",
@@ -123,8 +139,8 @@ export const seedPurchaseInvoices = async () => {
     },
     // Tech Solutions - May 2024
     {
-      id: "purchase_3",
-      clientId: "gst_client_1",
+      id: purchaseIds[2],
+      clientId: clientIds.client1,
       invoiceNumber: "PI/2024/003",
       vendorName: "Software Services Inc",
       vendorGSTIN: "27AABSS1234G1Z8",
@@ -142,8 +158,8 @@ export const seedPurchaseInvoices = async () => {
       createdBy: "user_demo_1",
     },
     {
-      id: "purchase_4",
-      clientId: "gst_client_1",
+      id: purchaseIds[3],
+      clientId: clientIds.client1,
       invoiceNumber: "PI/2024/004",
       vendorName: "Telecom Solutions",
       vendorGSTIN: "29AABTS7890H1Z9",
@@ -162,8 +178,8 @@ export const seedPurchaseInvoices = async () => {
     },
     // Retail Mart - April 2024 (Quarterly filer)
     {
-      id: "purchase_5",
-      clientId: "gst_client_2",
+      id: purchaseIds[4],
+      clientId: clientIds.client2,
       invoiceNumber: "RM/PI/001",
       vendorName: "Wholesale Traders",
       vendorGSTIN: "27AABWT1234I1Z1",
@@ -181,8 +197,8 @@ export const seedPurchaseInvoices = async () => {
       createdBy: "user_demo_2",
     },
     {
-      id: "purchase_6",
-      clientId: "gst_client_2",
+      id: purchaseIds[5],
+      clientId: clientIds.client2,
       invoiceNumber: "RM/PI/002",
       vendorName: "FMCG Distributors",
       vendorGSTIN: "27AABFG5678J1Z2",
@@ -201,8 +217,8 @@ export const seedPurchaseInvoices = async () => {
     },
     // Manufacturing Industries - April 2024
     {
-      id: "purchase_7",
-      clientId: "gst_client_3",
+      id: purchaseIds[6],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/P/2024/001",
       vendorName: "Raw Materials Supplier",
       vendorGSTIN: "07AABRM1234K1Z3",
@@ -220,8 +236,8 @@ export const seedPurchaseInvoices = async () => {
       createdBy: "admin_demo_1",
     },
     {
-      id: "purchase_8",
-      clientId: "gst_client_3",
+      id: purchaseIds[7],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/P/2024/002",
       vendorName: "Machinery Parts Ltd",
       vendorGSTIN: "29AABMP7890L1Z4",
@@ -240,8 +256,8 @@ export const seedPurchaseInvoices = async () => {
     },
     // Manufacturing Industries - May 2024
     {
-      id: "purchase_9",
-      clientId: "gst_client_3",
+      id: purchaseIds[8],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/P/2024/003",
       vendorName: "Packaging Materials Co",
       vendorGSTIN: "07AABPM1234M1Z5",
@@ -274,8 +290,8 @@ export const seedSalesInvoices = async () => {
   const demoSales: SalesInvoice[] = [
     // Tech Solutions - April 2024
     {
-      id: "sales_1",
-      clientId: "gst_client_1",
+      id: salesIds[0],
+      clientId: clientIds.client1,
       invoiceNumber: "SI/2024/001",
       customerName: "Enterprise Solutions Ltd",
       customerGSTIN: "29AACES1234N1Z6",
@@ -293,8 +309,8 @@ export const seedSalesInvoices = async () => {
       createdBy: "user_demo_1",
     },
     {
-      id: "sales_2",
-      clientId: "gst_client_1",
+      id: salesIds[1],
+      clientId: clientIds.client1,
       invoiceNumber: "SI/2024/002",
       customerName: "Digital Services Corp",
       customerGSTIN: "27AACDS5678O1Z7",
@@ -312,8 +328,8 @@ export const seedSalesInvoices = async () => {
       createdBy: "user_demo_1",
     },
     {
-      id: "sales_3",
-      clientId: "gst_client_1",
+      id: salesIds[2],
+      clientId: clientIds.client1,
       invoiceNumber: "SI/2024/003",
       customerName: "Tech Startups Inc",
       customerGSTIN: "29AACTS7890P1Z8",
@@ -332,8 +348,8 @@ export const seedSalesInvoices = async () => {
     },
     // Tech Solutions - May 2024
     {
-      id: "sales_4",
-      clientId: "gst_client_1",
+      id: salesIds[3],
+      clientId: clientIds.client1,
       invoiceNumber: "SI/2024/004",
       customerName: "Cloud Computing Ltd",
       customerGSTIN: "29AACCC1234Q1Z9",
@@ -351,8 +367,8 @@ export const seedSalesInvoices = async () => {
       createdBy: "user_demo_1",
     },
     {
-      id: "sales_5",
-      clientId: "gst_client_1",
+      id: salesIds[4],
+      clientId: clientIds.client1,
       invoiceNumber: "SI/2024/005",
       customerName: "IT Consulting Group",
       customerGSTIN: "27AACIT5678R1Z1",
@@ -371,8 +387,8 @@ export const seedSalesInvoices = async () => {
     },
     // Retail Mart - April 2024
     {
-      id: "sales_6",
-      clientId: "gst_client_2",
+      id: salesIds[5],
+      clientId: clientIds.client2,
       invoiceNumber: "RM/SI/001",
       customerName: "Retail Chain Stores",
       customerGSTIN: "27AACRC1234S1Z2",
@@ -390,8 +406,8 @@ export const seedSalesInvoices = async () => {
       createdBy: "user_demo_2",
     },
     {
-      id: "sales_7",
-      clientId: "gst_client_2",
+      id: salesIds[6],
+      clientId: clientIds.client2,
       invoiceNumber: "RM/SI/002",
       customerName: "Online Marketplace Pvt Ltd",
       customerGSTIN: "27AACOM7890T1Z3",
@@ -410,8 +426,8 @@ export const seedSalesInvoices = async () => {
     },
     // Manufacturing Industries - April 2024
     {
-      id: "sales_8",
-      clientId: "gst_client_3",
+      id: salesIds[7],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/S/2024/001",
       customerName: "Industrial Supplies Co",
       customerGSTIN: "07AACIS1234U1Z4",
@@ -429,8 +445,8 @@ export const seedSalesInvoices = async () => {
       createdBy: "admin_demo_1",
     },
     {
-      id: "sales_9",
-      clientId: "gst_client_3",
+      id: salesIds[8],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/S/2024/002",
       customerName: "Export Trading House",
       customerGSTIN: "29AACET5678V1Z5",
@@ -449,8 +465,8 @@ export const seedSalesInvoices = async () => {
     },
     // Manufacturing Industries - May 2024
     {
-      id: "sales_10",
-      clientId: "gst_client_3",
+      id: salesIds[9],
+      clientId: clientIds.client3,
       invoiceNumber: "MI/S/2024/003",
       customerName: "Automotive Components Ltd",
       customerGSTIN: "07AACAC1234W1Z6",
@@ -483,8 +499,8 @@ export const seedGSTFilings = async () => {
   const demoFilings: GSTReturnFiling[] = [
     // Tech Solutions - April 2024 (Filed)
     {
-      id: "filing_1",
-      clientId: "gst_client_1",
+      id: filingIds[0],
+      clientId: clientIds.client1,
       month: "2024-04",
       financialYear: "2024-25",
       gstr1Filed: true,
@@ -506,8 +522,8 @@ export const seedGSTFilings = async () => {
     },
     // Tech Solutions - May 2024 (Pending)
     {
-      id: "filing_2",
-      clientId: "gst_client_1",
+      id: filingIds[1],
+      clientId: clientIds.client1,
       month: "2024-05",
       financialYear: "2024-25",
       gstr1Filed: false,
@@ -525,8 +541,8 @@ export const seedGSTFilings = async () => {
     },
     // Retail Mart - April 2024 (Late filing - quarterly)
     {
-      id: "filing_3",
-      clientId: "gst_client_2",
+      id: filingIds[2],
+      clientId: clientIds.client2,
       month: "2024-04",
       financialYear: "2024-25",
       gstr1Filed: true,
@@ -548,8 +564,8 @@ export const seedGSTFilings = async () => {
     },
     // Manufacturing Industries - April 2024 (Filed)
     {
-      id: "filing_4",
-      clientId: "gst_client_3",
+      id: filingIds[3],
+      clientId: clientIds.client3,
       month: "2024-04",
       financialYear: "2024-25",
       gstr1Filed: true,
@@ -571,8 +587,8 @@ export const seedGSTFilings = async () => {
     },
     // Manufacturing Industries - May 2024 (Pending)
     {
-      id: "filing_5",
-      clientId: "gst_client_3",
+      id: filingIds[4],
+      clientId: clientIds.client3,
       month: "2024-05",
       financialYear: "2024-25",
       gstr1Filed: false,
