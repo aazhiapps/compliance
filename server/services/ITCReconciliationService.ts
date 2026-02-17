@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import ITCReconciliationRepository from "../repositories/ITCReconciliationRepository";
 import { PurchaseInvoiceModel } from "../models/PurchaseInvoice";
 import { logger } from "../utils/logger";
+import { webhookService } from "./WebhookService";
 
 /**
  * ITCReconciliationService handles ITC reconciliation logic
@@ -185,6 +186,68 @@ export class ITCReconciliationService {
         availableITC: portalData.availableITCFromGST,
         discrepancy: record.claimedITC - portalData.availableITCFromGST,
       });
+
+      // Publish webhook event for ITC reconciliation completion
+      try {
+        const discrepancy = record.claimedITC - portalData.availableITCFromGST;
+        const discrepancyPercentage =
+          portalData.availableITCFromGST > 0
+            ? ((discrepancy / portalData.availableITCFromGST) * 100).toFixed(2)
+            : "N/A";
+
+        const updated_id = typeof updated._id === "string" ? new ObjectId(updated._id) : updated._id;
+
+        await webhookService.publishWebhookEvent({
+          clientId,
+          eventType: "itc.reconciliation_completed",
+          entityType: "itc_reconciliation",
+          entityId: updated_id,
+          data: {
+            reconciliationId: updated_id,
+            clientId,
+            month,
+            financialYear: record.financialYear,
+            claimedITC: record.claimedITC,
+            availableITC: portalData.availableITCFromGST,
+            discrepancy,
+            discrepancyPercentage,
+            pendingITC: portalData.pendingITC,
+            rejectedITC: portalData.rejectedITC,
+            needsReview,
+            completedAt: new Date().toISOString(),
+          },
+          source: "itc_service",
+        });
+
+        // If discrepancy detected, publish additional event
+        if (needsReview && Math.abs(discrepancy) > 0.01) {
+          await webhookService.publishWebhookEvent({
+            clientId,
+            eventType: "itc.discrepancy_detected",
+            entityType: "itc_reconciliation",
+            entityId: updated_id,
+            data: {
+              reconciliationId: updated._id,
+              clientId,
+              month,
+              financialYear: record.financialYear,
+              claimedITC: record.claimedITC,
+              availableITC: portalData.availableITCFromGST,
+              discrepancy,
+              discrepancyPercentage,
+              flaggedAt: new Date().toISOString(),
+            },
+            source: "itc_service",
+          });
+        }
+      } catch (webhookError) {
+        logger.warn("Failed to publish webhook for ITC reconciliation", {
+          clientId: clientId.toString(),
+          month,
+          message: (webhookError as Error).message,
+        });
+        // Don't throw - webhook failure shouldn't block the reconciliation
+      }
 
       return {
         clientId,

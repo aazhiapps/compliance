@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import FilingRepository from "../repositories/FilingRepository";
 import { logger } from "../utils/logger";
+import { webhookService } from "./WebhookService";
 
 /**
  * FilingWorkflowService manages GST filing state machine
@@ -103,6 +104,36 @@ export class FilingWorkflowService {
         step: stepType,
         performedBy,
       });
+
+      // Publish webhook event for filing status change
+      try {
+        const clientId = typeof filing.clientId === "string" ? new ObjectId(filing.clientId) : filing.clientId;
+        const filingId_obj = typeof filing._id === "string" ? new ObjectId(filing._id) : filing._id;
+
+        await webhookService.publishWebhookEvent({
+          clientId,
+          eventType: "filing.status_changed",
+          entityType: "filing",
+          entityId: filingId_obj,
+          data: {
+            filingId: filingId_obj,
+            clientId,
+            previousStatus: fromStatus,
+            newStatus: toStatus,
+            step: stepType,
+            financialYear: filing.financialYear,
+            month: filing.month,
+            updatedAt: new Date().toISOString(),
+          },
+          source: "filing_service",
+        });
+      } catch (webhookError) {
+        logger.warn("Failed to publish webhook for filing transition", {
+          filingId,
+          message: (webhookError as Error).message,
+        });
+        // Don't throw - webhook failure shouldn't block the filing transition
+      }
 
       return { filing, step };
     } catch (error) {

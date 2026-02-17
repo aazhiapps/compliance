@@ -7,6 +7,7 @@ import documentRoutes from "./routes/documents";
 import itcReconciliationRoutes from "./routes/itc-reconciliation";
 import notificationRoutes from "./routes/notifications";
 import jobRoutes from "./routes/jobs";
+import webhookRoutes from "./routes/webhooks";
 import {
   handleSignup,
   handleLogin,
@@ -185,6 +186,9 @@ export function createServer() {
 
   // Background Jobs Routes (Phase 4)
   app.use("/api/jobs", jobRoutes);
+
+  // Webhook Routes (Phase 5)
+  app.use("/api/webhooks", webhookRoutes);
 
   // GST Management Routes (protected)
   // Client management

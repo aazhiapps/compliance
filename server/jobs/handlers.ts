@@ -441,37 +441,91 @@ export async function handleReportGeneration(
 }
 
 /**
- * Webhook Retry Handler
- * Retries failed webhook deliveries
+ * Webhook Delivery Job Handler
+ * Processes webhook events and delivers them to subscribed endpoints
  */
-export async function handleWebhookRetry(job: Job): Promise<void> {
+export async function handleWebhookDelivery(job: Job): Promise<void> {
+  const { eventId } = job.data;
+
   const jobLog = await JobLogModel.create({
-    jobName: "Webhook Retry",
-    jobType: "webhook_retry",
+    jobName: "Webhook Delivery",
+    jobType: "webhook_delivery",
     status: "running",
-    triggeredBy: "schedule",
+    triggeredBy: "event",
     progress: 0,
+    metadata: { eventId },
   });
 
   try {
     const startTime = Date.now();
+    const { webhookService } = await import("../services/WebhookService");
 
-    // Find failed webhooks and retry
-    // This would integrate with a webhook system
-    logger.info("Webhook retry job executed");
+    await webhookService.processWebhookEventDelivery(new ObjectId(eventId));
 
     jobLog.status = "completed";
-    jobLog.processed = 0;
-    jobLog.successful = 0;
+    jobLog.successful = 1;
+    jobLog.processed = 1;
     jobLog.duration = Date.now() - startTime;
-    await jobLog.save();
-  } catch (error) {
-    jobLog.status = "failed";
-    jobLog.error = String(error);
-    jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
+    jobLog.progress = 100;
     await jobLog.save();
 
-    logger.error("Webhook retry job failed:", { error });
-    throw error;
+    logger.info("Webhook delivery completed", { eventId, duration: jobLog.duration });
+  } catch (error) {
+    logger.error("Webhook delivery failed", {
+      eventId,
+      error: (error as Error).message,
+    });
+
+    jobLog.status = "failed";
+    jobLog.failed = 1;
+    jobLog.duration = Date.now() - jobLog.createdAt.getTime();
+    jobLog.errorMessage = (error as Error).message;
+    jobLog.errorStack = (error as Error).stack;
+    await jobLog.save();
+  }
+}
+
+/**
+ * Webhook Retry Handler
+ * Retries failed webhook deliveries with exponential backoff
+ */
+export async function handleWebhookRetry(job: Job): Promise<void> {
+  const { deliveryId } = job.data;
+
+  const jobLog = await JobLogModel.create({
+    jobName: "Webhook Retry",
+    jobType: "webhook_retry",
+    status: "running",
+    triggeredBy: "retry",
+    progress: 0,
+    metadata: { deliveryId },
+  });
+
+  try {
+    const startTime = Date.now();
+    const { webhookService } = await import("../services/WebhookService");
+
+    await webhookService.retryWebhookDelivery(new ObjectId(deliveryId));
+
+    jobLog.status = "completed";
+    jobLog.successful = 1;
+    jobLog.processed = 1;
+    jobLog.duration = Date.now() - startTime;
+    jobLog.progress = 100;
+    await jobLog.save();
+
+    logger.info("Webhook retry completed", { deliveryId, duration: jobLog.duration });
+  } catch (error) {
+    logger.error("Webhook retry failed", {
+      deliveryId,
+      error: (error as Error).message,
+    });
+
+    jobLog.status = "failed";
+    jobLog.failed = 1;
+    jobLog.duration = Date.now() - jobLog.createdAt.getTime();
+    jobLog.errorMessage = (error as Error).message;
+    jobLog.errorStack = (error as Error).stack;
+    await jobLog.save();
   }
 }
