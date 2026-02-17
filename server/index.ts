@@ -2,6 +2,12 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import filingRoutes from "./routes/filings";
+import documentRoutes from "./routes/documents";
+import itcReconciliationRoutes from "./routes/itc-reconciliation";
+import notificationRoutes from "./routes/notifications";
+import jobRoutes from "./routes/jobs";
+import webhookRoutes from "./routes/webhooks";
 import {
   handleSignup,
   handleLogin,
@@ -165,6 +171,24 @@ export function createServer() {
   app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
   app.get("/api/staff/members", authenticateToken, requireAdmin, getAllStaff);
   app.post("/api/staff/assign/:applicationId", authenticateToken, requireAdmin, assignApplicationToStaff);
+
+  // Filing Workflow Routes (Phase 1)
+  app.use("/api/filings", filingRoutes);
+
+  // Document Management Routes (Phase 2)
+  app.use("/api/documents", documentRoutes);
+
+  // ITC Reconciliation Routes (Phase 3)
+  app.use("/api/itc-reconciliation", itcReconciliationRoutes);
+
+  // Notification Routes (Phase 4)
+  app.use("/api/notifications", notificationRoutes);
+
+  // Background Jobs Routes (Phase 4)
+  app.use("/api/jobs", jobRoutes);
+
+  // Webhook Routes (Phase 5)
+  app.use("/api/webhooks", webhookRoutes);
 
   // GST Management Routes (protected)
   // Client management
