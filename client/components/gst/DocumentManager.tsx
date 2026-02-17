@@ -16,8 +16,6 @@ import {
   Trash2,
   Tag,
   Calendar,
-  User,
-  Version2,
   Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";

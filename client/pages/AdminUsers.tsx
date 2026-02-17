@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, Edit, Users, TrendingUp, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, Edit, Users, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { User as ApiUser } from "@shared/auth";
 
 // Extended User interface for display purposes
@@ -26,7 +24,7 @@ export default function AdminUsers() {
       id: "user_1",
       name: "Demo User",
       email: "demo@example.com",
-      businessType: "Individual",
+      businessType: "individual",
       joinedDate: "2024-02-01",
       status: "active",
       applications: 2,
@@ -36,7 +34,7 @@ export default function AdminUsers() {
       id: "user_2",
       name: "Rajesh Kumar",
       email: "rajesh@example.com",
-      businessType: "Startup",
+      businessType: "startup",
       joinedDate: "2024-02-02",
       status: "active",
       applications: 1,
@@ -46,7 +44,7 @@ export default function AdminUsers() {
       id: "user_3",
       name: "Priya Singh",
       email: "priya@example.com",
-      businessType: "Company",
+      businessType: "company",
       joinedDate: "2024-02-03",
       status: "active",
       applications: 0,
@@ -56,7 +54,7 @@ export default function AdminUsers() {
       id: "user_4",
       name: "Amit Patel",
       email: "amit@example.com",
-      businessType: "Individual",
+      businessType: "individual",
       joinedDate: "2024-02-04",
       status: "inactive",
       applications: 0,
@@ -66,7 +64,7 @@ export default function AdminUsers() {
       id: "user_5",
       name: "Neha Sharma",
       email: "neha@example.com",
-      businessType: "Company",
+      businessType: "company",
       joinedDate: "2024-02-05",
       status: "active",
       applications: 3,

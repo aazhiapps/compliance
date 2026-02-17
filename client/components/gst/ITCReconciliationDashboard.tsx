@@ -20,16 +20,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import {
   AlertCircle,
   TrendingDown,
-  TrendingUp,
   CheckCircle2,
   RefreshCw,
   FileText,
-  Download,
   Loader2,
   Calendar,
 } from "lucide-react";
@@ -101,7 +98,7 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
   const [selectedRecord, setSelectedRecord] = useState<ReconciliationRecord | null>(null);
   const [analysis, setAnalysis] = useState<DiscrepancyAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const [syncing] = useState(false);
   const [filterDiscrepancies, setFilterDiscrepancies] = useState(false);
   const [filterNeedsReview, setFilterNeedsReview] = useState(false);
   const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
@@ -226,24 +223,6 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
     available: record.availableITCFromGST || 0,
     discrepancy: record.discrepancy || 0,
   }));
-
-  // Get discrepancy reason breakdown for pie chart
-  const discrepancyBreakdown = report?.discrepancyByReason || {};
-  const reasonData = Object.entries(discrepancyBreakdown)
-    .filter(([, count]) => count > 0)
-    .map(([reason, count]) => ({
-      name: reason.replace(/_/g, " ").toUpperCase(),
-      value: count,
-    }));
-
-  const reasonColors: Record<string, string> = {
-    "EXCESS CLAIMED": "#ef4444",
-    "UNCLAIMED": "#f97316",
-    "GST REJECTED": "#dc2626",
-    "PENDING ACCEPTANCE": "#eab308",
-    "RECONCILED": "#22c55e",
-    "AWAITING GSTR2B": "#0ea5e9",
-  };
 
   return (
     <div className="w-full space-y-6">

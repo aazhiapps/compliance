@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useGSTStore } from "@/store/gstStore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ChevronRight, Lock, Unlock, FileText } from "lucide-react";
+import { Loader2, ChevronRight, Lock, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 /**
@@ -337,7 +337,9 @@ const FilingCard: React.FC<{
             <p className="text-xs text-gray-500">{filing.month}</p>
           </div>
           {filing.isLocked && (
-            <Lock className="w-4 h-4 text-amber-600" title="Locked" />
+            <div title="Locked">
+              <Lock className="w-4 h-4 text-amber-600" />
+            </div>
           )}
         </div>
 

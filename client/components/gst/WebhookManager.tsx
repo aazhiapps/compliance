@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { ObjectId } from "mongodb";
 import {
   Dialog,
   DialogContent,
@@ -35,8 +34,6 @@ import {
 import { Badge } from "../ui/badge";
 import {
   AlertCircle,
-  Check,
-  Copy,
   Eye,
   RotateCcw,
   Trash2,
@@ -47,7 +44,7 @@ import {
 import { toast } from "sonner";
 
 interface WebhookEndpoint {
-  id: ObjectId;
+  id: string;
   url: string;
   description?: string;
   events: string[];
@@ -62,8 +59,8 @@ interface WebhookEndpoint {
 }
 
 interface WebhookDelivery {
-  id: ObjectId;
-  eventId: ObjectId;
+  id: string;
+  eventId: string;
   attemptNumber: number;
   status: "success" | "failed" | "pending" | "timeout" | "invalid_url";
   httpStatusCode?: number;
@@ -76,11 +73,11 @@ interface WebhookDelivery {
 }
 
 interface WebhookEvent {
-  id: ObjectId;
+  id: string;
   eventType: string;
   status: "pending" | "processing" | "delivered" | "failed";
   entityType: string;
-  entityId: ObjectId;
+  entityId: string;
   createdAt: string;
 }
 
@@ -161,7 +158,7 @@ export function WebhookManager() {
     }
   };
 
-  const fetchEndpointStats = async (endpointId: ObjectId) => {
+  const fetchEndpointStats = async (endpointId: string) => {
     try {
       const response = await fetch(`/api/webhooks/endpoints/${endpointId}/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
@@ -173,7 +170,7 @@ export function WebhookManager() {
     }
   };
 
-  const fetchDeliveries = async (endpointId: ObjectId) => {
+  const fetchDeliveries = async (endpointId: string) => {
     try {
       const response = await fetch(`/api/webhooks/endpoints/${endpointId}/deliveries`);
       if (!response.ok) throw new Error("Failed to fetch deliveries");
@@ -224,7 +221,7 @@ export function WebhookManager() {
     });
   };
 
-  const handleDeleteEndpoint = async (endpointId: ObjectId) => {
+  const handleDeleteEndpoint = async (endpointId: string) => {
     if (!confirm("Are you sure you want to delete this webhook endpoint?")) return;
 
     try {
@@ -242,9 +239,9 @@ export function WebhookManager() {
     }
   };
 
-  const handleTestWebhook = async (endpointId: ObjectId) => {
+  const handleTestWebhook = async (endpointId: string) => {
     try {
-      setTestingEndpoint(endpointId.toString());
+      setTestingEndpoint(endpointId);
       const response = await fetch(`/api/webhooks/endpoints/${endpointId}/test`, {
         method: "POST",
       });

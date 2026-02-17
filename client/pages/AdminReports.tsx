@@ -576,7 +576,7 @@ export default function AdminReports() {
                                 size="sm"
                                 onClick={() => handleExportCSV(report.id)}
                                 disabled={
-                                  isExportDisabled(report) ||
+                                  isExportDisabled() ||
                                   exportingCSV[report.id]
                                 }
                                 className="gap-1"
@@ -600,7 +600,7 @@ export default function AdminReports() {
                                 size="sm"
                                 onClick={() => handleExportPDF(report.id)}
                                 disabled={
-                                  isExportDisabled(report) ||
+                                  isExportDisabled() ||
                                   exportingPDF[report.id]
                                 }
                                 className="gap-1"

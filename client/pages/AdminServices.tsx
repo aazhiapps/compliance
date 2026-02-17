@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Search, Filter, Plus, Edit, Trash2, MoreVertical, Package, TrendingUp, Loader2, X } from "lucide-react";
+import { Search, Filter, Plus, Edit, Trash2, Package, TrendingUp, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 import { Service } from "@shared/service";

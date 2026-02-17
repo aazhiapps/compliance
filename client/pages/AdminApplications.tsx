@@ -136,6 +136,8 @@ export default function AdminApplications() {
     setServices(uniqueServices);
   };
 
+  // Kept for future implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleApprove = (appId: string) => {
     setApplications((prev) =>
       prev.map((app) =>
@@ -144,6 +146,8 @@ export default function AdminApplications() {
     );
   };
 
+  // Kept for future implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleReject = (appId: string) => {
     setApplications((prev) =>
       prev.map((app) =>
@@ -152,6 +156,8 @@ export default function AdminApplications() {
     );
   };
 
+  // Kept for future implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAssignStaff = (appId: string, staff: string) => {
     setApplications((prev) =>
       prev.map((app) =>

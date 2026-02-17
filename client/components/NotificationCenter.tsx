@@ -16,7 +16,6 @@ import {
   Clock,
   Trash2,
   Eye,
-  Zap,
   Mail,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -62,8 +61,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const [loading] = useState(false);
+  const [showDialog] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [filterType, setFilterType] = useState<"all" | "unread" | "read">("unread");
   const { toast } = useToast();
