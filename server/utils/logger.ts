@@ -16,7 +16,15 @@ type LogLevel = "debug" | "info" | "warn" | "error";
 
 export const createLogger = (serviceName: string) => {
   const maskSensitive = (data: any): any => {
-    const sensitive = ["password", "token", "secret", "gstin", "pan", "email", "phone"];
+    const sensitive = [
+      "password",
+      "token",
+      "secret",
+      "gstin",
+      "pan",
+      "email",
+      "phone",
+    ];
     if (typeof data !== "object" || data === null) return data;
 
     const masked = { ...data };
@@ -32,7 +40,7 @@ export const createLogger = (serviceName: string) => {
     level: LogLevel,
     message: string,
     context?: LogContext,
-    error?: Error
+    error?: Error,
   ): string => {
     const timestamp = new Date().toISOString();
     const maskedContext = context ? maskSensitive(context) : {};

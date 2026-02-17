@@ -26,10 +26,16 @@ export default function Footer() {
             <Link to="/about" className="hover:text-primary transition-colors">
               About
             </Link>
-            <Link to="/contact" className="hover:text-primary transition-colors">
+            <Link
+              to="/contact"
+              className="hover:text-primary transition-colors"
+            >
               Contact
             </Link>
-            <Link to="/privacy" className="hover:text-primary transition-colors">
+            <Link
+              to="/privacy"
+              className="hover:text-primary transition-colors"
+            >
               Privacy
             </Link>
             <Link to="/terms" className="hover:text-primary transition-colors">
@@ -39,16 +45,28 @@ export default function Footer() {
 
           {/* Right: Social Icons */}
           <div className="flex gap-3">
-            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-primary transition-colors"
+            >
               <Facebook className="w-4 h-4" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-primary transition-colors"
+            >
               <Twitter className="w-4 h-4" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-primary transition-colors"
+            >
               <Linkedin className="w-4 h-4" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-primary transition-colors"
+            >
               <Instagram className="w-4 h-4" />
             </a>
           </div>

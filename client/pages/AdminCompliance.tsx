@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Plus, AlertCircle, CheckCircle2, Clock, Eye, Edit, MoreVertical, ChevronDown, ChevronUp, Users } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Plus,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Eye,
+  Edit,
+  MoreVertical,
+  ChevronDown,
+  ChevronUp,
+  Users,
+} from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { CustomerCompliance } from "@shared/api";
 
@@ -26,7 +39,8 @@ export default function AdminCompliance() {
     {
       id: "comp_1",
       name: "GDPR Compliance",
-      description: "General Data Protection Regulation - Personal data protection",
+      description:
+        "General Data Protection Regulation - Personal data protection",
       status: "compliant",
       deadline: "2024-12-31",
       priority: "high",
@@ -224,7 +238,8 @@ export default function AdminCompliance() {
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || item.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -258,10 +273,18 @@ export default function AdminCompliance() {
     }
   };
 
-  const compliantCount = complianceItems.filter(i => i.status === "compliant").length;
-  const pendingCount = complianceItems.filter(i => i.status === "pending").length;
-  const atRiskCount = complianceItems.filter(i => i.status === "at_risk").length;
-  const nonCompliantCount = complianceItems.filter(i => i.status === "non_compliant").length;
+  const compliantCount = complianceItems.filter(
+    (i) => i.status === "compliant",
+  ).length;
+  const pendingCount = complianceItems.filter(
+    (i) => i.status === "pending",
+  ).length;
+  const atRiskCount = complianceItems.filter(
+    (i) => i.status === "at_risk",
+  ).length;
+  const nonCompliantCount = complianceItems.filter(
+    (i) => i.status === "non_compliant",
+  ).length;
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItems((prev) => {
@@ -281,8 +304,12 @@ export default function AdminCompliance() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Compliance Management</h1>
-            <p className="text-muted-foreground mt-1">Track and manage compliance requirements</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Compliance Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Track and manage compliance requirements
+            </p>
           </div>
           <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
             <Plus className="w-4 h-4" />
@@ -296,8 +323,12 @@ export default function AdminCompliance() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-medium">Compliant</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{compliantCount}</p>
+                  <p className="text-sm text-green-600 font-medium">
+                    Compliant
+                  </p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">
+                    {compliantCount}
+                  </p>
                 </div>
                 <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -309,7 +340,9 @@ export default function AdminCompliance() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-yellow-600 font-medium">Pending</p>
-                  <p className="text-3xl font-bold text-yellow-900 mt-1">{pendingCount}</p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">
+                    {pendingCount}
+                  </p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-50" />
               </div>
@@ -321,7 +354,9 @@ export default function AdminCompliance() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-orange-600 font-medium">At Risk</p>
-                  <p className="text-3xl font-bold text-orange-900 mt-1">{atRiskCount}</p>
+                  <p className="text-3xl font-bold text-orange-900 mt-1">
+                    {atRiskCount}
+                  </p>
                 </div>
                 <AlertCircle className="w-10 h-10 text-orange-400 opacity-50" />
               </div>
@@ -332,8 +367,12 @@ export default function AdminCompliance() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-red-600 font-medium">Non-Compliant</p>
-                  <p className="text-3xl font-bold text-red-900 mt-1">{nonCompliantCount}</p>
+                  <p className="text-sm text-red-600 font-medium">
+                    Non-Compliant
+                  </p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">
+                    {nonCompliantCount}
+                  </p>
                 </div>
                 <AlertCircle className="w-10 h-10 text-red-400 opacity-50" />
               </div>
@@ -379,45 +418,68 @@ export default function AdminCompliance() {
         {/* Compliance Items List */}
         <div className="space-y-4">
           {filteredCompliance.map((item) => (
-            <Card key={item.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            <Card
+              key={item.id}
+              className="border-0 shadow-sm hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="mt-1">
-                      {getStatusIcon(item.status)}
-                    </div>
+                    <div className="mt-1">{getStatusIcon(item.status)}</div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg text-foreground">{item.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(item.status)}`}>
+                        <h3 className="font-semibold text-lg text-foreground">
+                          {item.name}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(item.status)}`}
+                        >
                           {item.status.replace(/_/g, " ")}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {item.description}
+                      </p>
 
                       {/* Details */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
-                          <p className="text-xs text-muted-foreground">Category</p>
+                          <p className="text-xs text-muted-foreground">
+                            Category
+                          </p>
                           <p className="text-sm font-medium">{item.category}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Deadline</p>
-                          <p className="text-sm font-medium">{new Date(item.deadline).toLocaleDateString()}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Deadline
+                          </p>
+                          <p className="text-sm font-medium">
+                            {new Date(item.deadline).toLocaleDateString()}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Priority</p>
-                          <p className={`text-sm font-medium capitalize ${
-                            item.priority === 'high' ? 'text-red-600' :
-                            item.priority === 'medium' ? 'text-yellow-600' :
-                            'text-green-600'
-                          }`}>
+                          <p className="text-xs text-muted-foreground">
+                            Priority
+                          </p>
+                          <p
+                            className={`text-sm font-medium capitalize ${
+                              item.priority === "high"
+                                ? "text-red-600"
+                                : item.priority === "medium"
+                                  ? "text-yellow-600"
+                                  : "text-green-600"
+                            }`}
+                          >
                             {item.priority}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Apps Affected</p>
-                          <p className="text-sm font-medium">{item.applicationsAffected}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Apps Affected
+                          </p>
+                          <p className="text-sm font-medium">
+                            {item.applicationsAffected}
+                          </p>
                         </div>
                       </div>
 
@@ -431,7 +493,8 @@ export default function AdminCompliance() {
                             className="flex items-center gap-2"
                           >
                             <Users className="w-4 h-4" />
-                            {expandedItems.has(item.id) ? "Hide" : "Show"} Customers ({item.customers.length})
+                            {expandedItems.has(item.id) ? "Hide" : "Show"}{" "}
+                            Customers ({item.customers.length})
                             {expandedItems.has(item.id) ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
@@ -442,42 +505,74 @@ export default function AdminCompliance() {
                       )}
 
                       {/* Expanded Customer List */}
-                      {expandedItems.has(item.id) && item.customers && item.customers.length > 0 && (
-                        <div className="mt-4 border-t pt-4">
-                          <h4 className="text-sm font-semibold mb-3 text-foreground">Customer Compliance Status</h4>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b">
-                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Customer</th>
-                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Email</th>
-                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
-                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Process</th>
-                                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Last Updated</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {item.customers.map((customer) => (
-                                  <tr key={customer.customerId} className="border-b last:border-b-0 hover:bg-muted/50">
-                                    <td className="py-3 px-3 font-medium">{customer.customerName}</td>
-                                    <td className="py-3 px-3 text-muted-foreground">{customer.customerEmail}</td>
-                                    <td className="py-3 px-3">
-                                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(customer.complianceStatus)}`}>
-                                        {getStatusIcon(customer.complianceStatus)}
-                                        {customer.complianceStatus.replace(/_/g, " ")}
-                                      </span>
-                                    </td>
-                                    <td className="py-3 px-3">{customer.process}</td>
-                                    <td className="py-3 px-3 text-muted-foreground">
-                                      {new Date(customer.lastUpdated).toLocaleDateString()}
-                                    </td>
+                      {expandedItems.has(item.id) &&
+                        item.customers &&
+                        item.customers.length > 0 && (
+                          <div className="mt-4 border-t pt-4">
+                            <h4 className="text-sm font-semibold mb-3 text-foreground">
+                              Customer Compliance Status
+                            </h4>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b">
+                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                      Customer
+                                    </th>
+                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                      Email
+                                    </th>
+                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                      Status
+                                    </th>
+                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                      Process
+                                    </th>
+                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                      Last Updated
+                                    </th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody>
+                                  {item.customers.map((customer) => (
+                                    <tr
+                                      key={customer.customerId}
+                                      className="border-b last:border-b-0 hover:bg-muted/50"
+                                    >
+                                      <td className="py-3 px-3 font-medium">
+                                        {customer.customerName}
+                                      </td>
+                                      <td className="py-3 px-3 text-muted-foreground">
+                                        {customer.customerEmail}
+                                      </td>
+                                      <td className="py-3 px-3">
+                                        <span
+                                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(customer.complianceStatus)}`}
+                                        >
+                                          {getStatusIcon(
+                                            customer.complianceStatus,
+                                          )}
+                                          {customer.complianceStatus.replace(
+                                            /_/g,
+                                            " ",
+                                          )}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-3">
+                                        {customer.process}
+                                      </td>
+                                      <td className="py-3 px-3 text-muted-foreground">
+                                        {new Date(
+                                          customer.lastUpdated,
+                                        ).toLocaleDateString()}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   </div>
 

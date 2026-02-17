@@ -36,9 +36,20 @@ export interface DocumentRecord extends MongooseDocument {
   documentId: string; // UUID
   clientId?: ObjectId; // For GST documents
   userId?: ObjectId; // For application documents
-  linkedEntityType: "invoice_purchase" | "invoice_sales" | "filing" | "application" | "report";
+  linkedEntityType:
+    | "invoice_purchase"
+    | "invoice_sales"
+    | "filing"
+    | "application"
+    | "report";
   linkedEntityId: ObjectId;
-  documentType: "invoice" | "challan" | "certificate" | "gstr" | "report" | "other";
+  documentType:
+    | "invoice"
+    | "challan"
+    | "certificate"
+    | "gstr"
+    | "report"
+    | "other";
   fileName: string;
   fileUrl: string; // S3 path
   mimeType: string;
@@ -79,7 +90,13 @@ const DocumentSchema = new Schema<DocumentRecord>(
     },
     linkedEntityType: {
       type: String,
-      enum: ["invoice_purchase", "invoice_sales", "filing", "application", "report"],
+      enum: [
+        "invoice_purchase",
+        "invoice_sales",
+        "filing",
+        "application",
+        "report",
+      ],
       required: true,
       index: true,
     },
@@ -143,7 +160,7 @@ const DocumentSchema = new Schema<DocumentRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -165,6 +182,7 @@ DocumentSchema.set("toJSON", {
 });
 
 export const DocumentModel =
-  mongoose.models.Document || mongoose.model<DocumentRecord>("Document", DocumentSchema);
+  mongoose.models.Document ||
+  mongoose.model<DocumentRecord>("Document", DocumentSchema);
 
 export default DocumentModel;

@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { StaffAssignment } from "@shared/gst";
 
-export interface IStaffAssignmentDocument extends Omit<StaffAssignment, "id">, MongooseDocument {}
+export interface IStaffAssignmentDocument
+  extends Omit<StaffAssignment, "id">, MongooseDocument {}
 
 const StaffAssignmentSchema = new Schema<IStaffAssignmentDocument>(
   {
@@ -45,7 +46,7 @@ const StaffAssignmentSchema = new Schema<IStaffAssignmentDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -53,5 +54,5 @@ StaffAssignmentSchema.index({ staffUserId: 1 });
 
 export const StaffAssignmentModel = mongoose.model<IStaffAssignmentDocument>(
   "StaffAssignment",
-  StaffAssignmentSchema
+  StaffAssignmentSchema,
 );

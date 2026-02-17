@@ -21,7 +21,8 @@ export function validateGSTIN(gstin: string): GSTValidationResult {
   }
 
   // Check format: 2 digits + 10 alphanumeric (PAN) + 1 digit + Z + 1 alphanumeric
-  const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  const gstinPattern =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
   if (!gstinPattern.test(gstin)) {
     errors.push("GSTIN format is invalid. Expected format: 22AAAAA0000A1Z5");
   }
@@ -29,19 +30,54 @@ export function validateGSTIN(gstin: string): GSTValidationResult {
   // Extract and validate state code (01-37, 97, 99)
   const stateCode = gstin.substring(0, 2);
   const validStateCodes = [
-    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-    "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-    "31", "32", "33", "34", "35", "36", "37", "97", "99"
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "97",
+    "99",
   ];
-  
+
   if (!validStateCodes.includes(stateCode)) {
     errors.push(`Invalid state code: ${stateCode}`);
   }
 
   // Extract PAN from GSTIN (characters 3-12)
   const pan = gstin.substring(2, 12);
-  
+
   // Validate PAN format within GSTIN
   const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
   if (!panPattern.test(pan)) {
@@ -49,22 +85,24 @@ export function validateGSTIN(gstin: string): GSTValidationResult {
   }
 
   // Check 14th character (index 13) is Z
-  if (gstin.charAt(13) !== 'Z') {
+  if (gstin.charAt(13) !== "Z") {
     warnings.push("14th character should be 'Z' for regular taxpayers");
   }
 
   // Validate checksum (15th character, index 14)
   const checksumChar = gstin.charAt(14);
   const calculatedChecksum = calculateGSTINChecksum(gstin.substring(0, 14));
-  
+
   if (checksumChar !== calculatedChecksum) {
-    errors.push(`Invalid checksum. Expected: ${calculatedChecksum}, Got: ${checksumChar}`);
+    errors.push(
+      `Invalid checksum. Expected: ${calculatedChecksum}, Got: ${checksumChar}`,
+    );
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -79,7 +117,7 @@ function calculateGSTINChecksum(gstinWithoutChecksum: string): string {
   for (let i = gstinWithoutChecksum.length - 1; i >= 0; i--) {
     const codePoint = chars.indexOf(gstinWithoutChecksum.charAt(i));
     let addend = factor * codePoint;
-    
+
     factor = factor === 2 ? 1 : 2;
     addend = Math.floor(addend / 36) + (addend % 36);
     sum += addend;
@@ -87,7 +125,7 @@ function calculateGSTINChecksum(gstinWithoutChecksum: string): string {
 
   const remainder = sum % 36;
   const checkCodePoint = (36 - remainder) % 36;
-  
+
   return chars.charAt(checkCodePoint);
 }
 
@@ -113,16 +151,16 @@ export function validatePAN(pan: string): GSTValidationResult {
   // Check 4th character (type of holder)
   const fourthChar = pan.charAt(3);
   const validTypes: Record<string, string> = {
-    'P': 'Individual/Person',
-    'C': 'Company',
-    'H': 'HUF (Hindu Undivided Family)',
-    'F': 'Firm/Partnership',
-    'A': 'Association of Persons',
-    'T': 'Trust',
-    'B': 'Body of Individuals',
-    'L': 'Local Authority',
-    'J': 'Artificial Juridical Person',
-    'G': 'Government'
+    P: "Individual/Person",
+    C: "Company",
+    H: "HUF (Hindu Undivided Family)",
+    F: "Firm/Partnership",
+    A: "Association of Persons",
+    T: "Trust",
+    B: "Body of Individuals",
+    L: "Local Authority",
+    J: "Artificial Juridical Person",
+    G: "Government",
   };
 
   if (!validTypes[fourthChar]) {
@@ -132,7 +170,7 @@ export function validatePAN(pan: string): GSTValidationResult {
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -159,12 +197,47 @@ export function validateARN(arn: string): GSTValidationResult {
   // Validate state code
   const stateCode = arn.substring(2, 4);
   const validStateCodes = [
-    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-    "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-    "31", "32", "33", "34", "35", "36", "37", "97", "99"
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "97",
+    "99",
   ];
-  
+
   if (!validStateCodes.includes(stateCode)) {
     warnings.push(`Unusual state code in ARN: ${stateCode}`);
   }
@@ -172,7 +245,7 @@ export function validateARN(arn: string): GSTValidationResult {
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -180,7 +253,7 @@ export function validateARN(arn: string): GSTValidationResult {
  * Calculate due dates for GST returns based on filing frequency
  * Rules:
  * - GSTR-1 (Monthly): 11th of next month
- * - GSTR-3B (Monthly): 20th of next month  
+ * - GSTR-3B (Monthly): 20th of next month
  * - GSTR-1 (Quarterly): 13th of month following quarter end
  * - GSTR-3B (Quarterly): 22nd/24th of month following quarter end
  * - GSTR-9 (Annual): 31st December of next financial year
@@ -188,10 +261,9 @@ export function validateARN(arn: string): GSTValidationResult {
 export function calculateDueDates(
   month: string, // YYYY-MM format
   filingFrequency: "monthly" | "quarterly" | "annual",
-  turnover?: number // Optional: affects quarterly due dates
+  _turnover?: number, // Optional: affects quarterly due dates
 ): DueDateInfo {
-  const [year, monthNum] = month.split('-').map(Number);
-  const date = new Date(year, monthNum - 1, 1);
+  const [year, monthNum] = month.split("-").map(Number);
 
   let gstr1DueDate: string;
   let gstr3bDueDate: string;
@@ -208,15 +280,14 @@ export function calculateDueDates(
     // GSTR-3B: 20th of next month
     const gstr3bDate = new Date(year, monthNum, 20);
     gstr3bDueDate = formatDate(gstr3bDate);
-
   } else if (filingFrequency === "quarterly") {
     // Quarterly filing (QRMP scheme)
     // Check if this is a quarter-end month (Sept, Dec, Mar, June)
     isQuarterEnd = [3, 6, 9, 12].includes(monthNum);
-    
+
     if (isQuarterEnd) {
       quarterEndMonth = month;
-      
+
       // GSTR-1: 13th of month following quarter end
       const gstr1Date = new Date(year, monthNum, 13);
       gstr1DueDate = formatDate(gstr1Date);
@@ -224,7 +295,7 @@ export function calculateDueDates(
       // GSTR-3B: 22nd or 24th depending on turnover
       // Turnover <= 5 crores: 24th
       // Turnover > 5 crores: 22nd
-      const day = !turnover || turnover <= 50000000 ? 24 : 22;
+      const day = !_turnover || _turnover <= 50000000 ? 24 : 22;
       const gstr3bDate = new Date(year, monthNum, day);
       gstr3bDueDate = formatDate(gstr3bDate);
     } else {
@@ -237,7 +308,6 @@ export function calculateDueDates(
       const gstr3bDate = new Date(year, monthNum, 25);
       gstr3bDueDate = formatDate(gstr3bDate);
     }
-
   } else {
     // Annual filing
     // GSTR-9: 31st December of next financial year
@@ -248,7 +318,7 @@ export function calculateDueDates(
     }
     const gstr9Date = new Date(fyEndYear + 1, 11, 31); // December 31st
     gstr9DueDate = formatDate(gstr9Date);
-    
+
     // For annual, we still need monthly dates for reference
     const gstr1Date = new Date(year, monthNum, 11);
     gstr1DueDate = formatDate(gstr1Date);
@@ -268,7 +338,7 @@ export function calculateDueDates(
     gstr9DueDate,
     isQuarterEnd,
     quarterEndMonth,
-    reminderDate: formatDate(reminderDate)
+    reminderDate: formatDate(reminderDate),
   };
 }
 
@@ -283,7 +353,7 @@ export function calculateDueDates(
 export function calculateLateFee(
   dueDate: string, // YYYY-MM-DD
   filedDate: string, // YYYY-MM-DD
-  isNilReturn: boolean = false
+  isNilReturn: boolean = false,
 ): number {
   const due = new Date(dueDate);
   const filed = new Date(filedDate);
@@ -294,11 +364,13 @@ export function calculateLateFee(
   }
 
   // Calculate days late
-  const daysLate = Math.floor((filed.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+  const daysLate = Math.floor(
+    (filed.getTime() - due.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   // Late fee per day
   const feePerDay = isNilReturn ? 20 : 50;
-  
+
   // Calculate total late fee
   let lateFee = daysLate * feePerDay;
 
@@ -316,7 +388,7 @@ export function calculateLateFee(
 export function calculateInterest(
   taxAmount: number,
   dueDate: string, // YYYY-MM-DD
-  paidDate: string // YYYY-MM-DD
+  paidDate: string, // YYYY-MM-DD
 ): number {
   const due = new Date(dueDate);
   const paid = new Date(paidDate);
@@ -327,11 +399,13 @@ export function calculateInterest(
   }
 
   // Calculate days late
-  const daysLate = Math.floor((paid.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+  const daysLate = Math.floor(
+    (paid.getTime() - due.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   // Interest rate: 18% per annum = 18/365 per day
   const dailyRate = 0.18 / 365;
-  
+
   // Calculate interest
   const interest = Math.round(taxAmount * dailyRate * daysLate);
 
@@ -342,9 +416,9 @@ export function calculateInterest(
  * Check if a month is overdue based on current date
  */
 export function isMonthOverdue(
-  month: string, // YYYY-MM
+  _month: string, // YYYY-MM
   dueDate: string, // YYYY-MM-DD
-  filedDate?: string // YYYY-MM-DD
+  filedDate?: string, // YYYY-MM-DD
 ): boolean {
   // If already filed, not overdue
   if (filedDate) {
@@ -367,7 +441,7 @@ export function getFilingStatus(
   gstr1DueDate?: string,
   gstr3bDueDate?: string,
   gstr1FiledDate?: string,
-  gstr3bFiledDate?: string
+  gstr3bFiledDate?: string,
 ): "pending" | "filed" | "late" | "overdue" {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -409,8 +483,8 @@ export function getFilingStatus(
  */
 function formatDate(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -457,7 +531,7 @@ export function getStateName(stateCode: string): string {
     "36": "Telangana",
     "37": "Andhra Pradesh (New)",
     "97": "Other Territory",
-    "99": "Centre Jurisdiction"
+    "99": "Centre Jurisdiction",
   };
 
   return stateMap[stateCode] || "Unknown State";
@@ -469,6 +543,8 @@ export function getStateName(stateCode: string): string {
 export function validateGSTINState(gstin: string, stateName: string): boolean {
   const stateCode = gstin.substring(0, 2);
   const expectedState = getStateName(stateCode);
-  return expectedState.toLowerCase().includes(stateName.toLowerCase()) || 
-         stateName.toLowerCase().includes(expectedState.toLowerCase());
+  return (
+    expectedState.toLowerCase().includes(stateName.toLowerCase()) ||
+    stateName.toLowerCase().includes(expectedState.toLowerCase())
+  );
 }

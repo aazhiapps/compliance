@@ -1,14 +1,15 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { Service } from "@shared/service";
 
-export interface IServiceDocument extends Omit<Service, "id">, MongooseDocument {}
+export interface IServiceDocument
+  extends Omit<Service, "id">, MongooseDocument {}
 
 const FAQSchema = new Schema(
   {
     question: { type: String, required: true },
     answer: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ServiceSchema = new Schema<IServiceDocument>(
@@ -81,7 +82,7 @@ const ServiceSchema = new Schema<IServiceDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -91,5 +92,5 @@ ServiceSchema.index({ name: 1 });
 
 export const ServiceModel = mongoose.model<IServiceDocument>(
   "Service",
-  ServiceSchema
+  ServiceSchema,
 );

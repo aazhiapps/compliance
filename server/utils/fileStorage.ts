@@ -8,7 +8,8 @@ import crypto from "crypto";
  */
 
 // Base directory for GST data storage
-const GST_DATA_BASE = process.env.GST_DATA_PATH || path.join(process.cwd(), "GST_DATA");
+const GST_DATA_BASE =
+  process.env.GST_DATA_PATH || path.join(process.cwd(), "GST_DATA");
 
 /**
  * Generate folder path for a client's GST data
@@ -18,7 +19,7 @@ export function getGSTFolderPath(
   clientName: string,
   financialYear: string,
   month: string,
-  subfolder: "Purchases" | "Sales" | "Returns" | "Challans"
+  subfolder: "Purchases" | "Sales" | "Returns" | "Challans",
 ): string {
   // Sanitize client name for file system
   const sanitizedClientName = sanitizeFileName(clientName);
@@ -27,7 +28,7 @@ export function getGSTFolderPath(
     sanitizedClientName,
     financialYear,
     month,
-    subfolder
+    subfolder,
   );
 }
 
@@ -61,14 +62,14 @@ export function generateFileName(
   month: string,
   invoiceNo: string,
   type: string,
-  originalName: string
+  originalName: string,
 ): string {
   const sanitizedClient = sanitizeFileName(clientName);
   const sanitizedInvoice = sanitizeFileName(invoiceNo);
   const sanitizedType = sanitizeFileName(type);
   const ext = path.extname(originalName);
   const hash = crypto.randomBytes(4).toString("hex");
-  
+
   return `${sanitizedClient}_${month}_${sanitizedInvoice}_${sanitizedType}_${hash}${ext}`;
 }
 
@@ -83,18 +84,29 @@ export async function saveGSTFile(
   invoiceNo: string,
   type: string,
   fileBuffer: Buffer,
-  originalName: string
+  originalName: string,
 ): Promise<string> {
   // Get folder path
-  const folderPath = getGSTFolderPath(clientName, financialYear, month, subfolder);
-  
+  const folderPath = getGSTFolderPath(
+    clientName,
+    financialYear,
+    month,
+    subfolder,
+  );
+
   // Ensure directory exists
   await ensureDirectory(folderPath);
-  
+
   // Generate unique file name
-  const fileName = generateFileName(clientName, month, invoiceNo, type, originalName);
+  const fileName = generateFileName(
+    clientName,
+    month,
+    invoiceNo,
+    type,
+    originalName,
+  );
   const filePath = path.join(folderPath, fileName);
-  
+
   // Check if file already exists
   try {
     await fs.access(filePath);
@@ -104,10 +116,10 @@ export async function saveGSTFile(
       throw error;
     }
   }
-  
+
   // Write file
   await fs.writeFile(filePath, fileBuffer);
-  
+
   // Return relative path from GST_DATA_BASE
   return path.relative(GST_DATA_BASE, filePath);
 }
@@ -148,10 +160,15 @@ export async function listFiles(
   clientName: string,
   financialYear: string,
   month: string,
-  subfolder: "Purchases" | "Sales" | "Returns" | "Challans"
+  subfolder: "Purchases" | "Sales" | "Returns" | "Challans",
 ): Promise<string[]> {
-  const folderPath = getGSTFolderPath(clientName, financialYear, month, subfolder);
-  
+  const folderPath = getGSTFolderPath(
+    clientName,
+    financialYear,
+    month,
+    subfolder,
+  );
+
   try {
     const files = await fs.readdir(folderPath);
     return files;
@@ -173,7 +190,7 @@ export async function getFileMetadata(relativePath: string): Promise<{
 }> {
   const filePath = path.join(GST_DATA_BASE, relativePath);
   const stats = await fs.stat(filePath);
-  
+
   return {
     size: stats.size,
     created: stats.birthtime,
@@ -186,7 +203,7 @@ export async function getFileMetadata(relativePath: string): Promise<{
  */
 export async function backupClientData(
   clientName: string,
-  financialYear: string
+  financialYear: string,
 ): Promise<string> {
   const sanitizedClient = sanitizeFileName(clientName);
   const sourcePath = path.join(GST_DATA_BASE, sanitizedClient, financialYear);
@@ -194,15 +211,15 @@ export async function backupClientData(
   const backupPath = path.join(
     GST_DATA_BASE,
     "backups",
-    `${sanitizedClient}_${financialYear}_${timestamp}`
+    `${sanitizedClient}_${financialYear}_${timestamp}`,
   );
-  
+
   // Ensure backup directory exists
   await ensureDirectory(path.join(GST_DATA_BASE, "backups"));
-  
+
   // Copy directory recursively
   await copyDirectory(sourcePath, backupPath);
-  
+
   return backupPath;
 }
 
@@ -212,11 +229,11 @@ export async function backupClientData(
 async function copyDirectory(src: string, dest: string): Promise<void> {
   await ensureDirectory(dest);
   const entries = await fs.readdir(src, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    
+
     if (entry.isDirectory()) {
       await copyDirectory(srcPath, destPath);
     } else {

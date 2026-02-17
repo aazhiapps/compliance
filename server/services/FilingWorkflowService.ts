@@ -55,9 +55,14 @@ export class FilingWorkflowService {
   /**
    * Check if a state transition is valid
    */
-  canTransition(from: WorkflowStatus, to: WorkflowStatus, step?: FilingStepType): boolean {
+  canTransition(
+    from: WorkflowStatus,
+    to: WorkflowStatus,
+    step?: FilingStepType,
+  ): boolean {
     return this.validTransitions.some(
-      (t) => t.from === from && t.to === to && (!step || !t.step || t.step === step)
+      (t) =>
+        t.from === from && t.to === to && (!step || !t.step || t.step === step),
     );
   }
 
@@ -70,13 +75,13 @@ export class FilingWorkflowService {
     toStatus: WorkflowStatus,
     performedBy: ObjectId,
     stepType: FilingStepType,
-    comments?: string
+    comments?: string,
   ) {
     try {
       // Validate transition
       if (!this.canTransition(fromStatus, toStatus, stepType)) {
         throw new Error(
-          `Invalid transition: ${fromStatus} -> ${toStatus} with step ${stepType}`
+          `Invalid transition: ${fromStatus} -> ${toStatus} with step ${stepType}`,
         );
       }
 
@@ -107,8 +112,14 @@ export class FilingWorkflowService {
 
       // Publish webhook event for filing status change
       try {
-        const clientId = typeof filing.clientId === "string" ? new ObjectId(filing.clientId) : filing.clientId;
-        const filingId_obj = typeof filing._id === "string" ? new ObjectId(filing._id) : filing._id;
+        const clientId =
+          typeof filing.clientId === "string"
+            ? new ObjectId(filing.clientId)
+            : filing.clientId;
+        const filingId_obj =
+          typeof filing._id === "string"
+            ? new ObjectId(filing._id)
+            : filing._id;
 
         await webhookService.publishWebhookEvent({
           clientId,
@@ -137,7 +148,11 @@ export class FilingWorkflowService {
 
       return { filing, step };
     } catch (error) {
-      logger.error("Failed to transition filing", error as Error, { filingId, fromStatus, toStatus });
+      logger.error("Failed to transition filing", error as Error, {
+        filingId,
+        fromStatus,
+        toStatus,
+      });
       throw error;
     }
   }
@@ -156,10 +171,12 @@ export class FilingWorkflowService {
         "prepared" as WorkflowStatus,
         performedBy,
         "gstr1_prepare",
-        "Starting GSTR-1 filing process"
+        "Starting GSTR-1 filing process",
       );
     } catch (error) {
-      logger.error("Failed to start GSTR-1 filing", error as Error, { filingId });
+      logger.error("Failed to start GSTR-1 filing", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }
@@ -171,7 +188,7 @@ export class FilingWorkflowService {
     filingId: ObjectId,
     performedBy: ObjectId,
     arn: string,
-    filedDate: Date
+    filedDate: Date,
   ) {
     try {
       const filing = await FilingRepository.getFilingById(filingId);
@@ -191,7 +208,9 @@ export class FilingWorkflowService {
 
       return updated;
     } catch (error) {
-      logger.error("Failed to complete GSTR-1 filing", error as Error, { filingId });
+      logger.error("Failed to complete GSTR-1 filing", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }
@@ -204,7 +223,7 @@ export class FilingWorkflowService {
     performedBy: ObjectId,
     arn: string,
     filedDate: Date,
-    taxDetails: Record<string, any>
+    taxDetails: Record<string, any>,
   ) {
     try {
       const filing = await FilingRepository.getFilingById(filingId);
@@ -225,7 +244,9 @@ export class FilingWorkflowService {
 
       return updated;
     } catch (error) {
-      logger.error("Failed to complete GSTR-3B filing", error as Error, { filingId });
+      logger.error("Failed to complete GSTR-3B filing", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }
@@ -236,10 +257,14 @@ export class FilingWorkflowService {
   async lockFilingMonth(
     filingId: ObjectId,
     lockedBy: ObjectId,
-    reason: string = "Monthly filing complete"
+    reason: string = "Monthly filing complete",
   ) {
     try {
-      const updated = await FilingRepository.lockFiling(filingId, lockedBy, reason);
+      const updated = await FilingRepository.lockFiling(
+        filingId,
+        lockedBy,
+        reason,
+      );
 
       // Create audit step
       await FilingRepository.createFilingStep({
@@ -265,7 +290,11 @@ export class FilingWorkflowService {
   /**
    * Unlock filing month (allow edits for amendment)
    */
-  async unlockFilingMonth(filingId: ObjectId, unlockedBy: ObjectId, reason: string) {
+  async unlockFilingMonth(
+    filingId: ObjectId,
+    unlockedBy: ObjectId,
+    reason: string,
+  ) {
     try {
       const updated = await FilingRepository.unlockFiling(filingId, unlockedBy);
 
@@ -285,7 +314,9 @@ export class FilingWorkflowService {
 
       return updated;
     } catch (error) {
-      logger.error("Failed to unlock filing month", error as Error, { filingId });
+      logger.error("Failed to unlock filing month", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }
@@ -293,7 +324,11 @@ export class FilingWorkflowService {
   /**
    * Start amendment workflow
    */
-  async startAmendment(filingId: ObjectId, performedBy: ObjectId, reason: string) {
+  async startAmendment(
+    filingId: ObjectId,
+    performedBy: ObjectId,
+    reason: string,
+  ) {
     try {
       const filing = await FilingRepository.getFilingById(filingId);
 
@@ -329,7 +364,7 @@ export class FilingWorkflowService {
     filingId: ObjectId,
     performedBy: ObjectId,
     arn: string,
-    formType: "gstr1" | "gstr3b"
+    formType: "gstr1" | "gstr3b",
   ) {
     try {
       const filing = await FilingRepository.getFilingById(filingId);
@@ -352,7 +387,9 @@ export class FilingWorkflowService {
 
       return updated;
     } catch (error) {
-      logger.error("Failed to complete amendment", error as Error, { filingId });
+      logger.error("Failed to complete amendment", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }
@@ -371,7 +408,9 @@ export class FilingWorkflowService {
 
       return available;
     } catch (error) {
-      logger.error("Failed to get available next steps", error as Error, { filingId });
+      logger.error("Failed to get available next steps", error as Error, {
+        filingId,
+      });
       throw error;
     }
   }

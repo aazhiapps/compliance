@@ -142,7 +142,7 @@ const WebhookEndpointSchema = new Schema<WebhookEndpointRecord>(
     headers: Schema.Types.Mixed,
     metadata: Schema.Types.Mixed,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -164,6 +164,9 @@ WebhookEndpointSchema.set("toJSON", {
 
 export const WebhookEndpointModel =
   mongoose.models.WebhookEndpoint ||
-  mongoose.model<WebhookEndpointRecord>("WebhookEndpoint", WebhookEndpointSchema);
+  mongoose.model<WebhookEndpointRecord>(
+    "WebhookEndpoint",
+    WebhookEndpointSchema,
+  );
 
 export default WebhookEndpointModel;

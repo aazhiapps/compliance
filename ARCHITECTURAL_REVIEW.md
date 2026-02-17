@@ -3,7 +3,7 @@
 **Document Version**: 1.0  
 **Date**: February 2024  
 **Audience**: Senior Engineering Leadership, Product Strategy, Architecture Team  
-**Scope**: Current system analysis, gap identification, and scalability roadmap for 5,000+ client SaaS platform  
+**Scope**: Current system analysis, gap identification, and scalability roadmap for 5,000+ client SaaS platform
 
 ---
 
@@ -26,7 +26,8 @@ Your GST compliance platform is a well-structured MERN stack application with so
 
 **Current State**: Basic GSTR-1/3B tracking with 4-state status enum (`pending|filed|late|overdue`).
 
-**Missing**: 
+**Missing**:
+
 - **Structured multi-step filing workflows** (not just status flags):
   - GSTR-1: Prepare → Upload → Validate → File → Receive ARN → Track Status
   - GSTR-3B: Verify ITC → Calculate Tax Liability → Prepare Return → File → Validate → Lock Month
@@ -53,6 +54,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
   - No automatic escalation: Overdue > 90 days → Risk score increase → Compliance alert
 
 **Recommendation**:
+
 - Introduce GST Workflow State Machine (via workflow engine or explicit enum + validator)
 - Add `GSTFilingStep` collection to persist each step with metadata
 - Add `GSTAmendment` collection for tracking corrections
@@ -65,11 +67,12 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Current State**: Monthly summary calculates totals; no cross-filing validation.
 
 **Missing**:
+
 - **ITC (Input Tax Credit) Reconciliation**:
   - GSTR-2A (supplier's GSTR-1 as seen by buyer): Auto-fetch from GST portal (future)
   - GSTR-2B (GST office reconciled): Auto-fetch (future)
   - PurchaseInvoice (what you claim): Manual upload
-  - **Mismatch Detection**: 
+  - **Mismatch Detection**:
     - Claimed ITC > Available ITC (GSTR-2A) → Flag: "Excess ITC claimed"
     - Available in GSTR-2A but not claimed → Alert: "Unclaimed ITC available"
     - GSTR-2B shows rejected by GST office → Alert: "ITC Rejected"
@@ -83,6 +86,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
   - Stock/inventory mismatches (for F&B, retail) → Suggest recheck
 
 **Recommendation**:
+
 - Add `ITCReconciliation` collection:
   ```
   {
@@ -106,6 +110,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Current State**: Files stored in flat folder structure with path-based ownership.
 
 **Missing**:
+
 - **Document versioning**: No history if invoice is re-uploaded
 - **Document tagging & indexing**: Can't search by document type, invoice number, date range
 - **OCR & metadata extraction**: Invoice date, amount, GSTIN auto-extracted
@@ -113,6 +118,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
 - **Document retention compliance**: Track doc age, auto-archive old docs, compliance alerts for missing docs
 
 **Recommendation**:
+
 - Redesign document hierarchy: `/gst/client-{id}/financial-year-{fy}/month-{month}/purchase-invoices/{invoiceId}/v{version}/file.pdf`
 - Add `Document` collection (separate from embedded documents):
   ```
@@ -135,6 +141,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Current State**: Staff assigned to clients; limited workflow orchestration.
 
 **Missing**:
+
 - **Staff capacity planning**: How many clients per staff member? Workload distribution?
 - **Task/ticket system for applications**:
   - Application stuck at "under_review" → Auto-escalate after 7 days → Notify manager
@@ -150,6 +157,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
   - Notifications are system-generated; no task comments
 
 **Recommendation**:
+
 - Add `ClientRisk` model (auto-calculated quarterly):
   ```
   { clientId, overdueDaysAvg, filingAccuracy, incompleteDocsCount, riskScore: Number }
@@ -164,6 +172,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
 ### 2.1 Current Backend Architecture Issues
 
 **Positive aspects:**
+
 - Clean repository pattern with Mongoose models
 - Modular route organization
 - Role-based middleware for authorization
@@ -172,6 +181,7 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Issues for scaling to 5,000+ clients:**
 
 #### A. No Query Optimization Strategy
+
 - **Problem**: Monthly summary aggregates all invoices in application memory:
   ```typescript
   // Current (in gstRepository):
@@ -182,15 +192,23 @@ Your GST compliance platform is a well-structured MERN stack application with so
 - **Impact**: At 5,000 clients × 12 months × 100+ invoices/month = 6M+ docs. Summaries will be slow.
 
 **Solution**:
+
 - Use MongoDB aggregation pipelines:
   ```typescript
   await PurchaseInvoice.aggregate([
     { $match: { clientId, month } },
-    { $group: { _id: null, totalTaxable: { $sum: "$taxableAmount" }, totalCGST: { $sum: "$cgst" } } }
-  ])
+    {
+      $group: {
+        _id: null,
+        totalTaxable: { $sum: "$taxableAmount" },
+        totalCGST: { $sum: "$cgst" },
+      },
+    },
+  ]);
   ```
 
 #### B. Missing Indexing Strategy
+
 - **Problem**: Indexes present but incomplete:
   - No index on `GSTReturnFiling.financialYear` (needed for annual reports)
   - No compound index on `PurchaseInvoice.{ clientId, financialYear }` (needed for year-end closure)
@@ -199,29 +217,35 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Solution**: See Section 3.2 (MongoDB Indexing Strategy).
 
 #### C. In-Memory Notifications
+
 - **Problem**: `gstNotificationService` uses `Map()` — lost on restart, no persistence, single-instance only.
 - **Impact**: At 5,000 clients with monthly reminders, 60K+ notifications/month untracked.
 
-**Solution**: 
+**Solution**:
+
 - Persist notifications to MongoDB: `Notification` collection
 - Use Bull.js (Redis) for scheduled job queue (due date reminders, overdue escalations)
 
 #### D. File Storage Not Cloud-Ready
+
 - **Problem**: Files saved to local `/uploads` directory
 - **Impact**: Not scalable (disk fills up), no backup, no CDN, single-point-of-failure
 - **For SaaS**: Clients expect secure, replicated storage
 
 **Solution**: Migrate to AWS S3 / Azure Blob:
+
 - Structured paths: `s3://bucket/gst/{clientId}/fy-{fy}/month-{month}/type/{documentId}.pdf`
 - Metadata stored in MongoDB
 - Presigned URLs for downloads
 - Encryption at rest, versioning enabled
 
 #### E. No Caching Strategy
+
 - **Problem**: Each admin dashboard load queries all users, applications, payments
 - **Impact**: Slow admin UI, database overload, especially during peak hours
 
-**Solution**: 
+**Solution**:
+
 - Redis cache for:
   - `admin:stats` (total clients, pending applications) — TTL 5 min
   - `client:{clientId}:filings` (client's filing status) — TTL 1 hour
@@ -229,10 +253,12 @@ Your GST compliance platform is a well-structured MERN stack application with so
 - Cache invalidation on mutations (e.g., update filing status → invalidate cache)
 
 #### F. No Background Job System
+
 - **Problem**: Long-running operations (PDF generation, email notifications, daily reconciliation checks) block request handlers
 - **Impact**: API timeouts, poor user experience
 
 **Solution**:
+
 - Bull.js + Redis for job queue:
   - `generateMonthlyReport` → Queued job, email link when ready
   - `processDueDateReminders` → Daily cron job
@@ -246,45 +272,53 @@ Your GST compliance platform is a well-structured MERN stack application with so
 **Current issues:**
 
 #### A. No Client-Side State Management
+
 - **Problem**: No Redux/Zustand; all state in component state or React Context
 - **Impact**: As app grows, hard to share state between distant components (e.g., dashboard stats vs admin panel)
 
 **Solution**: Introduce Zustand (lightweight alternative):
+
 ```typescript
 // store/gstStore.ts
 export const useGSTStore = create((set) => ({
   clients: [],
   filings: {},
   setClients: (clients) => set({ clients }),
-  addFiling: (clientId, filing) => set((state) => ({
-    filings: { ...state.filings, [clientId]: filing }
-  }))
-}))
+  addFiling: (clientId, filing) =>
+    set((state) => ({
+      filings: { ...state.filings, [clientId]: filing },
+    })),
+}));
 ```
 
 #### B. React Query Not Used Everywhere
+
 - **Problem**: Some components fetch data directly; inconsistent caching strategy
 - **Impact**: Duplicate requests, stale data, poor performance
 
 **Solution**: Globally use React Query for all server data:
+
 ```typescript
 const { data: filings } = useQuery({
-  queryKey: ['filings', clientId],
+  queryKey: ["filings", clientId],
   queryFn: async () => (await fetch(`/api/gst/filings/${clientId}`)).json(),
-  staleTime: 1000 * 60 * 5 // 5 min
-})
+  staleTime: 1000 * 60 * 5, // 5 min
+});
 ```
 
 #### C. Missing Filtering & Pagination UI
+
 - **Problem**: Admin dashboard shows all users/applications in one view; no filters, no pagination
 - **Impact**: Slow UI at scale, hard to find specific client
 
 **Solution**:
+
 - Implement client-side pagination (React Query + React Table)
 - Add filter panels (status, date range, assigned staff)
 - Remember filters in localStorage
 
 #### D. Poor Month Navigation
+
 - **Problem**: "Month" hard-coded as string like "2024-02"; no date picker, hard to navigate YoY
 - **Solution**: Replace with proper date picker, add "Previous 12 months" view, quick nav buttons
 
@@ -295,17 +329,20 @@ const { data: filings } = useQuery({
 **Current issues:**
 
 #### A. Embedded Documents vs References
+
 - **Problem**: Application.documents stored as embedded array; grows unbounded with large file counts
 - **Solution**: Separate `Document` collection with references
 
 #### B. Missing Soft Deletes
+
 - **Problem**: Admins can delete invoices/filings; no audit trail
-- **Solution**: 
+- **Solution**:
   - Add `isDeleted: Boolean, deletedAt: Date, deletedBy: String` fields
   - Never physically delete; use soft delete + logical filters
   - Add `RestoreRequest` model for admin approval
 
 #### C. No Schema Versioning
+
 - **Problem**: Schema changes (e.g., adding new GST form fields) risky
 - **Solution**:
   - Add `schemaVersion: Number` field to all models
@@ -377,6 +414,7 @@ const { data: filings } = useQuery({
 ### 3.2 Modular Architecture Breakdown
 
 #### **Frontend Modules**
+
 ```
 client/
 ├── auth/
@@ -438,6 +476,7 @@ client/
 ```
 
 #### **Backend Modules**
+
 ```
 server/
 ├── auth/
@@ -603,6 +642,7 @@ server/
 ### 4.1 Core Collections
 
 #### **User Collection** (Enhanced)
+
 ```typescript
 db.createCollection("users", {
   validator: {
@@ -616,7 +656,9 @@ db.createCollection("users", {
         lastName: { bsonType: "string" },
         phone: { bsonType: "string" },
         role: { enum: ["user", "admin", "staff"] },
-        businessType: { enum: ["individual", "startup", "company", "nonprofit"] },
+        businessType: {
+          enum: ["individual", "startup", "company", "nonprofit"],
+        },
         language: { enum: ["en", "hi"] },
         isEmailVerified: { bsonType: "bool" },
         // NEW FIELDS FOR SCALABILITY
@@ -629,17 +671,17 @@ db.createCollection("users", {
             avatar: { bsonType: "string" },
             bio: { bsonType: "string" },
             organizationName: { bsonType: "string" },
-            gstin: { bsonType: "string" }
-          }
+            gstin: { bsonType: "string" },
+          },
         },
         metadata: { bsonType: "object" }, // Custom fields
         lastLoginAt: { bsonType: "date" },
         createdAt: { bsonType: "date" },
-        updatedAt: { bsonType: "date" }
+        updatedAt: { bsonType: "date" },
       },
-      required: ["email", "passwordHash", "firstName", "role"]
-    }
-  }
+      required: ["email", "passwordHash", "firstName", "role"],
+    },
+  },
 });
 
 // Indexes
@@ -650,6 +692,7 @@ db.users.createIndex({ subscriptionTier: 1, subscriptionExpiresAt: 1 });
 ```
 
 #### **GSTClient Collection** (Redesigned)
+
 ```typescript
 db.createCollection("gst_clients", {
   validator: {
@@ -666,7 +709,10 @@ db.createCollection("gst_clients", {
         filingFrequency: { enum: ["monthly", "quarterly", "annual"] },
         financialYearStart: { bsonType: "string" }, // e.g., "04-01"
         status: { enum: ["active", "inactive", "suspended"] },
-        assignedStaffIds: { bsonType: "array", items: { bsonType: "objectId" } },
+        assignedStaffIds: {
+          bsonType: "array",
+          items: { bsonType: "objectId" },
+        },
         // NEW: Risk & Compliance Tracking
         riskScore: { bsonType: "int", minimum: 0, maximum: 100 },
         complianceStatus: { enum: ["good", "warning", "critical"] },
@@ -684,11 +730,11 @@ db.createCollection("gst_clients", {
         createdBy: { bsonType: "objectId" },
         createdAt: { bsonType: "date" },
         updatedAt: { bsonType: "date" },
-        deactivatedAt: { bsonType: "date" }
+        deactivatedAt: { bsonType: "date" },
       },
-      required: ["userId", "clientName", "gstin", "filingFrequency"]
-    }
-  }
+      required: ["userId", "clientName", "gstin", "filingFrequency"],
+    },
+  },
 });
 
 // Indexes
@@ -700,6 +746,7 @@ db.gst_clients.createIndex({ createdAt: -1 });
 ```
 
 #### **GSTReturnFiling Collection** (Redesigned with Workflow)
+
 ```typescript
 db.createCollection("gst_return_filings", {
   validator: {
@@ -712,8 +759,16 @@ db.createCollection("gst_return_filings", {
         month: { bsonType: "string" }, // "2024-02"
         financialYear: { bsonType: "string" }, // "2023-24"
         // NEW: Filing Workflow State Machine
-        workflowStatus: { 
-          enum: ["draft", "prepared", "validated", "filed", "amendment", "locked", "archived"]
+        workflowStatus: {
+          enum: [
+            "draft",
+            "prepared",
+            "validated",
+            "filed",
+            "amendment",
+            "locked",
+            "archived",
+          ],
         },
         currentStep: { bsonType: "string" }, // e.g., "gstr1_preparation", "gstr3b_validation"
         // NEW: Step-wise Tracking
@@ -724,13 +779,15 @@ db.createCollection("gst_return_filings", {
             properties: {
               stepId: { bsonType: "string" },
               stepName: { bsonType: "string" }, // e.g., "GSTR-1 Filed"
-              status: { enum: ["pending", "in_progress", "completed", "failed"] },
+              status: {
+                enum: ["pending", "in_progress", "completed", "failed"],
+              },
               completedAt: { bsonType: "date" },
               completedBy: { bsonType: "objectId" },
               notes: { bsonType: "string" },
-              attachments: { bsonType: "array" }
-            }
-          }
+              attachments: { bsonType: "array" },
+            },
+          },
         },
         // GSTR-1 Fields
         gstr1: {
@@ -744,8 +801,8 @@ db.createCollection("gst_return_filings", {
             taxableValue: { bsonType: "double" },
             sgst: { bsonType: "double" },
             cgst: { bsonType: "double" },
-            igst: { bsonType: "double" }
-          }
+            igst: { bsonType: "double" },
+          },
         },
         // GSTR-3B Fields
         gstr3b: {
@@ -763,8 +820,8 @@ db.createCollection("gst_return_filings", {
             netTaxPayable: { bsonType: "double" },
             taxPaid: { bsonType: "double" },
             interestAccrued: { bsonType: "double" },
-            penaltyAccrued: { bsonType: "double" }
-          }
+            penaltyAccrued: { bsonType: "double" },
+          },
         },
         // GSTR-2A/2B Fields (Future: from GST Portal)
         gstr2A: {
@@ -773,8 +830,8 @@ db.createCollection("gst_return_filings", {
             lastSyncedAt: { bsonType: "date" },
             totalAvailableITC: { bsonType: "double" },
             pendingForAcceptance: { bsonType: "double" },
-            rejectedByGST: { bsonType: "double" }
-          }
+            rejectedByGST: { bsonType: "double" },
+          },
         },
         // Amendment Tracking
         amendments: {
@@ -788,9 +845,9 @@ db.createCollection("gst_return_filings", {
               changedFields: { bsonType: "object" },
               filedDate: { bsonType: "date" },
               arn: { bsonType: "string" },
-              createdAt: { bsonType: "date" }
-            }
-          }
+              createdAt: { bsonType: "date" },
+            },
+          },
         },
         // Lock & Compliance
         isLocked: { bsonType: "bool" },
@@ -801,11 +858,11 @@ db.createCollection("gst_return_filings", {
         createdBy: { bsonType: "objectId" },
         updatedBy: { bsonType: "objectId" },
         createdAt: { bsonType: "date" },
-        updatedAt: { bsonType: "date" }
+        updatedAt: { bsonType: "date" },
       },
-      required: ["clientId", "month", "financialYear", "workflowStatus"]
-    }
-  }
+      required: ["clientId", "month", "financialYear", "workflowStatus"],
+    },
+  },
 });
 
 // Indexes
@@ -818,6 +875,7 @@ db.gst_return_filings.createIndex({ createdAt: -1 });
 ```
 
 #### **FilingStep Collection** (NEW: Audit Trail)
+
 ```typescript
 db.createCollection("filing_steps", {
   validator: {
@@ -827,18 +885,20 @@ db.createCollection("filing_steps", {
         _id: { bsonType: "objectId" },
         filingId: { bsonType: "objectId" }, // Reference to GSTReturnFiling
         stepType: { bsonType: "string" }, // e.g., "gstr1_file", "gstr3b_validate", "lock_month"
-        status: { enum: ["pending", "in_progress", "completed", "failed", "skipped"] },
+        status: {
+          enum: ["pending", "in_progress", "completed", "failed", "skipped"],
+        },
         startedAt: { bsonType: "date" },
         completedAt: { bsonType: "date" },
         performedBy: { bsonType: "objectId" },
         comments: { bsonType: "string" },
         changes: { bsonType: "object" }, // What changed
         attachments: { bsonType: "array" }, // ARNs, confirmation PDFs, etc.
-        errorDetails: { bsonType: "object" } // If failed
+        errorDetails: { bsonType: "object" }, // If failed
       },
-      required: ["filingId", "stepType", "status"]
-    }
-  }
+      required: ["filingId", "stepType", "status"],
+    },
+  },
 });
 
 // Index
@@ -846,6 +906,7 @@ db.filing_steps.createIndex({ filingId: 1, createdAt: -1 });
 ```
 
 #### **PurchaseInvoice & SalesInvoice** (Enhanced)
+
 ```typescript
 db.createCollection("purchase_invoices", {
   validator: {
@@ -871,8 +932,12 @@ db.createCollection("purchase_invoices", {
         itcClaimed: { bsonType: "bool" },
         itcClaimedAmount: { bsonType: "double" },
         // NEW: Reconciliation Status
-        reconciliationStatus: { enum: ["unreconciled", "matched", "mismatch", "excess"] },
-        gstr2AMatchStatus: { enum: ["not_checked", "found", "not_found", "rejected"] },
+        reconciliationStatus: {
+          enum: ["unreconciled", "matched", "mismatch", "excess"],
+        },
+        gstr2AMatchStatus: {
+          enum: ["not_checked", "found", "not_found", "rejected"],
+        },
         // Documents (now references, not embedded)
         documentIds: { bsonType: "array", items: { bsonType: "objectId" } },
         // Audit
@@ -882,11 +947,11 @@ db.createCollection("purchase_invoices", {
         // Soft Delete
         isDeleted: { bsonType: "bool" },
         deletedAt: { bsonType: "date" },
-        deletedBy: { bsonType: "objectId" }
+        deletedBy: { bsonType: "objectId" },
       },
-      required: ["clientId", "invoiceNumber", "invoiceDate", "taxableAmount"]
-    }
-  }
+      required: ["clientId", "invoiceNumber", "invoiceDate", "taxableAmount"],
+    },
+  },
 });
 
 // Indexes
@@ -899,6 +964,7 @@ db.purchase_invoices.createIndex({ vendorGSTIN: 1 });
 ```
 
 #### **Document Collection** (NEW: Separate from invoices)
+
 ```typescript
 db.createCollection("documents", {
   validator: {
@@ -908,9 +974,13 @@ db.createCollection("documents", {
         _id: { bsonType: "objectId" },
         documentId: { bsonType: "string" }, // UUID
         clientId: { bsonType: "objectId" },
-        linkedEntityType: { enum: ["invoice_purchase", "invoice_sales", "filing", "application"] },
+        linkedEntityType: {
+          enum: ["invoice_purchase", "invoice_sales", "filing", "application"],
+        },
         linkedEntityId: { bsonType: "objectId" },
-        documentType: { enum: ["invoice", "challan", "certificate", "gstr", "other"] },
+        documentType: {
+          enum: ["invoice", "challan", "certificate", "gstr", "other"],
+        },
         fileName: { bsonType: "string" },
         fileUrl: { bsonType: "string" }, // S3 path
         mimeType: { bsonType: "string" },
@@ -923,8 +993,8 @@ db.createCollection("documents", {
             invoiceDate: { bsonType: "date" },
             vendorName: { bsonType: "string" },
             amount: { bsonType: "double" },
-            extractedAt: { bsonType: "date" }
-          }
+            extractedAt: { bsonType: "date" },
+          },
         },
         // Versioning
         version: { bsonType: "int" },
@@ -936,20 +1006,20 @@ db.createCollection("documents", {
               versionNum: { bsonType: "int" },
               uploadedAt: { bsonType: "date" },
               uploadedBy: { bsonType: "objectId" },
-              changes: { bsonType: "string" }
-            }
-          }
+              changes: { bsonType: "string" },
+            },
+          },
         },
         // Tags & Search
         tags: { bsonType: "array", items: { bsonType: "string" } },
         // Audit
         createdAt: { bsonType: "date" },
         updatedAt: { bsonType: "date" },
-        createdBy: { bsonType: "objectId" }
+        createdBy: { bsonType: "objectId" },
       },
-      required: ["clientId", "documentType", "fileName", "fileUrl"]
-    }
-  }
+      required: ["clientId", "documentType", "fileName", "fileUrl"],
+    },
+  },
 });
 
 // Indexes
@@ -960,6 +1030,7 @@ db.documents.createIndex({ createdAt: -1 });
 ```
 
 #### **ITCReconciliation Collection** (NEW)
+
 ```typescript
 db.createCollection("itc_reconciliations", {
   validator: {
@@ -979,18 +1050,20 @@ db.createCollection("itc_reconciliations", {
         rejectedITC: { bsonType: "double" },
         // Discrepancy
         discrepancy: { bsonType: "double" },
-        discrepancyReason: { enum: ["excess_claimed", "unclaimed", "gst_rejected", "reconciled"] },
+        discrepancyReason: {
+          enum: ["excess_claimed", "unclaimed", "gst_rejected", "reconciled"],
+        },
         // Action Items
         resolution: { bsonType: "string" },
         resolvedAt: { bsonType: "date" },
         resolvedBy: { bsonType: "objectId" },
         // Audit
         lastSyncedAt: { bsonType: "date" },
-        createdAt: { bsonType: "date" }
+        createdAt: { bsonType: "date" },
       },
-      required: ["clientId", "month", "financialYear"]
-    }
-  }
+      required: ["clientId", "month", "financialYear"],
+    },
+  },
 });
 
 // Index
@@ -998,6 +1071,7 @@ db.itc_reconciliations.createIndex({ clientId: 1, month: 1 }, { unique: true });
 ```
 
 #### **Notification Collection** (Persistent)
+
 ```typescript
 db.createCollection("notifications", {
   validator: {
@@ -1006,19 +1080,30 @@ db.createCollection("notifications", {
       properties: {
         _id: { bsonType: "objectId" },
         userId: { bsonType: "objectId" },
-        type: { enum: ["filing_due", "filing_overdue", "document_missing", "itc_mismatch", "payment_due", "system"] },
+        type: {
+          enum: [
+            "filing_due",
+            "filing_overdue",
+            "document_missing",
+            "itc_mismatch",
+            "payment_due",
+            "system",
+          ],
+        },
         title: { bsonType: "string" },
         message: { bsonType: "string" },
-        relatedEntityType: { enum: ["client", "filing", "document", "payment"] },
+        relatedEntityType: {
+          enum: ["client", "filing", "document", "payment"],
+        },
         relatedEntityId: { bsonType: "objectId" },
         isRead: { bsonType: "bool" },
         readAt: { bsonType: "date" },
         actionUrl: { bsonType: "string" },
-        createdAt: { bsonType: "date" }
+        createdAt: { bsonType: "date" },
       },
-      required: ["userId", "type", "title"]
-    }
-  }
+      required: ["userId", "type", "title"],
+    },
+  },
 });
 
 // Indexes
@@ -1027,6 +1112,7 @@ db.notifications.createIndex({ createdAt: -1 });
 ```
 
 #### **Compliance Rules Collection** (NEW: Configurable GST Rules)
+
 ```typescript
 db.createCollection("compliance_rules", {
   validator: {
@@ -1034,7 +1120,9 @@ db.createCollection("compliance_rules", {
       bsonType: "object",
       properties: {
         _id: { bsonType: "objectId" },
-        ruleType: { enum: ["gst_due_date", "late_fee", "interest", "filing_requirement"] },
+        ruleType: {
+          enum: ["gst_due_date", "late_fee", "interest", "filing_requirement"],
+        },
         ruleCode: { bsonType: "string" }, // e.g., "GSTR3B_DUE_20TH"
         description: { bsonType: "string" },
         // Rule Parameters
@@ -1044,23 +1132,24 @@ db.createCollection("compliance_rules", {
             dueDate: { bsonType: "int" }, // Day of month
             applicableTo: { bsonType: "array" }, // ["monthly", "quarterly"]
             lateFeeBase: { bsonType: "double" }, // Flat or per-day
-            interestRate: { bsonType: "double" } // % per annum
-          }
+            interestRate: { bsonType: "double" }, // % per annum
+          },
         },
         isActive: { bsonType: "bool" },
         effectiveFrom: { bsonType: "date" },
         effectiveUntil: { bsonType: "date" },
         // Audit
         createdAt: { bsonType: "date" },
-        updatedAt: { bsonType: "date" }
+        updatedAt: { bsonType: "date" },
       },
-      required: ["ruleType", "ruleCode", "parameters"]
-    }
-  }
+      required: ["ruleType", "ruleCode", "parameters"],
+    },
+  },
 });
 ```
 
 #### **AuditLog Collection** (Enhanced with Correlation IDs)
+
 ```typescript
 db.createCollection("audit_logs", {
   validator: {
@@ -1069,20 +1158,32 @@ db.createCollection("audit_logs", {
       properties: {
         _id: { bsonType: "objectId" },
         correlationId: { bsonType: "string" }, // Trace requests end-to-end
-        entityType: { enum: ["user", "client", "filing", "invoice", "document", "payment"] },
+        entityType: {
+          enum: ["user", "client", "filing", "invoice", "document", "payment"],
+        },
         entityId: { bsonType: "objectId" },
-        action: { enum: ["create", "update", "delete", "read", "export", "lock", "unlock"] },
+        action: {
+          enum: [
+            "create",
+            "update",
+            "delete",
+            "read",
+            "export",
+            "lock",
+            "unlock",
+          ],
+        },
         changes: { bsonType: "object" }, // What changed (before/after)
         performedBy: { bsonType: "objectId" },
         performedAt: { bsonType: "date" },
         ipAddress: { bsonType: "string" },
         userAgent: { bsonType: "string" },
         status: { enum: ["success", "failed"] },
-        errorMessage: { bsonType: "string" }
+        errorMessage: { bsonType: "string" },
       },
-      required: ["entityType", "entityId", "action", "performedAt"]
-    }
-  }
+      required: ["entityType", "entityId", "action", "performedAt"],
+    },
+  },
 });
 
 // Indexes
@@ -1096,9 +1197,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ## PART 5: DEVELOPMENT ROADMAP (PHASE-WISE)
 
 ### **Phase 0: Foundation (Weeks 1-4)**
+
 **Focus**: Stabilize current system, infrastructure setup, architecture refactoring
 
 **Tasks**:
+
 1. Set up Redis (local + production configs)
 2. Set up AWS S3 bucket with folder structure
 3. Set up Elasticsearch (optional, for doc search)
@@ -1110,6 +1213,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 9. Add React Query setup globally
 
 **Deliverables**:
+
 - Redis + S3 + Elasticsearch running
 - Refactored codebase with modular structure
 - CI/CD pipeline (GitHub Actions) for tests + linting
@@ -1118,9 +1222,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 1: Core Filing Workflow (Weeks 5-10)**
+
 **Focus**: State machine for GST filing, persistent audit trail
 
 **Tasks**:
+
 1. Create `FilingStep` and `FilingAmendment` models
 2. Implement `FilingWorkflowService` (state machine):
    - Draft → Prepare → Validate → File → Locked
@@ -1134,6 +1240,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 7. Write tests for workflow state transitions
 
 **Deliverables**:
+
 - Filing workflow state machine
 - Persistent audit trail (FilingStep collection)
 - Filing board UI (Kanban)
@@ -1142,9 +1249,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 2: Document Management & Versioning (Weeks 11-15)**
+
 **Focus**: Separate document collection, S3 integration, metadata extraction
 
 **Tasks**:
+
 1. Migrate documents from embedded to separate `Document` collection
 2. Integrate AWS S3 (upload, download, delete with presigned URLs)
 3. Add document versioning (track upload history)
@@ -1156,6 +1265,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 7. Migrate existing files to S3 (data migration script)
 
 **Deliverables**:
+
 - Document collection + versioning
 - S3 integration
 - OCR metadata extraction
@@ -1165,9 +1275,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 3: ITC Reconciliation Engine (Weeks 16-22)**
+
 **Focus**: Reconciliation workflow, GST portal integration preparation, mismatch alerts
 
 **Tasks**:
+
 1. Create `ITCReconciliation` model
 2. Create `ReconciliationService`:
    - Compare claimed ITC vs available ITC (from GSTR-2A/2B, currently manual)
@@ -1184,6 +1296,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 6. Add ITC mismatch alert to notifications
 
 **Deliverables**:
+
 - ITC reconciliation model + service
 - Reconciliation UI
 - Mismatch detection + alerts
@@ -1193,9 +1306,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 4: Background Jobs & Notifications (Weeks 23-28)**
+
 **Focus**: Job queue (Bull.js), persistent notifications, scheduled tasks
 
 **Tasks**:
+
 1. Set up Bull.js + Redis job queue
 2. Create job definitions:
    - `DueDateReminderJob`: 7 days, 3 days, 1 day before due date
@@ -1210,6 +1325,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 7. Create cron scheduler (node-cron) for daily/weekly/monthly jobs
 
 **Deliverables**:
+
 - Bull.js job queue setup
 - Job definitions + consumers
 - Persistent notifications
@@ -1219,9 +1335,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 5: Compliance & Risk Scoring (Weeks 29-34)**
+
 **Focus**: Risk scoring, compliance rules, automated alerts, dashboard KPIs
 
 **Tasks**:
+
 1. Create `ClientRisk` model:
    - RiskScore calculation: overdue filings count, filing accuracy, incomplete docs
    - ComplianceStatus: good|warning|critical
@@ -1243,6 +1361,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 7. Add compliance report (annual risk assessment)
 
 **Deliverables**:
+
 - Risk scoring engine
 - Compliance rules framework
 - Admin compliance dashboard
@@ -1252,9 +1371,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 6: Reports & Analytics (Weeks 35-42)**
+
 **Focus**: Advanced reporting, report aggregation pipeline, export formats
 
 **Tasks**:
+
 1. Create `ReportAggregationService`:
    - Monthly compliance summary (per client)
    - Annual filing status report
@@ -1283,6 +1404,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
    - Income/revenue (if commission-based)
 
 **Deliverables**:
+
 - Report aggregation pipelines
 - Report templates + export service
 - Reports UI
@@ -1292,9 +1414,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 7: Scalability & Performance Optimization (Weeks 43-48)**
+
 **Focus**: Caching, indexing, pagination, CDN, API optimization
 
 **Tasks**:
+
 1. **Indexing Strategy** (MongoDB):
    - Add all recommended indexes (see Section 3.2)
    - Use `EXPLAIN` to analyze query performance
@@ -1327,6 +1451,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
    - Identify bottlenecks, scale horizontally if needed
 
 **Deliverables**:
+
 - Optimized indexes
 - Redis caching layer
 - Pagination implementation
@@ -1337,9 +1462,11 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ---
 
 ### **Phase 8: Production Hardening & Compliance (Weeks 49-54)**
+
 **Focus**: Security, data protection, compliance, disaster recovery
 
 **Tasks**:
+
 1. **Security Hardening**:
    - Rotate JWT secrets regularly
    - Encrypt sensitive fields (GSTIN, PAN) at rest (AES-256)
@@ -1375,6 +1502,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
    - Runbooks for common operations (backups, scaling, incident response)
 
 **Deliverables**:
+
 - Security audit report + fixes
 - Data protection policy
 - Disaster recovery runbook
@@ -1419,18 +1547,21 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ### 6.2 Scaling Phases
 
 **Phase 1 (0-500 clients):**
+
 - Single API server (vertical scale: 8GB RAM, 4CPU)
 - Single MongoDB instance (will need backups)
 - Redis single instance
 - Local file storage → S3 migration
 
 **Phase 2 (500-2000 clients):**
+
 - 2-3 API servers behind load balancer
 - MongoDB Replica Set (3 nodes)
 - Redis Cluster (3 nodes)
 - S3 with CDN (CloudFront)
 
 **Phase 3 (2000-5000 clients):**
+
 - 5+ API servers (auto-scaling group)
 - MongoDB Sharded Cluster (3 shards, 3 nodes each):
   - Shard key: `clientId` (for GST queries)
@@ -1446,6 +1577,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ### 6.3 Database Sharding Strategy
 
 **Shard Key**: `clientId` (ObjectId)
+
 - Reason: Most queries filter by `clientId`; GST filing, invoices, documents are all per-client
 - Even distribution: ObjectId is random, so shards will have roughly equal data
 
@@ -1468,6 +1600,7 @@ db.audit_logs.createIndex({ correlationId: 1 }); // Request tracing
 ### 6.4 Caching Strategy
 
 **Redis Key Structure**:
+
 ```
 admin:stats:clients_count
 admin:stats:pending_apps
@@ -1481,6 +1614,7 @@ report:{reportId}
 ```
 
 **TTL Configuration**:
+
 - Admin stats: 5 min (changes frequently)
 - Client data: 1 hour (user-specific, can be stale)
 - GST rules: 24 hours (rarely change)
@@ -1488,6 +1622,7 @@ report:{reportId}
 - Reports: 6 hours (large objects, but updated daily)
 
 **Cache Invalidation**:
+
 ```typescript
 // On filing status update
 await redis.del(`client:${clientId}:filings`);
@@ -1503,6 +1638,7 @@ await redis.del(`client:${clientId}:invoices:${month}`);
 - **Availability**: 99.9% (SLA)
 
 **Benchmarks per operation**:
+
 ```
 GET /api/gst/clients (list)          : < 100ms  (with pagination)
 POST /api/gst/filings                : < 200ms  (validation + create)
@@ -1517,38 +1653,38 @@ GET /api/gst/summary/{clientId}/{month} : < 150ms (aggregation)
 
 ### 7.1 Data Integrity Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Double-filing (client files same month twice) | Audit complications | Add unique constraint on (clientId, month) + lock mechanism after filing |
-| Data loss (file corruption) | Compliance violation | S3 versioning + daily MongoDB backups + 7-year retention |
-| ITC over-claim | Penalties | Reconciliation checks + alerts when claimed > available |
-| Unauthorized filing | Fraud | Role-based access + audit trail + staff approval for amendments |
+| Risk                                          | Impact               | Mitigation                                                               |
+| --------------------------------------------- | -------------------- | ------------------------------------------------------------------------ |
+| Double-filing (client files same month twice) | Audit complications  | Add unique constraint on (clientId, month) + lock mechanism after filing |
+| Data loss (file corruption)                   | Compliance violation | S3 versioning + daily MongoDB backups + 7-year retention                 |
+| ITC over-claim                                | Penalties            | Reconciliation checks + alerts when claimed > available                  |
+| Unauthorized filing                           | Fraud                | Role-based access + audit trail + staff approval for amendments          |
 
 ### 7.2 Operational Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| API downtime | Clients can't file | Load balancer + health checks + auto-restart + failover |
-| Database slowdown (5000+ clients, 100+ invoices/month = 6M docs) | Timeouts | Indexing strategy + aggregation pipelines + caching + sharding |
-| File storage failure | Loss of documents | S3 + versioning + cross-region replication + backups |
-| Job queue backlog | Delays in notifications, reports | Bull.js + scale workers + priority queues |
+| Risk                                                             | Impact                           | Mitigation                                                     |
+| ---------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------- |
+| API downtime                                                     | Clients can't file               | Load balancer + health checks + auto-restart + failover        |
+| Database slowdown (5000+ clients, 100+ invoices/month = 6M docs) | Timeouts                         | Indexing strategy + aggregation pipelines + caching + sharding |
+| File storage failure                                             | Loss of documents                | S3 + versioning + cross-region replication + backups           |
+| Job queue backlog                                                | Delays in notifications, reports | Bull.js + scale workers + priority queues                      |
 
 ### 7.3 Compliance Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Missing audit trail | Cannot audit who changed what | Persistent audit logs + timestamps + user tracking |
-| Data retention violations | GST law compliance | Auto-archive old data (>7 years), compliance report templates |
-| Unauthorized access to GSTIN/PAN | Data breach | Encrypt sensitive fields at rest, mask in logs, role-based access |
-| Report tampering | Audit failures | Immutable audit logs + digital signatures + staff approval workflows |
+| Risk                             | Impact                        | Mitigation                                                           |
+| -------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| Missing audit trail              | Cannot audit who changed what | Persistent audit logs + timestamps + user tracking                   |
+| Data retention violations        | GST law compliance            | Auto-archive old data (>7 years), compliance report templates        |
+| Unauthorized access to GSTIN/PAN | Data breach                   | Encrypt sensitive fields at rest, mask in logs, role-based access    |
+| Report tampering                 | Audit failures                | Immutable audit logs + digital signatures + staff approval workflows |
 
 ### 7.4 Business Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Late filing alerts not sent | Client miss due dates | Redundant notification channels (email + SMS + in-app) + escalation |
-| Staff bottleneck | Manual filings piling up | Staff workload tracking + auto-assign based on capacity + senior staff alerts |
-| Wrong GST rates applied | Incorrect tax calculations | Rules engine + compliance rules collection + version tracking |
+| Risk                        | Impact                     | Mitigation                                                                    |
+| --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
+| Late filing alerts not sent | Client miss due dates      | Redundant notification channels (email + SMS + in-app) + escalation           |
+| Staff bottleneck            | Manual filings piling up   | Staff workload tracking + auto-assign based on capacity + senior staff alerts |
+| Wrong GST rates applied     | Incorrect tax calculations | Rules engine + compliance rules collection + version tracking                 |
 
 ---
 
@@ -1556,58 +1692,58 @@ GET /api/gst/summary/{clientId}/{month} : < 150ms (aggregation)
 
 ### 8.1 Frontend Stack Upgrades
 
-| Current | Recommended | Reason |
-|---------|------------|--------|
-| React 18 | Keep + upgrade to latest | Already good |
-| React Router v6 | Keep | Good for SPA routing |
-| No state management | Zustand | Lightweight, easy to use |
-| React Query (partial) | Expand globally | Better data sync + caching |
-| TailwindCSS 3 | Keep | Good for rapid UI building |
-| Radix UI | Keep | Headless, accessible components |
-| No charting | Add Recharts / ApexCharts | For analytics dashboards |
-| No forms validation | Zod (server) + React Hook Form + Zod (client) | Type-safe validation |
-| No data table | Add TanStack React Table | Virtualized, large datasets |
-| No date picker | Add react-day-picker (already present) | For month selection |
+| Current               | Recommended                                   | Reason                          |
+| --------------------- | --------------------------------------------- | ------------------------------- |
+| React 18              | Keep + upgrade to latest                      | Already good                    |
+| React Router v6       | Keep                                          | Good for SPA routing            |
+| No state management   | Zustand                                       | Lightweight, easy to use        |
+| React Query (partial) | Expand globally                               | Better data sync + caching      |
+| TailwindCSS 3         | Keep                                          | Good for rapid UI building      |
+| Radix UI              | Keep                                          | Headless, accessible components |
+| No charting           | Add Recharts / ApexCharts                     | For analytics dashboards        |
+| No forms validation   | Zod (server) + React Hook Form + Zod (client) | Type-safe validation            |
+| No data table         | Add TanStack React Table                      | Virtualized, large datasets     |
+| No date picker        | Add react-day-picker (already present)        | For month selection             |
 
 ### 8.2 Backend Stack Upgrades
 
-| Current | Recommended | Reason |
-|---------|------------|--------|
-| Express 5 | Keep | Good HTTP framework |
-| MongoDB 9 | Keep + add sharding | Good for SaaS |
-| No Redis | Add Redis | Caching + job queue |
-| No job queue | Add Bull.js | Background jobs |
-| No OCR | Add Tesseract.js (client) or AWS Textract (prod) | Document metadata extraction |
-| No file storage | Add AWS S3 | Scalable, secure file storage |
-| No email service | Add SendGrid / Nodemailer | Email notifications |
-| No logging | Add Winston / Pino | Structured logging |
-| No APM | Add Datadog / New Relic | Performance monitoring |
-| No error tracking | Add Sentry | Error alerting + debugging |
+| Current           | Recommended                                      | Reason                        |
+| ----------------- | ------------------------------------------------ | ----------------------------- |
+| Express 5         | Keep                                             | Good HTTP framework           |
+| MongoDB 9         | Keep + add sharding                              | Good for SaaS                 |
+| No Redis          | Add Redis                                        | Caching + job queue           |
+| No job queue      | Add Bull.js                                      | Background jobs               |
+| No OCR            | Add Tesseract.js (client) or AWS Textract (prod) | Document metadata extraction  |
+| No file storage   | Add AWS S3                                       | Scalable, secure file storage |
+| No email service  | Add SendGrid / Nodemailer                        | Email notifications           |
+| No logging        | Add Winston / Pino                               | Structured logging            |
+| No APM            | Add Datadog / New Relic                          | Performance monitoring        |
+| No error tracking | Add Sentry                                       | Error alerting + debugging    |
 
 ### 8.3 Infrastructure Upgrades
 
-| Layer | Current | Recommended |
-|-------|---------|------------|
-| Deployment | Netlify | AWS ECS / Kubernetes |
-| Database | Single MongoDB | MongoDB Atlas (managed) or self-hosted Replica Set + Sharding |
-| Cache | None | Redis (AWS ElastiCache or self-hosted) |
-| File Storage | Local FS | AWS S3 |
-| CDN | None | CloudFront (S3) or Cloudflare |
-| Monitoring | None | DataDog / CloudWatch |
-| Logging | Console | ELK Stack / CloudWatch Logs |
-| Backup | None | Automated daily backups, 30-day retention |
+| Layer        | Current        | Recommended                                                   |
+| ------------ | -------------- | ------------------------------------------------------------- |
+| Deployment   | Netlify        | AWS ECS / Kubernetes                                          |
+| Database     | Single MongoDB | MongoDB Atlas (managed) or self-hosted Replica Set + Sharding |
+| Cache        | None           | Redis (AWS ElastiCache or self-hosted)                        |
+| File Storage | Local FS       | AWS S3                                                        |
+| CDN          | None           | CloudFront (S3) or Cloudflare                                 |
+| Monitoring   | None           | DataDog / CloudWatch                                          |
+| Logging      | Console        | ELK Stack / CloudWatch Logs                                   |
+| Backup       | None           | Automated daily backups, 30-day retention                     |
 
 ### 8.4 Development Process Improvements
 
-| Area | Current | Recommended |
-|------|---------|------------|
-| Testing | Vitest (partial) | Add E2E (Playwright), integration tests, load tests |
-| CI/CD | Likely manual | GitHub Actions / GitLab CI |
-| Code Quality | Prettier, No linting | Add ESLint + prettier + pre-commit hooks |
-| Documentation | AGENTS.md | API docs (Swagger), Architecture docs, Runbooks |
-| Type Safety | TypeScript | Stricter tsconfig (noImplicitAny, strictNullChecks) |
-| API Types | Shared in shared/api.ts | Generate with OpenAPI / Swagger |
-| Secrets Management | .env | AWS Secrets Manager / HashiCorp Vault |
+| Area               | Current                 | Recommended                                         |
+| ------------------ | ----------------------- | --------------------------------------------------- |
+| Testing            | Vitest (partial)        | Add E2E (Playwright), integration tests, load tests |
+| CI/CD              | Likely manual           | GitHub Actions / GitLab CI                          |
+| Code Quality       | Prettier, No linting    | Add ESLint + prettier + pre-commit hooks            |
+| Documentation      | AGENTS.md               | API docs (Swagger), Architecture docs, Runbooks     |
+| Type Safety        | TypeScript              | Stricter tsconfig (noImplicitAny, strictNullChecks) |
+| API Types          | Shared in shared/api.ts | Generate with OpenAPI / Swagger                     |
+| Secrets Management | .env                    | AWS Secrets Manager / HashiCorp Vault               |
 
 ---
 
@@ -1616,42 +1752,49 @@ GET /api/gst/summary/{clientId}/{month} : < 150ms (aggregation)
 ### **Sprint Goal**: Achieve Phase 2 (Core Filing Workflow + Document Management)
 
 ### **Week 1-2: Setup & Planning**
+
 - [ ] Set up infrastructure (Redis, S3, GitHub Actions)
 - [ ] Refactor backend into modular structure
 - [ ] Create detailed design docs for filing workflow
 - [ ] Create UI mockups for Kanban board
 
 ### **Week 3-4: Filing Workflow State Machine**
+
 - [ ] Implement FilingStep + FilingAmendment models
 - [ ] Build FilingWorkflowService (state machine)
 - [ ] Add unit tests for workflow transitions
 - [ ] Create filing API endpoints
 
 ### **Week 5-6: Filing UI (Kanban Board)**
+
 - [ ] Build Kanban board component (React Beautiful DnD)
 - [ ] Add filing details panel (history, notes, attachments)
 - [ ] Add lock/unlock UI
 - [ ] Integrate with backend
 
 ### **Week 7-8: Document Management**
+
 - [ ] Migrate documents to separate collection
 - [ ] Integrate S3 upload/download
 - [ ] Add document versioning UI
 - [ ] Write data migration script
 
 ### **Week 9-10: OCR & Metadata**
+
 - [ ] Integrate Tesseract.js (client-side)
 - [ ] Add metadata extraction on upload
 - [ ] Build document search UI
 - [ ] Add tagging feature
 
 ### **Week 11: Testing & QA**
+
 - [ ] Write E2E tests for filing workflow
 - [ ] Perform load testing (1000 concurrent users)
 - [ ] Fix bugs + optimize performance
 - [ ] Create user documentation
 
 ### **Week 12: Launch & Monitoring**
+
 - [ ] Deploy to staging
 - [ ] Run UAT with beta users
 - [ ] Deploy to production
@@ -1672,12 +1815,14 @@ Your GST compliance platform has a solid foundation. To scale to **5,000+ client
 This roadmap balances **product velocity** (ship new features) with **technical excellence** (scalability, security, maintainability).
 
 **Next Steps:**
+
 1. Prioritize Phase 0 foundation work (Redis, S3, refactoring)
 2. Assign 1-2 senior engineers to architect Phase 1-2
 3. Set up infrastructure in parallel
 4. Begin 90-day sprint with weekly demos
 
 **Success Metrics:**
+
 - Filing workflow automated (reduce manual steps by 70%)
 - 99.9% availability on production
 - < 200ms API response time (P95)

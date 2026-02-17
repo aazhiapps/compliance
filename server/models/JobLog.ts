@@ -131,7 +131,7 @@ const JobLogSchema = new Schema<JobLogRecord>(
     summary: Schema.Types.Mixed,
     metadata: Schema.Types.Mixed,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -143,10 +143,7 @@ JobLogSchema.index({ nextRetryAt: 1, status: 1 });
 JobLogSchema.index({ triggeredBy: 1, createdAt: -1 });
 
 // TTL index - auto-delete logs older than 90 days
-JobLogSchema.index(
-  { createdAt: 1 },
-  { expireAfterSeconds: 90 * 24 * 60 * 60 }
-);
+JobLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 // Convert to plain object with id field
 JobLogSchema.set("toJSON", {

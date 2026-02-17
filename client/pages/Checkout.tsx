@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle,
@@ -34,7 +40,12 @@ const services: Record<number, Service> = {
     priceAmount: 499,
     turnaround: "2-3 days",
     description: "Easy GST registration and compliance for your business",
-    documents: ["PAN Card", "Aadhar Card", "Business Address Proof", "Bank Statement"],
+    documents: [
+      "PAN Card",
+      "Aadhar Card",
+      "Business Address Proof",
+      "Bank Statement",
+    ],
   },
   2: {
     id: 2,
@@ -44,7 +55,12 @@ const services: Record<number, Service> = {
     priceAmount: 2999,
     turnaround: "7-10 days",
     description: "Register your company and get all legal documents",
-    documents: ["PAN Card", "Aadhar Card", "Address Proof", "Residential Proof"],
+    documents: [
+      "PAN Card",
+      "Aadhar Card",
+      "Address Proof",
+      "Residential Proof",
+    ],
   },
   3: {
     id: 3,
@@ -72,7 +88,9 @@ export default function Checkout() {
   const serviceId = id ? parseInt(id) : 1;
   const service = services[serviceId];
 
-  const [step, setStep] = useState<"documents" | "review" | "payment">("documents");
+  const [step, setStep] = useState<"documents" | "review" | "payment">(
+    "documents",
+  );
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,19 +194,28 @@ export default function Checkout() {
             formData.append("applicationId", applicationId);
             formData.append("fileName", uploadedFile.file.name);
             formData.append("fileType", uploadedFile.file.type);
-            formData.append("fileUrl", `https://example.com/docs/${uploadedFile.file.name}`);
+            formData.append(
+              "fileUrl",
+              `https://example.com/docs/${uploadedFile.file.name}`,
+            );
 
-            const uploadResponse = await fetch("/api/applications/" + applicationId + "/documents", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-              body: formData,
-            });
+            const uploadResponse = await fetch(
+              "/api/applications/" + applicationId + "/documents",
+              {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+              },
+            );
 
             if (!uploadResponse.ok) {
               console.error(`Failed to upload ${uploadedFile.file.name}`);
             }
           } catch (uploadError) {
-            console.error(`Error uploading ${uploadedFile.file.name}:`, uploadError);
+            console.error(
+              `Error uploading ${uploadedFile.file.name}:`,
+              uploadError,
+            );
           }
         }
       }
@@ -250,7 +277,9 @@ export default function Checkout() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-4xl font-bold text-foreground">Complete Your Application</h1>
+          <h1 className="text-4xl font-bold text-foreground">
+            Complete Your Application
+          </h1>
           <p className="text-muted-foreground mt-2">{service.title}</p>
         </div>
 
@@ -262,7 +291,8 @@ export default function Checkout() {
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                   step === s
                     ? "bg-primary text-white"
-                    : (["documents", "review"].includes(s) && step === "payment") ||
+                    : (["documents", "review"].includes(s) &&
+                          step === "payment") ||
                         (s === "review" && step === "payment")
                       ? "bg-success text-white"
                       : "bg-gray-200 text-gray-600"
@@ -275,7 +305,9 @@ export default function Checkout() {
                   idx + 1
                 )}
               </div>
-              <span className="text-sm font-medium capitalize hidden sm:inline">{s}</span>
+              <span className="text-sm font-medium capitalize hidden sm:inline">
+                {s}
+              </span>
               {idx < 2 && <div className="w-8 h-0.5 bg-gray-200"></div>}
             </div>
           ))}
@@ -299,10 +331,15 @@ export default function Checkout() {
                 <CardContent className="space-y-6">
                   {/* Document Requirements */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm font-medium text-blue-900 mb-3">Required Documents:</p>
+                    <p className="text-sm font-medium text-blue-900 mb-3">
+                      Required Documents:
+                    </p>
                     <ul className="space-y-2">
                       {service.documents.map((doc, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm text-blue-900">
+                        <li
+                          key={idx}
+                          className="flex items-center gap-2 text-sm text-blue-900"
+                        >
                           <CheckCircle className="w-4 h-4" />
                           {doc}
                         </li>
@@ -329,7 +366,10 @@ export default function Checkout() {
                   <Button
                     onClick={() => setStep("review")}
                     className="w-full bg-primary hover:bg-primary/90"
-                    disabled={uploadedFiles.filter((f) => f.status === "success").length === 0}
+                    disabled={
+                      uploadedFiles.filter((f) => f.status === "success")
+                        .length === 0
+                    }
                   >
                     Continue to Review
                   </Button>
@@ -342,7 +382,9 @@ export default function Checkout() {
               <Card>
                 <CardHeader>
                   <CardTitle>Review Your Application</CardTitle>
-                  <CardDescription>Please review all details before payment</CardDescription>
+                  <CardDescription>
+                    Please review all details before payment
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Application Details */}
@@ -355,7 +397,9 @@ export default function Checkout() {
                           <span className="font-medium">{service.title}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Estimated Time</span>
+                          <span className="text-muted-foreground">
+                            Estimated Time
+                          </span>
                           <span className="font-medium flex items-center gap-1">
                             <Clock className="w-4 h-4" /> {service.turnaround}
                           </span>
@@ -431,7 +475,9 @@ export default function Checkout() {
                     <Lock className="w-5 h-5 text-primary" />
                     Secure Payment
                   </CardTitle>
-                  <CardDescription>Complete your payment securely via Razorpay</CardDescription>
+                  <CardDescription>
+                    Complete your payment securely via Razorpay
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Payment Methods */}
@@ -484,7 +530,9 @@ export default function Checkout() {
                   <div className="text-2xl">{service.icon}</div>
                   <div>
                     <p className="font-semibold text-sm">{service.title}</p>
-                    <p className="text-xs text-muted-foreground">{service.turnaround}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {service.turnaround}
+                    </p>
                   </div>
                 </div>
 
@@ -496,20 +544,28 @@ export default function Checkout() {
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-success">Discount ({appliedCoupon})</span>
-                      <span className="font-medium text-success">-₹{discount}</span>
+                      <span className="text-success">
+                        Discount ({appliedCoupon})
+                      </span>
+                      <span className="font-medium text-success">
+                        -₹{discount}
+                      </span>
                     </div>
                   )}
 
                   <div className="border-t pt-3 flex justify-between">
                     <span className="font-semibold">Total Amount</span>
-                    <span className="font-bold text-lg text-primary">₹{finalPrice}</span>
+                    <span className="font-bold text-lg text-primary">
+                      ₹{finalPrice}
+                    </span>
                   </div>
                 </div>
 
                 {/* Coupon Code */}
                 <div className="pt-2 border-t space-y-2">
-                  <label className="text-sm font-medium">Have a coupon code?</label>
+                  <label className="text-sm font-medium">
+                    Have a coupon code?
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -533,9 +589,10 @@ export default function Checkout() {
                       size="sm"
                       variant="outline"
                       onClick={(e) => {
-                        const input = (e.currentTarget.parentElement?.querySelector(
-                          "input"
-                        ) as HTMLInputElement) || null;
+                        const input =
+                          (e.currentTarget.parentElement?.querySelector(
+                            "input",
+                          ) as HTMLInputElement) || null;
                         if (input) {
                           handleApplyCoupon(input.value);
                         }

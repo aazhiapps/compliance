@@ -26,7 +26,7 @@ export interface ITCReconciliationRecord extends MongooseDocument {
   // Discrepancy analysis
   discrepancy: number; // Claimed - Available
   discrepancyPercentage: number; // (Discrepancy / Available) * 100
-  discrepancyReason?: 
+  discrepancyReason?:
     | "excess_claimed"
     | "unclaimed"
     | "gst_rejected"
@@ -134,7 +134,7 @@ const ITCReconciliationSchema = new Schema<ITCReconciliationRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Unique constraint on clientId + month to ensure one record per client-month
@@ -158,6 +158,9 @@ ITCReconciliationSchema.set("toJSON", {
 
 export const ITCReconciliationModel =
   mongoose.models.ITCReconciliation ||
-  mongoose.model<ITCReconciliationRecord>("ITCReconciliation", ITCReconciliationSchema);
+  mongoose.model<ITCReconciliationRecord>(
+    "ITCReconciliation",
+    ITCReconciliationSchema,
+  );
 
 export default ITCReconciliationModel;

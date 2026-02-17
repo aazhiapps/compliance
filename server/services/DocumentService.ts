@@ -12,9 +12,20 @@ import { logger } from "../utils/logger";
 interface UploadDocumentOptions {
   clientId?: ObjectId;
   userId?: ObjectId;
-  linkedEntityType: "invoice_purchase" | "invoice_sales" | "filing" | "application" | "report";
+  linkedEntityType:
+    | "invoice_purchase"
+    | "invoice_sales"
+    | "filing"
+    | "application"
+    | "report";
   linkedEntityId: ObjectId;
-  documentType: "invoice" | "challan" | "certificate" | "gstr" | "report" | "other";
+  documentType:
+    | "invoice"
+    | "challan"
+    | "certificate"
+    | "gstr"
+    | "report"
+    | "other";
   tags?: string[];
   description?: string;
   uploadedBy: ObjectId;
@@ -46,7 +57,7 @@ export class DocumentService {
     fileBuffer: Buffer,
     fileName: string,
     mimeType: string,
-    options: UploadDocumentOptions
+    options: UploadDocumentOptions,
   ) {
     try {
       // Generate document ID
@@ -64,28 +75,37 @@ export class DocumentService {
           fy,
           month,
           options.documentType,
-          documentId
+          documentId,
         );
       } else if (options.userId) {
         // Application document path
         s3Path = s3Paths.application(
           options.userId.toString(),
           options.linkedEntityId.toString(),
-          documentId
+          documentId,
         );
       } else {
         throw new Error("Either clientId or userId must be provided");
       }
 
       // Upload to S3
-      const fileUrl = await this.s3Service.uploadFile(s3Path, fileBuffer, mimeType, {
-        documentId,
-        entityType: options.linkedEntityType,
-        documentType: options.documentType,
-      });
+      const fileUrl = await this.s3Service.uploadFile(
+        s3Path,
+        fileBuffer,
+        mimeType,
+        {
+          documentId,
+          entityType: options.linkedEntityType,
+          documentType: options.documentType,
+        },
+      );
 
       // Extract metadata (TODO: Implement OCR)
-      const metadata = await this.extractMetadata(fileBuffer, fileName, mimeType);
+      const metadata = await this.extractMetadata(
+        fileBuffer,
+        fileName,
+        mimeType,
+      );
 
       // Create document record
       const document = await DocumentRepository.createDocument({
@@ -131,13 +151,17 @@ export class DocumentService {
       }
 
       // Verify access (TODO: Implement proper authorization)
-      if (userId && document.userId && document.userId.toString() !== userId.toString()) {
+      if (
+        userId &&
+        document.userId &&
+        document.userId.toString() !== userId.toString()
+      ) {
         throw new Error("Unauthorized access to document");
       }
 
       // Download from S3
       const fileBuffer = await this.s3Service.downloadFile(
-        document.fileUrl.replace(/^s3:\/\/[^/]+\//, "")
+        document.fileUrl.replace(/^s3:\/\/[^/]+\//, ""),
       );
 
       logger.info("Document downloaded", { documentId });
@@ -148,7 +172,9 @@ export class DocumentService {
         mimeType: document.mimeType,
       };
     } catch (error) {
-      logger.error("Failed to download document", error as Error, { documentId });
+      logger.error("Failed to download document", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -165,13 +191,18 @@ export class DocumentService {
       }
 
       const s3Path = document.fileUrl.replace(/^s3:\/\/[^/]+\//, "");
-      const presignedUrl = await this.s3Service.getPresignedDownloadUrl(s3Path, expiresIn);
+      const presignedUrl = await this.s3Service.getPresignedDownloadUrl(
+        s3Path,
+        expiresIn,
+      );
 
       logger.info("Presigned download URL generated", { documentId });
 
       return presignedUrl;
     } catch (error) {
-      logger.error("Failed to get download URL", error as Error, { documentId });
+      logger.error("Failed to get download URL", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -185,7 +216,7 @@ export class DocumentService {
     fileName: string,
     mimeType: string,
     changes: string,
-    uploadedBy: ObjectId
+    uploadedBy: ObjectId,
   ) {
     try {
       const document = await DocumentRepository.getDocumentById(documentId);
@@ -198,13 +229,22 @@ export class DocumentService {
       const s3Path = document.fileUrl.replace(/^s3:\/\/[^/]+\//, "");
 
       // Upload new version to S3
-      const fileUrl = await this.s3Service.uploadFile(s3Path, fileBuffer, mimeType, {
-        documentId,
-        version: `v${document.version + 1}`,
-      });
+      const fileUrl = await this.s3Service.uploadFile(
+        s3Path,
+        fileBuffer,
+        mimeType,
+        {
+          documentId,
+          version: `v${document.version + 1}`,
+        },
+      );
 
       // Extract metadata for new version
-      const metadata = await this.extractMetadata(fileBuffer, fileName, mimeType);
+      const metadata = await this.extractMetadata(
+        fileBuffer,
+        fileName,
+        mimeType,
+      );
 
       // Update document with new version
       const updated = await DocumentRepository.uploadNewVersion(documentId, {
@@ -215,11 +255,16 @@ export class DocumentService {
         metadata,
       });
 
-      logger.info("Document version updated", { documentId, newVersion: updated.version });
+      logger.info("Document version updated", {
+        documentId,
+        newVersion: updated.version,
+      });
 
       return updated;
     } catch (error) {
-      logger.error("Failed to update document version", error as Error, { documentId });
+      logger.error("Failed to update document version", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -240,7 +285,9 @@ export class DocumentService {
         const s3Path = document.fileUrl.replace(/^s3:\/\/[^/]+\//, "");
         await this.s3Service.deleteFile(s3Path);
       } catch (error) {
-        logger.warn("Failed to delete file from S3", error as Error, { documentId });
+        logger.warn("Failed to delete file from S3", error as Error, {
+          documentId,
+        });
         // Continue - soft delete the record anyway
       }
 
@@ -261,7 +308,7 @@ export class DocumentService {
   private async extractMetadata(
     fileBuffer: Buffer,
     fileName: string,
-    mimeType: string
+    mimeType: string,
   ): Promise<ExtractedMetadata> {
     try {
       // For now, extract basic metadata from file name and type
@@ -305,7 +352,7 @@ export class DocumentService {
         results = await DocumentRepository.getClientDocuments(
           query.clientId,
           query.documentType,
-          query.tags
+          query.tags,
         );
       } else if (query.metadata) {
         results = await DocumentRepository.searchByMetadata(query.metadata);
@@ -333,7 +380,9 @@ export class DocumentService {
         totalSize: stats.reduce((sum, stat) => sum + stat.totalSize, 0),
       };
     } catch (error) {
-      logger.error("Failed to get document stats", error as Error, { clientId });
+      logger.error("Failed to get document stats", error as Error, {
+        clientId,
+      });
       throw error;
     }
   }
@@ -346,7 +395,9 @@ export class DocumentService {
       const history = await DocumentRepository.getVersionHistory(documentId);
       return history;
     } catch (error) {
-      logger.error("Failed to get version history", error as Error, { documentId });
+      logger.error("Failed to get version history", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }

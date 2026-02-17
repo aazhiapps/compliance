@@ -1,5 +1,4 @@
 import Redis from "ioredis";
-import { env } from "./env";
 
 /**
  * Redis client configuration for caching and job queue
@@ -128,7 +127,10 @@ export const cacheService = {
       if (keys.length === 0) return 0;
       return await redisClient.del(...keys);
     } catch (error) {
-      console.error(`Cache pattern delete error for pattern ${pattern}:`, error);
+      console.error(
+        `Cache pattern delete error for pattern ${pattern}:`,
+        error,
+      );
       return 0;
     }
   },

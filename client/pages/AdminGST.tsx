@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, FileText, TrendingUp, Calendar, LayoutGrid } from "lucide-react";
+import {
+  Plus,
+  Building2,
+  FileText,
+  TrendingUp,
+  Calendar,
+  LayoutGrid,
+} from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { GSTClient } from "@shared/gst";
 import ClientSelector from "@/components/gst/ClientSelector";
@@ -105,7 +118,8 @@ export default function AdminGST() {
               <Building2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Client Selected</h3>
               <p className="text-muted-foreground mb-4">
-                Select a client from the dropdown above or create a new GST client to get started.
+                Select a client from the dropdown above or create a new GST
+                client to get started.
               </p>
               <Button onClick={() => setShowClientForm(true)}>
                 <Plus className="w-4 h-4 mr-2" />
@@ -120,8 +134,9 @@ export default function AdminGST() {
               <CardHeader>
                 <CardTitle>{selectedClient.clientName}</CardTitle>
                 <CardDescription>
-                  GSTIN: {selectedClient.gstin} | PAN: {selectedClient.panNumber} | 
-                  Filing Frequency: {selectedClient.filingFrequency}
+                  GSTIN: {selectedClient.gstin} | PAN:{" "}
+                  {selectedClient.panNumber} | Filing Frequency:{" "}
+                  {selectedClient.filingFrequency}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -172,7 +187,10 @@ export default function AdminGST() {
                   clientId={selectedClient.id}
                   clientName={selectedClient.clientName}
                   month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
+                  financialYear={selectedClient.financialYearStart.substring(
+                    0,
+                    4,
+                  )}
                 />
               </TabsContent>
 
@@ -181,7 +199,10 @@ export default function AdminGST() {
                   clientId={selectedClient.id}
                   clientName={selectedClient.clientName}
                   month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
+                  financialYear={selectedClient.financialYearStart.substring(
+                    0,
+                    4,
+                  )}
                 />
               </TabsContent>
 
@@ -189,7 +210,10 @@ export default function AdminGST() {
                 <FilingStatus
                   clientId={selectedClient.id}
                   month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
+                  financialYear={selectedClient.financialYearStart.substring(
+                    0,
+                    4,
+                  )}
                 />
               </TabsContent>
             </Tabs>

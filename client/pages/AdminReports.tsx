@@ -77,9 +77,7 @@ export default function AdminReports() {
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [financialYears, setFinancialYears] = useState<string[]>([]);
-  const [exportLogs, setExportLogs] = useState<Record<string, ExportLog[]>>(
-    {}
-  );
+  const [exportLogs, setExportLogs] = useState<Record<string, ExportLog[]>>({});
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -192,7 +190,7 @@ export default function AdminReports() {
       (report) =>
         report.clientName.toLowerCase().includes(query) ||
         report.reportType.toLowerCase().includes(query) ||
-        report.id.toLowerCase().includes(query)
+        report.id.toLowerCase().includes(query),
     );
     setFilteredReports(filtered);
   };
@@ -430,7 +428,10 @@ export default function AdminReports() {
 
               {/* Client Filter */}
               <div>
-                <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <Select
+                  value={selectedClient}
+                  onValueChange={setSelectedClient}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Client" />
                   </SelectTrigger>
@@ -525,7 +526,11 @@ export default function AdminReports() {
                 <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Reports Found</h3>
                 <p className="text-muted-foreground">
-                  {searchQuery || selectedClient !== "all" || selectedFY !== "all" || selectedReportType !== "all" || selectedStatus !== "all"
+                  {searchQuery ||
+                  selectedClient !== "all" ||
+                  selectedFY !== "all" ||
+                  selectedReportType !== "all" ||
+                  selectedStatus !== "all"
                     ? "Try adjusting your filters"
                     : "No reports available yet"}
                 </p>
@@ -576,8 +581,7 @@ export default function AdminReports() {
                                 size="sm"
                                 onClick={() => handleExportCSV(report.id)}
                                 disabled={
-                                  isExportDisabled() ||
-                                  exportingCSV[report.id]
+                                  isExportDisabled() || exportingCSV[report.id]
                                 }
                                 className="gap-1"
                               >
@@ -600,8 +604,7 @@ export default function AdminReports() {
                                 size="sm"
                                 onClick={() => handleExportPDF(report.id)}
                                 disabled={
-                                  isExportDisabled() ||
-                                  exportingPDF[report.id]
+                                  isExportDisabled() || exportingPDF[report.id]
                                 }
                                 className="gap-1"
                               >
@@ -633,49 +636,53 @@ export default function AdminReports() {
                                   <DialogHeader>
                                     <DialogTitle>Export Audit Logs</DialogTitle>
                                     <DialogDescription>
-                                      View export history for {report.clientName} -{" "}
-                                      {report.reportType}
+                                      View export history for{" "}
+                                      {report.clientName} - {report.reportType}
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="space-y-4">
                                     {exportLogs[report.id] &&
                                     exportLogs[report.id].length > 0 ? (
-                                      exportLogs[report.id].map((log, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-start gap-3 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex-shrink-0 mt-1">
-                                            {log.format === "csv" ? (
-                                              <FileSpreadsheet className="w-4 h-4 text-green-600" />
-                                            ) : (
-                                              <FileDown className="w-4 h-4 text-red-600" />
-                                            )}
-                                          </div>
-                                          <div className="flex-1 space-y-1">
-                                            <div className="flex items-center justify-between">
-                                              <span className="font-medium">
-                                                {log.format.toUpperCase()} Export
-                                              </span>
-                                              <Badge variant="outline">
+                                      exportLogs[report.id].map(
+                                        (log, index) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-start gap-3 p-3 border rounded-lg"
+                                          >
+                                            <div className="flex-shrink-0 mt-1">
+                                              {log.format === "csv" ? (
+                                                <FileSpreadsheet className="w-4 h-4 text-green-600" />
+                                              ) : (
+                                                <FileDown className="w-4 h-4 text-red-600" />
+                                              )}
+                                            </div>
+                                            <div className="flex-1 space-y-1">
+                                              <div className="flex items-center justify-between">
+                                                <span className="font-medium">
+                                                  {log.format.toUpperCase()}{" "}
+                                                  Export
+                                                </span>
+                                                <Badge variant="outline">
+                                                  {new Date(
+                                                    log.exportedAt,
+                                                  ).toLocaleDateString()}
+                                                </Badge>
+                                              </div>
+                                              <p className="text-sm text-muted-foreground">
+                                                Exported by:{" "}
+                                                {log.exportedByName ||
+                                                  "Unknown"}
+                                              </p>
+                                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Clock className="w-3 h-3" />
                                                 {new Date(
-                                                  log.exportedAt
-                                                ).toLocaleDateString()}
-                                              </Badge>
-                                            </div>
-                                            <p className="text-sm text-muted-foreground">
-                                              Exported by:{" "}
-                                              {log.exportedByName || "Unknown"}
-                                            </p>
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                              <Clock className="w-3 h-3" />
-                                              {new Date(
-                                                log.exportedAt
-                                              ).toLocaleTimeString()}
+                                                  log.exportedAt,
+                                                ).toLocaleTimeString()}
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                      ))
+                                        ),
+                                      )
                                     ) : (
                                       <div className="text-center py-8 text-muted-foreground">
                                         <Download className="w-12 h-12 mx-auto mb-2 opacity-50" />

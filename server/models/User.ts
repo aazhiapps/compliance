@@ -63,7 +63,10 @@ const UserSchema = new Schema<IUserDocument>(
       transform: function (_doc, ret) {
         ret.id = ret._id.toString();
         if (ret.createdAt) {
-          ret.createdAt = ret.createdAt instanceof Date ? ret.createdAt.toISOString() : ret.createdAt;
+          ret.createdAt =
+            ret.createdAt instanceof Date
+              ? ret.createdAt.toISOString()
+              : ret.createdAt;
         }
         delete ret._id;
         delete ret.__v;
@@ -72,7 +75,7 @@ const UserSchema = new Schema<IUserDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance

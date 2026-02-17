@@ -15,93 +15,112 @@ const router = Router();
  * Create a new filing record for a client-month
  * Required: Admin or Staff
  */
-router.post("/", authenticateToken, requireStaff, async (req: Request, res: Response) => {
-  try {
-    const { clientId, month, financialYear } = req.body;
+router.post(
+  "/",
+  authenticateToken,
+  requireStaff,
+  async (req: Request, res: Response) => {
+    try {
+      const { clientId, month, financialYear } = req.body;
 
-    // Validate input
-    if (!clientId || !month || !financialYear) {
-      return res.status(400).json({ error: "Missing required fields" });
+      // Validate input
+      if (!clientId || !month || !financialYear) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Check if filing already exists
+      const existing = await FilingRepository.getFilingByClientMonth(
+        new ObjectId(clientId),
+        month,
+      );
+      if (existing) {
+        return res
+          .status(409)
+          .json({ error: "Filing already exists for this month" });
+      }
+
+      // Create filing
+      const filing = await FilingRepository.createFiling({
+        clientId: new ObjectId(clientId),
+        month,
+        financialYear,
+        workflowStatus: "draft",
+        currentStep: "initialization",
+      });
+
+      logger.info("Filing created via API", {
+        correlationId: req.correlationId,
+        filingId: filing.id,
+        clientId,
+      });
+
+      res.status(201).json(filing);
+    } catch (error) {
+      logger.error("Failed to create filing", error as Error, {
+        correlationId: req.correlationId,
+      });
+      res.status(500).json({ error: "Failed to create filing" });
     }
-
-    // Check if filing already exists
-    const existing = await FilingRepository.getFilingByClientMonth(
-      new ObjectId(clientId),
-      month
-    );
-    if (existing) {
-      return res.status(409).json({ error: "Filing already exists for this month" });
-    }
-
-    // Create filing
-    const filing = await FilingRepository.createFiling({
-      clientId: new ObjectId(clientId),
-      month,
-      financialYear,
-      workflowStatus: "draft",
-      currentStep: "initialization",
-    });
-
-    logger.info("Filing created via API", {
-      correlationId: req.correlationId,
-      filingId: filing.id,
-      clientId,
-    });
-
-    res.status(201).json(filing);
-  } catch (error) {
-    logger.error("Failed to create filing", error as Error, {
-      correlationId: req.correlationId,
-    });
-    res.status(500).json({ error: "Failed to create filing" });
-  }
-});
+  },
+);
 
 /**
  * GET /api/filings/:filingId
  * Get filing details
  */
-router.get("/:filingId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { filingId } = req.params;
+router.get(
+  "/:filingId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { filingId } = req.params;
 
-    const filing = await FilingRepository.getFilingById(new ObjectId(filingId));
-    const steps = await FilingRepository.getFilingSteps(new ObjectId(filingId));
+      const filing = await FilingRepository.getFilingById(
+        new ObjectId(filingId),
+      );
+      const steps = await FilingRepository.getFilingSteps(
+        new ObjectId(filingId),
+      );
 
-    res.json({
-      ...filing,
-      steps,
-    });
-  } catch (error) {
-    logger.error("Failed to get filing", error as Error, {
-      correlationId: req.correlationId,
-    });
-    res.status(500).json({ error: "Failed to get filing" });
-  }
-});
+      res.json({
+        ...filing,
+        steps,
+      });
+    } catch (error) {
+      logger.error("Failed to get filing", error as Error, {
+        correlationId: req.correlationId,
+      });
+      res.status(500).json({ error: "Failed to get filing" });
+    }
+  },
+);
 
 /**
  * GET /api/filings/client/:clientId
  * Get all filings for a client
  */
-router.get("/client/:clientId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { clientId } = req.params;
-    const { financialYear } = req.query;
+router.get(
+  "/client/:clientId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const { financialYear } = req.query;
 
-    const filings = await FilingRepository.getClientFilings(
-      new ObjectId(clientId),
-      financialYear as string
-    );
+      const filings = await FilingRepository.getClientFilings(
+        new ObjectId(clientId),
+        financialYear as string,
+      );
 
-    res.json(filings);
-  } catch (error) {
-    logger.error("Failed to get client filings", error as Error, {
-      correlationId: req.correlationId,
-    });
-    res.status(500).json({ error: "Failed to get client filings" });
-  }
-});
+      res.json(filings);
+    } catch (error) {
+      logger.error("Failed to get client filings", error as Error, {
+        correlationId: req.correlationId,
+      });
+      res.status(500).json({ error: "Failed to get client filings" });
+    }
+  },
+);
 
 /**
  * POST /api/filings/:filingId/transition
@@ -122,7 +141,9 @@ router.post(
         return res.status(400).json({ error: "Missing toStatus or stepType" });
       }
 
-      const filing = await FilingRepository.getFilingById(new ObjectId(filingId));
+      const filing = await FilingRepository.getFilingById(
+        new ObjectId(filingId),
+      );
 
       // Transition filing
       const result = await FilingWorkflowService.transitionFiling(
@@ -131,7 +152,7 @@ router.post(
         toStatus,
         new ObjectId(userId),
         stepType,
-        comments
+        comments,
       );
 
       logger.info("Filing transitioned via API", {
@@ -148,7 +169,7 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -174,7 +195,7 @@ router.post(
         new ObjectId(filingId),
         new ObjectId(userId),
         arn,
-        new Date(filedDate)
+        new Date(filedDate),
       );
 
       res.json(updated);
@@ -184,7 +205,7 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -211,7 +232,7 @@ router.post(
         new ObjectId(userId),
         arn,
         new Date(filedDate),
-        taxDetails || {}
+        taxDetails || {},
       );
 
       res.json(updated);
@@ -221,7 +242,7 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -242,7 +263,7 @@ router.post(
       const updated = await FilingWorkflowService.lockFilingMonth(
         new ObjectId(filingId),
         new ObjectId(userId),
-        reason || "Monthly filing complete"
+        reason || "Monthly filing complete",
       );
 
       res.json(updated);
@@ -252,7 +273,7 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -277,7 +298,7 @@ router.post(
       const updated = await FilingWorkflowService.unlockFilingMonth(
         new ObjectId(filingId),
         new ObjectId(userId),
-        reason
+        reason,
       );
 
       res.json(updated);
@@ -287,7 +308,7 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
@@ -312,7 +333,7 @@ router.post(
       const updated = await FilingWorkflowService.startAmendment(
         new ObjectId(filingId),
         new ObjectId(userId),
-        reason
+        reason,
       );
 
       res.json(updated);
@@ -322,27 +343,33 @@ router.post(
       });
       res.status(500).json({ error: (error as Error).message });
     }
-  }
+  },
 );
 
 /**
  * GET /api/filings/:filingId/steps
  * Get filing workflow steps
  */
-router.get("/:filingId/steps", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { filingId } = req.params;
+router.get(
+  "/:filingId/steps",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { filingId } = req.params;
 
-    const steps = await FilingRepository.getFilingSteps(new ObjectId(filingId));
+      const steps = await FilingRepository.getFilingSteps(
+        new ObjectId(filingId),
+      );
 
-    res.json(steps);
-  } catch (error) {
-    logger.error("Failed to get filing steps", error as Error, {
-      correlationId: req.correlationId,
-    });
-    res.status(500).json({ error: "Failed to get filing steps" });
-  }
-});
+      res.json(steps);
+    } catch (error) {
+      logger.error("Failed to get filing steps", error as Error, {
+        correlationId: req.correlationId,
+      });
+      res.status(500).json({ error: "Failed to get filing steps" });
+    }
+  },
+);
 
 /**
  * GET /api/filings/status/overdue
@@ -363,7 +390,7 @@ router.get(
       });
       res.status(500).json({ error: "Failed to get overdue filings" });
     }
-  }
+  },
 );
 
 /**
@@ -377,7 +404,9 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { days = "7" } = req.query;
-      const upcoming = await FilingRepository.getUpcomingDueFilings(parseInt(days as string));
+      const upcoming = await FilingRepository.getUpcomingDueFilings(
+        parseInt(days as string),
+      );
 
       res.json(upcoming);
     } catch (error) {
@@ -386,7 +415,7 @@ router.get(
       });
       res.status(500).json({ error: "Failed to get upcoming filings" });
     }
-  }
+  },
 );
 
 /**
@@ -402,7 +431,7 @@ router.get(
 
       const report = await FilingRepository.getFilingStatusReport(
         new ObjectId(clientId),
-        financialYear
+        financialYear,
       );
 
       res.json(report);
@@ -412,7 +441,7 @@ router.get(
       });
       res.status(500).json({ error: "Failed to get filing status report" });
     }
-  }
+  },
 );
 
 export default router;

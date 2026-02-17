@@ -9,7 +9,16 @@ import { ObjectId } from "mongodb";
 export interface FilingStepDocument extends MongooseDocument {
   id: string;
   filingId: ObjectId;
-  stepType: "gstr1_prepare" | "gstr1_validate" | "gstr1_file" | "gstr3b_prepare" | "gstr3b_validate" | "gstr3b_file" | "amendment" | "lock_month" | "unlock_month";
+  stepType:
+    | "gstr1_prepare"
+    | "gstr1_validate"
+    | "gstr1_file"
+    | "gstr3b_prepare"
+    | "gstr3b_validate"
+    | "gstr3b_file"
+    | "amendment"
+    | "lock_month"
+    | "unlock_month";
   status: "pending" | "in_progress" | "completed" | "failed" | "skipped";
   title: string; // Human-readable step name
   description?: string;
@@ -103,7 +112,7 @@ const FilingStepSchema = new Schema<FilingStepDocument>(
     ipAddress: String,
     userAgent: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for efficient querying
@@ -123,6 +132,7 @@ FilingStepSchema.set("toJSON", {
 });
 
 export const FilingStepModel =
-  mongoose.models.FilingStep || mongoose.model<FilingStepDocument>("FilingStep", FilingStepSchema);
+  mongoose.models.FilingStep ||
+  mongoose.model<FilingStepDocument>("FilingStep", FilingStepSchema);
 
 export default FilingStepModel;

@@ -24,7 +24,14 @@ export interface GSTFiling {
   clientId: string;
   month: string;
   financialYear: string;
-  workflowStatus: "draft" | "prepared" | "validated" | "filed" | "amendment" | "locked" | "archived";
+  workflowStatus:
+    | "draft"
+    | "prepared"
+    | "validated"
+    | "filed"
+    | "amendment"
+    | "locked"
+    | "archived";
   currentStep: string;
   gstr1: {
     filed: boolean;
@@ -131,10 +138,13 @@ export const useGSTStore = create<GSTStore>((set) => ({
   // Client actions
   setClients: (clients) => set({ clients }),
   setSelectedClientId: (id) => set({ selectedClientId: id }),
-  addClient: (client) => set((state) => ({ clients: [...state.clients, client] })),
+  addClient: (client) =>
+    set((state) => ({ clients: [...state.clients, client] })),
   updateClient: (id, updates) =>
     set((state) => ({
-      clients: state.clients.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+      clients: state.clients.map((c) =>
+        c.id === id ? { ...c, ...updates } : c,
+      ),
     })),
 
   // Filing actions
@@ -155,7 +165,7 @@ export const useGSTStore = create<GSTStore>((set) => ({
       const newFilings = { ...state.filings };
       for (const clientId in newFilings) {
         newFilings[clientId] = newFilings[clientId].map((f) =>
-          f.id === id ? { ...f, ...updates } : f
+          f.id === id ? { ...f, ...updates } : f,
         );
       }
       return { filings: newFilings };
@@ -181,11 +191,16 @@ export const useGSTStore = create<GSTStore>((set) => ({
   addInvoice: (invoice) =>
     set((state) => ({
       invoices: [...state.invoices, invoice],
-      filteredInvoices: filterInvoices([...state.invoices, invoice], state.invoiceFilter),
+      filteredInvoices: filterInvoices(
+        [...state.invoices, invoice],
+        state.invoiceFilter,
+      ),
     })),
   updateInvoice: (id, updates) =>
     set((state) => ({
-      invoices: state.invoices.map((i) => (i.id === id ? { ...i, ...updates } : i)),
+      invoices: state.invoices.map((i) =>
+        i.id === id ? { ...i, ...updates } : i,
+      ),
     })),
   setInvoiceFilter: (filter) =>
     set((state) => {
@@ -211,11 +226,12 @@ export const useGSTStore = create<GSTStore>((set) => ({
  */
 function filterInvoices(
   invoices: GSTInvoice[],
-  filter: Record<string, any>
+  filter: Record<string, any>,
 ): GSTInvoice[] {
   return invoices.filter((invoice) => {
     if (filter.type && invoice.invoiceType !== filter.type) return false;
-    if (filter.month && invoice.invoiceDate.slice(0, 7) !== filter.month) return false;
+    if (filter.month && invoice.invoiceDate.slice(0, 7) !== filter.month)
+      return false;
     if (
       filter.reconcilationStatus &&
       invoice.reconciliationStatus !== filter.reconcilationStatus

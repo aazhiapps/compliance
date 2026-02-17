@@ -1,5 +1,11 @@
 import { RequestHandler } from "express";
-import { SignupRequest, LoginRequest, AuthResponse, User, Application } from "@shared/auth";
+import {
+  SignupRequest,
+  LoginRequest,
+  AuthResponse,
+  User,
+  Application,
+} from "@shared/auth";
 import bcrypt from "bcrypt";
 import { generateToken } from "../middleware/auth";
 import { userRepository } from "../repositories/userRepository";
@@ -93,13 +99,17 @@ export const seedDemoUsers = async () => {
     },
   ];
 
-  const results = await Promise.allSettled(demoUsers.map(user => userRepository.create(user)));
-  const succeeded = results.filter(r => r.status === 'fulfilled').length;
-  const failed = results.filter(r => r.status === 'rejected').length;
+  const results = await Promise.allSettled(
+    demoUsers.map((user) => userRepository.create(user)),
+  );
+  const succeeded = results.filter((r) => r.status === "fulfilled").length;
+  const failed = results.filter((r) => r.status === "rejected").length;
   if (failed > 0) {
     console.warn(`⚠ ${failed} user(s) failed to seed`);
   }
-  console.log(`✓ Demo users seeded successfully (${succeeded}/${demoUsers.length})`);
+  console.log(
+    `✓ Demo users seeded successfully (${succeeded}/${demoUsers.length})`,
+  );
 };
 
 /**
@@ -216,13 +226,17 @@ export const seedDemoApplications = async () => {
     },
   ];
 
-  const results = await Promise.allSettled(demoApplications.map(app => applicationRepository.create(app)));
-  const succeeded = results.filter(r => r.status === 'fulfilled').length;
-  const failed = results.filter(r => r.status === 'rejected').length;
+  const results = await Promise.allSettled(
+    demoApplications.map((app) => applicationRepository.create(app)),
+  );
+  const succeeded = results.filter((r) => r.status === "fulfilled").length;
+  const failed = results.filter((r) => r.status === "rejected").length;
   if (failed > 0) {
     console.warn(`⚠ ${failed} application(s) failed to seed`);
   }
-  console.log(`✓ Demo applications seeded successfully (${succeeded}/${demoApplications.length})`);
+  console.log(
+    `✓ Demo applications seeded successfully (${succeeded}/${demoApplications.length})`,
+  );
 };
 
 /**
@@ -234,8 +248,15 @@ export const handleSignup: RequestHandler<
   AuthResponse,
   SignupRequest
 > = async (req, res) => {
-  const { email, firstName, lastName, phone, password, businessType, language } =
-    req.body;
+  const {
+    email,
+    firstName,
+    lastName,
+    phone,
+    password,
+    businessType,
+    language,
+  } = req.body;
 
   // Check if user already exists
   if (await userRepository.exists(email)) {
@@ -278,36 +299,39 @@ export const handleSignup: RequestHandler<
  * Handle user login
  * Authenticates user with email and password
  */
-export const handleLogin: RequestHandler<unknown, AuthResponse, LoginRequest> =
-  async (req, res) => {
-    const { email, password } = req.body;
+export const handleLogin: RequestHandler<
+  unknown,
+  AuthResponse,
+  LoginRequest
+> = async (req, res) => {
+  const { email, password } = req.body;
 
-    const user = await userRepository.findByEmail(email);
-    if (!user) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    const token = generateToken(user.id);
-    const { password: _, ...userWithoutPassword } = user;
-
-    res.json({
-      success: true,
-      message: "Login successful",
-      user: userWithoutPassword,
-      token,
+  const user = await userRepository.findByEmail(email);
+  if (!user) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Invalid email or password",
     });
-  };
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password);
+  if (!passwordMatch) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+      success: false,
+      message: "Invalid email or password",
+    });
+  }
+
+  const token = generateToken(user.id);
+  const { password: _, ...userWithoutPassword } = user;
+
+  res.json({
+    success: true,
+    message: "Login successful",
+    user: userWithoutPassword,
+    token,
+  });
+};
 
 /**
  * Get authenticated user profile

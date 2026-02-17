@@ -1,5 +1,8 @@
 import { ObjectId } from "mongodb";
-import { WebhookEndpointModel, WebhookEventType } from "../models/WebhookEndpoint";
+import {
+  WebhookEndpointModel,
+  WebhookEventType,
+} from "../models/WebhookEndpoint";
 import { WebhookEventModel } from "../models/WebhookEvent";
 import { WebhookDeliveryModel } from "../models/WebhookDelivery";
 
@@ -27,10 +30,21 @@ export interface UpdateWebhookEndpointInput {
 export interface CreateWebhookEventInput {
   clientId: ObjectId;
   eventType: WebhookEventType;
-  entityType: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
+  entityType:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
   entityId: ObjectId;
   data: Record<string, any>;
-  source: "filing_service" | "itc_service" | "document_service" | "notification_service" | "manual";
+  source:
+    | "filing_service"
+    | "itc_service"
+    | "document_service"
+    | "notification_service"
+    | "manual";
   correlationId: string;
 }
 
@@ -79,15 +93,14 @@ export class WebhookRepository {
   /**
    * Get active webhook endpoints that subscribe to an event
    */
-  async getSubscribedEndpoints(clientId: ObjectId, eventType: WebhookEventType) {
+  async getSubscribedEndpoints(
+    clientId: ObjectId,
+    eventType: WebhookEventType,
+  ) {
     return WebhookEndpointModel.find({
       clientId,
       isActive: true,
-      $or: [
-        { subscribeToAll: true },
-        { events: eventType },
-        { events: "*" },
-      ],
+      $or: [{ subscribeToAll: true }, { events: eventType }, { events: "*" }],
     });
   }
 
@@ -111,7 +124,7 @@ export class WebhookRepository {
   async updateEndpointStats(
     id: ObjectId,
     isSuccess: boolean,
-    triggeredAt?: Date
+    triggeredAt?: Date,
   ) {
     const update: any = {
       $inc: isSuccess ? { successCount: 1 } : { failureCount: 1 },
@@ -133,10 +146,7 @@ export class WebhookRepository {
       isActive: true,
       failureCount: { $gte: maxFailures },
       $expr: {
-        $gte: [
-          { $add: ["$failureCount", "$successCount"] },
-          minAttempts,
-        ],
+        $gte: [{ $add: ["$failureCount", "$successCount"] }, minAttempts],
       },
     });
   }
@@ -177,7 +187,7 @@ export class WebhookRepository {
       eventType?: WebhookEventType;
       limit?: number;
       skip?: number;
-    }
+    },
   ) {
     const query: any = { clientId };
     if (filter?.status) {
@@ -202,7 +212,7 @@ export class WebhookRepository {
   async updateEventStatus(
     id: ObjectId,
     status: "pending" | "processing" | "delivered" | "failed",
-    failureReason?: string
+    failureReason?: string,
   ) {
     const update: any = {
       status,
@@ -297,7 +307,7 @@ export class WebhookRepository {
       status?: "success" | "failed" | "pending" | "timeout" | "invalid_url";
       limit?: number;
       skip?: number;
-    }
+    },
   ) {
     const query: any = { webhookEndpointId: endpointId };
     if (filter?.status) {
@@ -327,7 +337,7 @@ export class WebhookRepository {
       errorStack?: string;
       nextRetryAt?: Date;
       willRetry?: boolean;
-    }
+    },
   ) {
     const update: any = {
       deliveryStatus,

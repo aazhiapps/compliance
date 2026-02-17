@@ -27,7 +27,13 @@ export interface NotificationRecord extends MongooseDocument {
   // Notification routing
   channels: Array<"in_app" | "email" | "sms">;
   // Related entity
-  entityType?: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
+  entityType?:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
   entityId?: ObjectId;
   // Status
   status: "pending" | "sent" | "failed" | "read";
@@ -99,7 +105,14 @@ const NotificationSchema = new Schema<NotificationRecord>(
     ],
     entityType: {
       type: String,
-      enum: ["filing", "document", "invoice", "itc_reconciliation", "payment", "client"],
+      enum: [
+        "filing",
+        "document",
+        "invoice",
+        "itc_reconciliation",
+        "payment",
+        "client",
+      ],
       sparse: true,
     },
     entityId: {
@@ -136,7 +149,7 @@ const NotificationSchema = new Schema<NotificationRecord>(
     actionUrl: String,
     actionText: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries

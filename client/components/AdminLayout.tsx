@@ -1,7 +1,22 @@
 import { ReactNode, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, LogOut, Home, Users, FileText, DollarSign, Settings, BarChart3, Package, CheckCircle2, File, Receipt, BarChart2 } from "lucide-react";
+import {
+  Menu,
+  X,
+  LogOut,
+  Home,
+  Users,
+  FileText,
+  DollarSign,
+  Settings,
+  BarChart3,
+  Package,
+  CheckCircle2,
+  File,
+  Receipt,
+  BarChart2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AdminLayoutProps {
@@ -19,16 +34,66 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const navItems = [
-    { icon: <BarChart3 className="w-5 h-5" />, label: "Dashboard", href: "/admin", id: "dashboard" },
-    { icon: <Users className="w-5 h-5" />, label: "Users", href: "/admin/users", id: "users" },
-    { icon: <FileText className="w-5 h-5" />, label: "Applications", href: "/admin/applications", id: "applications" },
-    { icon: <Package className="w-5 h-5" />, label: "Services", href: "/admin/services", id: "services" },
-    { icon: <CheckCircle2 className="w-5 h-5" />, label: "Compliance", href: "/admin/compliance", id: "compliance" },
-    { icon: <Receipt className="w-5 h-5" />, label: "GST Filing", href: "/admin/gst", id: "gst" },
-    { icon: <File className="w-5 h-5" />, label: "Documents", href: "/admin/documents", id: "documents" },
-    { icon: <DollarSign className="w-5 h-5" />, label: "Payments", href: "/admin/payments", id: "payments" },
-    { icon: <BarChart2 className="w-5 h-5" />, label: "Reports", href: "/admin/reports", id: "reports" },
-    { icon: <Settings className="w-5 h-5" />, label: "Settings", href: "/admin/settings", id: "settings" },
+    {
+      icon: <BarChart3 className="w-5 h-5" />,
+      label: "Dashboard",
+      href: "/admin",
+      id: "dashboard",
+    },
+    {
+      icon: <Users className="w-5 h-5" />,
+      label: "Users",
+      href: "/admin/users",
+      id: "users",
+    },
+    {
+      icon: <FileText className="w-5 h-5" />,
+      label: "Applications",
+      href: "/admin/applications",
+      id: "applications",
+    },
+    {
+      icon: <Package className="w-5 h-5" />,
+      label: "Services",
+      href: "/admin/services",
+      id: "services",
+    },
+    {
+      icon: <CheckCircle2 className="w-5 h-5" />,
+      label: "Compliance",
+      href: "/admin/compliance",
+      id: "compliance",
+    },
+    {
+      icon: <Receipt className="w-5 h-5" />,
+      label: "GST Filing",
+      href: "/admin/gst",
+      id: "gst",
+    },
+    {
+      icon: <File className="w-5 h-5" />,
+      label: "Documents",
+      href: "/admin/documents",
+      id: "documents",
+    },
+    {
+      icon: <DollarSign className="w-5 h-5" />,
+      label: "Payments",
+      href: "/admin/payments",
+      id: "payments",
+    },
+    {
+      icon: <BarChart2 className="w-5 h-5" />,
+      label: "Reports",
+      href: "/admin/reports",
+      id: "reports",
+    },
+    {
+      icon: <Settings className="w-5 h-5" />,
+      label: "Settings",
+      href: "/admin/settings",
+      id: "settings",
+    },
   ];
 
   return (
@@ -45,7 +110,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
               ⚙️
             </div>
-            {sidebarOpen && <span className="font-bold text-lg">ComplianCe</span>}
+            {sidebarOpen && (
+              <span className="font-bold text-lg">ComplianCe</span>
+            )}
           </Link>
         </div>
 
@@ -59,7 +126,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               title={!sidebarOpen ? item.label : ""}
             >
               {item.icon}
-              {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+              {sidebarOpen && (
+                <span className="text-sm font-medium">{item.label}</span>
+              )}
             </Link>
           ))}
         </nav>
@@ -69,8 +138,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {sidebarOpen && (
             <div className="px-4 py-3 bg-white/10 rounded-lg">
               <p className="text-xs text-white/70">Logged in as</p>
-              <p className="text-sm font-semibold truncate">{authUser?.firstName} {authUser?.lastName}</p>
-              <p className="text-xs text-white/70 truncate">{authUser?.email}</p>
+              <p className="text-sm font-semibold truncate">
+                {authUser?.firstName} {authUser?.lastName}
+              </p>
+              <p className="text-xs text-white/70 truncate">
+                {authUser?.email}
+              </p>
             </div>
           )}
 
@@ -81,7 +154,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
-            {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {sidebarOpen ? (
+              <X className="w-4 h-4" />
+            ) : (
+              <Menu className="w-4 h-4" />
+            )}
             {sidebarOpen && "Collapse"}
           </Button>
 
@@ -102,7 +179,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Top Bar */}
         <div className="bg-white border-b border-border px-6 py-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              Admin Dashboard
+            </h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
                 {authUser?.firstName} {authUser?.lastName}

@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, FileText, TrendingUp, Calendar, LayoutGrid } from "lucide-react";
+import {
+  Plus,
+  Building2,
+  FileText,
+  TrendingUp,
+  Calendar,
+  LayoutGrid,
+} from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { GSTClient } from "@shared/gst";
 import ClientSelector from "@/components/gst/ClientSelector";
@@ -63,140 +76,156 @@ export default function UserGST() {
     <AppLayout>
       <div className="container mx-auto max-w-7xl px-4 py-8">
         <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">GST Filing Tracking</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage GST clients, track purchases, sales, and filing status
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/gst-summary")}>
-              <LayoutGrid className="w-4 h-4 mr-2" />
-              View All Client Data
-            </Button>
-            <Button onClick={() => setShowClientForm(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add GST Client
-            </Button>
-          </div>
-        </div>
-
-        {/* Client Form Dialog */}
-        {showClientForm && (
-          <ClientForm
-            onClose={() => setShowClientForm(false)}
-            onSuccess={handleClientCreated}
-          />
-        )}
-
-        {/* Client Selection */}
-        <ClientSelector
-          clients={clients}
-          selectedClient={selectedClient}
-          onSelectClient={handleClientSelected}
-          loading={loading}
-        />
-
-        {/* Content Area */}
-        {!selectedClient ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Building2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Client Selected</h3>
-              <p className="text-muted-foreground mb-4">
-                Select a client from the dropdown above or create a new GST client to get started.
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">GST Filing Tracking</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage GST clients, track purchases, sales, and filing status
               </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/gst-summary")}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                View All Client Data
+              </Button>
               <Button onClick={() => setShowClientForm(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Create GST Client
+                Add GST Client
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Client Info Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{selectedClient.clientName}</CardTitle>
-                <CardDescription>
-                  GSTIN: {selectedClient.gstin} | PAN: {selectedClient.panNumber} | 
-                  Filing Frequency: {selectedClient.filingFrequency}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            </div>
+          </div>
 
-            {/* Month Selector */}
+          {/* Client Form Dialog */}
+          {showClientForm && (
+            <ClientForm
+              onClose={() => setShowClientForm(false)}
+              onSuccess={handleClientCreated}
+            />
+          )}
+
+          {/* Client Selection */}
+          <ClientSelector
+            clients={clients}
+            selectedClient={selectedClient}
+            onSelectClient={handleClientSelected}
+            loading={loading}
+          />
+
+          {/* Content Area */}
+          {!selectedClient ? (
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <Calendar className="w-5 h-5 text-muted-foreground" />
-                  <label className="font-medium">Select Month:</label>
-                  <input
-                    type="month"
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="px-3 py-2 border rounded-md"
-                  />
-                </div>
+              <CardContent className="p-12 text-center">
+                <Building2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  No Client Selected
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Select a client from the dropdown above or create a new GST
+                  client to get started.
+                </p>
+                <Button onClick={() => setShowClientForm(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create GST Client
+                </Button>
               </CardContent>
             </Card>
+          ) : (
+            <div className="space-y-6">
+              {/* Client Info Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>{selectedClient.clientName}</CardTitle>
+                  <CardDescription>
+                    GSTIN: {selectedClient.gstin} | PAN:{" "}
+                    {selectedClient.panNumber} | Filing Frequency:{" "}
+                    {selectedClient.filingFrequency}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
 
-            {/* Monthly Summary */}
-            {selectedMonth && (
-              <MonthlySummary
-                clientId={selectedClient.id}
-                month={selectedMonth}
-              />
-            )}
+              {/* Month Selector */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <label className="font-medium">Select Month:</label>
+                    <input
+                      type="month"
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(e.target.value)}
+                      className="px-3 py-2 border rounded-md"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Tabs for different sections */}
-            <Tabs defaultValue="purchases" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="purchases">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Purchases
-                </TabsTrigger>
-                <TabsTrigger value="sales">
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  Sales
-                </TabsTrigger>
-                <TabsTrigger value="filing">
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Filing Status
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="purchases" className="space-y-4">
-                <PurchaseInvoices
-                  clientId={selectedClient.id}
-                  clientName={selectedClient.clientName}
-                  month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
-                />
-              </TabsContent>
-
-              <TabsContent value="sales" className="space-y-4">
-                <SalesInvoices
-                  clientId={selectedClient.id}
-                  clientName={selectedClient.clientName}
-                  month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
-                />
-              </TabsContent>
-
-              <TabsContent value="filing" className="space-y-4">
-                <FilingStatus
+              {/* Monthly Summary */}
+              {selectedMonth && (
+                <MonthlySummary
                   clientId={selectedClient.id}
                   month={selectedMonth}
-                  financialYear={selectedClient.financialYearStart.substring(0, 4)}
                 />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-      </div>
+              )}
+
+              {/* Tabs for different sections */}
+              <Tabs defaultValue="purchases" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="purchases">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Purchases
+                  </TabsTrigger>
+                  <TabsTrigger value="sales">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Sales
+                  </TabsTrigger>
+                  <TabsTrigger value="filing">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Filing Status
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="purchases" className="space-y-4">
+                  <PurchaseInvoices
+                    clientId={selectedClient.id}
+                    clientName={selectedClient.clientName}
+                    month={selectedMonth}
+                    financialYear={selectedClient.financialYearStart.substring(
+                      0,
+                      4,
+                    )}
+                  />
+                </TabsContent>
+
+                <TabsContent value="sales" className="space-y-4">
+                  <SalesInvoices
+                    clientId={selectedClient.id}
+                    clientName={selectedClient.clientName}
+                    month={selectedMonth}
+                    financialYear={selectedClient.financialYearStart.substring(
+                      0,
+                      4,
+                    )}
+                  />
+                </TabsContent>
+
+                <TabsContent value="filing" className="space-y-4">
+                  <FilingStatus
+                    clientId={selectedClient.id}
+                    month={selectedMonth}
+                    financialYear={selectedClient.financialYearStart.substring(
+                      0,
+                      4,
+                    )}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );

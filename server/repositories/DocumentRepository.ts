@@ -11,9 +11,20 @@ export interface CreateDocumentInput {
   documentId: string;
   clientId?: ObjectId;
   userId?: ObjectId;
-  linkedEntityType: "invoice_purchase" | "invoice_sales" | "filing" | "application" | "report";
+  linkedEntityType:
+    | "invoice_purchase"
+    | "invoice_sales"
+    | "filing"
+    | "application"
+    | "report";
   linkedEntityId: ObjectId;
-  documentType: "invoice" | "challan" | "certificate" | "gstr" | "report" | "other";
+  documentType:
+    | "invoice"
+    | "challan"
+    | "certificate"
+    | "gstr"
+    | "report"
+    | "other";
   fileName: string;
   fileUrl: string;
   mimeType?: string;
@@ -74,7 +85,9 @@ export class DocumentRepository {
       const document = await DocumentModel.findOne({ documentId }).lean();
       return document as DocumentRecord | null;
     } catch (error) {
-      logger.error("Failed to get document by ID", error as Error, { documentId });
+      logger.error("Failed to get document by ID", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -85,7 +98,7 @@ export class DocumentRepository {
   async getClientDocuments(
     clientId: ObjectId,
     documentType?: string,
-    tags?: string[]
+    tags?: string[],
   ): Promise<DocumentRecord[]> {
     try {
       const query: Record<string, any> = { clientId };
@@ -102,7 +115,9 @@ export class DocumentRepository {
 
       return documents as DocumentRecord[];
     } catch (error) {
-      logger.error("Failed to get client documents", error as Error, { clientId });
+      logger.error("Failed to get client documents", error as Error, {
+        clientId,
+      });
       throw error;
     }
   }
@@ -128,7 +143,7 @@ export class DocumentRepository {
    */
   async getLinkedDocuments(
     linkedEntityType: string,
-    linkedEntityId: ObjectId
+    linkedEntityId: ObjectId,
   ): Promise<DocumentRecord[]> {
     try {
       const documents = await DocumentModel.find({
@@ -140,11 +155,10 @@ export class DocumentRepository {
 
       return documents as DocumentRecord[];
     } catch (error) {
-      logger.error(
-        "Failed to get linked documents",
-        error as Error,
-        { linkedEntityType, linkedEntityId }
-      );
+      logger.error("Failed to get linked documents", error as Error, {
+        linkedEntityType,
+        linkedEntityId,
+      });
       throw error;
     }
   }
@@ -152,12 +166,15 @@ export class DocumentRepository {
   /**
    * Update document metadata
    */
-  async updateDocument(documentId: string, data: UpdateDocumentInput): Promise<DocumentRecord> {
+  async updateDocument(
+    documentId: string,
+    data: UpdateDocumentInput,
+  ): Promise<DocumentRecord> {
     try {
       const document = await DocumentModel.findOneAndUpdate(
         { documentId },
         { ...data, updatedAt: new Date() },
-        { new: true }
+        { new: true },
       ).lean();
 
       if (!document) {
@@ -178,7 +195,7 @@ export class DocumentRepository {
    */
   async uploadNewVersion(
     documentId: string,
-    data: UploadNewVersionInput
+    data: UploadNewVersionInput,
   ): Promise<DocumentRecord> {
     try {
       const document = await DocumentModel.findOne({ documentId });
@@ -224,7 +241,9 @@ export class DocumentRepository {
 
       return updated.toJSON() as DocumentRecord;
     } catch (error) {
-      logger.error("Failed to upload new version", error as Error, { documentId });
+      logger.error("Failed to upload new version", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -267,7 +286,9 @@ export class DocumentRepository {
 
       return documents as DocumentRecord[];
     } catch (error) {
-      logger.error("Failed to search documents by tags", error as Error, { tags });
+      logger.error("Failed to search documents by tags", error as Error, {
+        tags,
+      });
       throw error;
     }
   }
@@ -275,7 +296,9 @@ export class DocumentRepository {
   /**
    * Search documents by metadata
    */
-  async searchByMetadata(query: Record<string, any>): Promise<DocumentRecord[]> {
+  async searchByMetadata(
+    query: Record<string, any>,
+  ): Promise<DocumentRecord[]> {
     try {
       // Build metadata query
       const mongoQuery: Record<string, any> = {};
@@ -289,7 +312,9 @@ export class DocumentRepository {
 
       return documents as DocumentRecord[];
     } catch (error) {
-      logger.error("Failed to search documents by metadata", error as Error, { query });
+      logger.error("Failed to search documents by metadata", error as Error, {
+        query,
+      });
       throw error;
     }
   }
@@ -305,7 +330,7 @@ export class DocumentRepository {
           isDeleted: true,
           deletedAt: new Date(),
           deletedBy,
-        }
+        },
       );
 
       logger.info("Document deleted", { documentId, deletedBy });
@@ -318,7 +343,10 @@ export class DocumentRepository {
   /**
    * Restore a soft-deleted document
    */
-  async restoreDocument(documentId: string, restoredBy: ObjectId): Promise<DocumentRecord> {
+  async restoreDocument(
+    documentId: string,
+    restoredBy: ObjectId,
+  ): Promise<DocumentRecord> {
     try {
       const document = await DocumentModel.findOneAndUpdate(
         { documentId },
@@ -329,7 +357,7 @@ export class DocumentRepository {
           updatedBy: restoredBy,
           updatedAt: new Date(),
         },
-        { new: true }
+        { new: true },
       ).lean();
 
       if (!document) {
@@ -340,7 +368,9 @@ export class DocumentRepository {
 
       return document as DocumentRecord;
     } catch (error) {
-      logger.error("Failed to restore document", error as Error, { documentId });
+      logger.error("Failed to restore document", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -363,7 +393,9 @@ export class DocumentRepository {
         history: document.versionHistory || [],
       };
     } catch (error) {
-      logger.error("Failed to get version history", error as Error, { documentId });
+      logger.error("Failed to get version history", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }
@@ -386,7 +418,9 @@ export class DocumentRepository {
 
       return stats;
     } catch (error) {
-      logger.error("Failed to get document stats", error as Error, { clientId });
+      logger.error("Failed to get document stats", error as Error, {
+        clientId,
+      });
       throw error;
     }
   }
@@ -394,7 +428,10 @@ export class DocumentRepository {
   /**
    * Clean up old versions (keep only last N versions)
    */
-  async cleanupOldVersions(documentId: string, keepVersions: number = 5): Promise<void> {
+  async cleanupOldVersions(
+    documentId: string,
+    keepVersions: number = 5,
+  ): Promise<void> {
     try {
       const document = await DocumentModel.findOne({ documentId });
 
@@ -413,7 +450,9 @@ export class DocumentRepository {
         });
       }
     } catch (error) {
-      logger.error("Failed to cleanup old versions", error as Error, { documentId });
+      logger.error("Failed to cleanup old versions", error as Error, {
+        documentId,
+      });
       throw error;
     }
   }

@@ -18,22 +18,22 @@ export interface ComplianceRuleRecord extends MongooseDocument {
     dueHour?: number; // Hour of day (e.g., 23:59)
     applicableTo?: string[]; // ["monthly", "quarterly", "annual"]
     formType?: string[]; // ["gstr1", "gstr3b", "gstr2a", "gstr2b"]
-    
+
     // For late fees
     lateFeeBase?: number; // Base amount (e.g., 100 for ₹100)
     lateFeePerDay?: number; // Fee per day of delay
     lateFeeMaxDays?: number; // Max number of days to apply fee
     lateFeeMax?: number; // Maximum total late fee
-    
+
     // For interest
     interestRate?: number; // Interest rate % per annum
     interestAppliedFrom?: string; // "due_date" or "filing_date"
-    
+
     // For filing requirements
     minimumTurnover?: number; // If applicable
     filingFrequency?: string; // "monthly", "quarterly", etc.
     exemptionCriteria?: string; // Conditions for exemption
-    
+
     // Generic
     [key: string]: any;
   };
@@ -91,7 +91,7 @@ const ComplianceRuleSchema = new Schema<ComplianceRuleRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for finding active rules

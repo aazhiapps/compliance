@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Clock, CheckCircle, XCircle, Search, Users } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Search,
+  Users,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Application {
@@ -105,7 +118,8 @@ export default function StaffDashboard() {
     const matchesSearch =
       app.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = selectedStatus === "all" || app.status === selectedStatus;
+    const matchesStatus =
+      selectedStatus === "all" || app.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -129,9 +143,12 @@ export default function StaffDashboard() {
       <div className="container mx-auto max-w-7xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Staff Dashboard</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Staff Dashboard
+          </h1>
           <p className="text-muted-foreground">
-            Welcome back, {user?.firstName}! Manage assigned applications and customer requests
+            Welcome back, {user?.firstName}! Manage assigned applications and
+            customer requests
           </p>
         </div>
 
@@ -141,8 +158,12 @@ export default function StaffDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Total Assigned</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-1">{stats.totalAssigned}</p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    Total Assigned
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">
+                    {stats.totalAssigned}
+                  </p>
                 </div>
                 <FileText className="w-10 h-10 text-blue-400 opacity-50" />
               </div>
@@ -154,7 +175,9 @@ export default function StaffDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-yellow-600 font-medium">Pending</p>
-                  <p className="text-3xl font-bold text-yellow-900 mt-1">{stats.pending}</p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">
+                    {stats.pending}
+                  </p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-50" />
               </div>
@@ -165,8 +188,12 @@ export default function StaffDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium">Under Review</p>
-                  <p className="text-3xl font-bold text-purple-900 mt-1">{stats.underReview}</p>
+                  <p className="text-sm text-purple-600 font-medium">
+                    Under Review
+                  </p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">
+                    {stats.underReview}
+                  </p>
                 </div>
                 <Users className="w-10 h-10 text-purple-400 opacity-50" />
               </div>
@@ -178,7 +205,9 @@ export default function StaffDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-green-600 font-medium">Approved</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{stats.approved}</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">
+                    {stats.approved}
+                  </p>
                 </div>
                 <CheckCircle className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -190,7 +219,9 @@ export default function StaffDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-red-600 font-medium">Rejected</p>
-                  <p className="text-3xl font-bold text-red-900 mt-1">{stats.rejected}</p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">
+                    {stats.rejected}
+                  </p>
                 </div>
                 <XCircle className="w-10 h-10 text-red-400 opacity-50" />
               </div>
@@ -231,7 +262,9 @@ export default function StaffDashboard() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
             <CardTitle className="text-lg">Assigned Applications</CardTitle>
-            <CardDescription>{filteredApplications.length} applications</CardDescription>
+            <CardDescription>
+              {filteredApplications.length} applications
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -265,11 +298,13 @@ export default function StaffDashboard() {
                       className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
                     >
                       <td className="py-3 px-4 text-sm font-mono">{app.id}</td>
-                      <td className="py-3 px-4 text-sm font-medium">{app.serviceName}</td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        {app.serviceName}
+                      </td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                            app.status
+                            app.status,
                           )}`}
                         >
                           {app.status.replace(/_/g, " ")}
@@ -319,10 +354,12 @@ export default function StaffDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Current Status</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Current Status
+                  </label>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(
-                      selectedApp.status
+                      selectedApp.status,
                     )}`}
                   >
                     {selectedApp.status.replace(/_/g, " ")}
@@ -330,7 +367,9 @@ export default function StaffDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Internal Notes</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Internal Notes
+                  </label>
                   <textarea
                     value={internalNotes}
                     onChange={(e) => setInternalNotes(e.target.value)}
@@ -341,12 +380,16 @@ export default function StaffDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Update Status</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Update Status
+                  </label>
                   <div className="flex gap-2 flex-wrap">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleUpdateStatus(selectedApp.id, "under_review")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedApp.id, "under_review")
+                      }
                       className="bg-blue-50 hover:bg-blue-100"
                     >
                       Mark Under Review
@@ -354,7 +397,9 @@ export default function StaffDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleUpdateStatus(selectedApp.id, "approved")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedApp.id, "approved")
+                      }
                       className="bg-green-50 hover:bg-green-100 text-green-700"
                     >
                       Approve
@@ -362,7 +407,9 @@ export default function StaffDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleUpdateStatus(selectedApp.id, "rejected")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedApp.id, "rejected")
+                      }
                       className="bg-red-50 hover:bg-red-100 text-red-700"
                     >
                       Reject

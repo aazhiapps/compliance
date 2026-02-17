@@ -94,7 +94,7 @@ const WebhookDeliverySchema = new Schema<WebhookDeliveryRecord>(
     },
     respondedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -107,7 +107,7 @@ WebhookDeliverySchema.index({ createdAt: -1 });
 // TTL index for automatic cleanup of old deliveries (90 days)
 WebhookDeliverySchema.index(
   { createdAt: 1 },
-  { expireAfterSeconds: 90 * 24 * 60 * 60 }
+  { expireAfterSeconds: 90 * 24 * 60 * 60 },
 );
 
 // Convert to plain object with id field
@@ -123,6 +123,9 @@ WebhookDeliverySchema.set("toJSON", {
 
 export const WebhookDeliveryModel =
   mongoose.models.WebhookDelivery ||
-  mongoose.model<WebhookDeliveryRecord>("WebhookDelivery", WebhookDeliverySchema);
+  mongoose.model<WebhookDeliveryRecord>(
+    "WebhookDelivery",
+    WebhookDeliverySchema,
+  );
 
 export default WebhookDeliveryModel;

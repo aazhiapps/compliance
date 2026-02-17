@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { GSTAuditLog } from "@shared/gst";
 
-export interface IGSTAuditLogDocument extends Omit<GSTAuditLog, "id">, MongooseDocument {}
+export interface IGSTAuditLogDocument
+  extends Omit<GSTAuditLog, "id">, MongooseDocument {}
 
 const GSTAuditLogSchema = new Schema<IGSTAuditLogDocument>(
   {
@@ -49,7 +50,7 @@ const GSTAuditLogSchema = new Schema<IGSTAuditLogDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -59,5 +60,5 @@ GSTAuditLogSchema.index({ performedAt: -1 });
 
 export const GSTAuditLogModel = mongoose.model<IGSTAuditLogDocument>(
   "GSTAuditLog",
-  GSTAuditLogSchema
+  GSTAuditLogSchema,
 );

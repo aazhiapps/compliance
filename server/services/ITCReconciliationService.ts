@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import ITCReconciliationRepository from "../repositories/ITCReconciliationRepository";
 import { PurchaseInvoiceModel } from "../models/PurchaseInvoice";
 import { logger } from "../utils/logger";
@@ -11,7 +11,7 @@ import { webhookService } from "./WebhookService";
  */
 
 export interface ITCClaimData {
-  clientId: string | ObjectId;
+  clientId: string | mongoose.Types.ObjectId;
   month: string; // "2024-02"
   financialYear: string; // "2023-24"
 }
@@ -23,7 +23,7 @@ export interface GSTPortalSyncData {
 }
 
 export interface ReconciliationResult {
-  clientId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
   month: string;
   claimedITC: number;
   claimedInvoiceCount: number;
@@ -66,11 +66,14 @@ export class ITCReconciliationService {
    */
   async calculateClaimedITC(data: ITCClaimData): Promise<ReconciliationResult> {
     try {
-      const clientId = new ObjectId(data.clientId);
+      const clientId = new mongoose.Types.ObjectId(data.clientId);
 
       // Fetch all purchase invoices for the month
       const invoices = await PurchaseInvoiceModel.find({
-        clientId: typeof data.clientId === "string" ? data.clientId : data.clientId.toString(),
+        clientId:
+          typeof data.clientId === "string"
+            ? data.clientId
+            : data.clientId.toString(),
         month: data.month,
         financialYear: data.financialYear,
       }).lean();
@@ -89,17 +92,23 @@ export class ITCReconciliationService {
       });
 
       // Check if reconciliation already exists
-      const existingRecord = await ITCReconciliationRepository.getReconciliationByMonth(
-        clientId,
-        data.month
-      );
+      const existingRecord =
+        await ITCReconciliationRepository.getReconciliationByMonth(
+          clientId,
+          data.month,
+        );
 
       if (existingRecord) {
-        // Update existing record
-        await ITCReconciliationRepository.updateWithGSTData(clientId, data.month, {
+        // Update existing record with proper typing
+        const updateData: any = {
           claimedITC,
           claimedInvoiceCount: invoices.length,
-        });
+        };
+        await ITCReconciliationRepository.updateWithGSTData(
+          clientId,
+          data.month,
+          updateData,
+        );
       } else {
         // Create new record
         await ITCReconciliationRepository.createReconciliation({
@@ -137,7 +146,9 @@ export class ITCReconciliationService {
         needsReview: false,
       };
     } catch (error) {
-      logger.error("Failed to calculate claimed ITC", { error });
+      logger.error("Failed to calculate claimed ITC", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -147,16 +158,21 @@ export class ITCReconciliationService {
    * This would typically be called via webhook or scheduled job
    */
   async syncWithGSTPortal(
-    clientId: ObjectId,
+    clientId: mongoose.Types.ObjectId,
     month: string,
     portalData: GSTPortalSyncData,
-    syncedBy: ObjectId
+    syncedBy: mongoose.Types.ObjectId,
   ): Promise<ReconciliationResult> {
     try {
-      const record = await ITCReconciliationRepository.getReconciliationByMonth(clientId, month);
+      const record = await ITCReconciliationRepository.getReconciliationByMonth(
+        clientId,
+        month,
+      );
 
       if (!record) {
-        throw new Error(`Reconciliation record not found for ${clientId} - ${month}`);
+        throw new Error(
+          `Reconciliation record not found for ${clientId} - ${month}`,
+        );
       }
 
       // Determine if needs review
@@ -164,7 +180,7 @@ export class ITCReconciliationService {
         record.claimedITC,
         portalData.availableITCFromGST,
         portalData.pendingITC,
-        portalData.rejectedITC
+        portalData.rejectedITC,
       );
 
       // Update with portal data
@@ -177,7 +193,7 @@ export class ITCReconciliationService {
           rejectedITC: portalData.rejectedITC,
           needsReview,
           syncedBy,
-        }
+        },
       );
 
       logger.info("Synced with GST portal", {
@@ -195,7 +211,10 @@ export class ITCReconciliationService {
             ? ((discrepancy / portalData.availableITCFromGST) * 100).toFixed(2)
             : "N/A";
 
-        const updated_id = typeof updated._id === "string" ? new ObjectId(updated._id) : updated._id;
+        const updated_id =
+          typeof updated._id === "string"
+            ? new mongoose.Types.ObjectId(updated._id)
+            : updated._id;
 
         await webhookService.publishWebhookEvent({
           clientId,
@@ -254,7 +273,11 @@ export class ITCReconciliationService {
         month,
         claimedITC: record.claimedITC,
         claimedInvoiceCount: record.claimedInvoiceCount,
-        claimedBreakdown: record.claimedBreakdown || { sgst: 0, cgst: 0, igst: 0 },
+        claimedBreakdown: record.claimedBreakdown || {
+          sgst: 0,
+          cgst: 0,
+          igst: 0,
+        },
         availableITCFromGST: portalData.availableITCFromGST,
         discrepancy: record.claimedITC - portalData.availableITCFromGST,
         discrepancyPercentage:
@@ -263,11 +286,14 @@ export class ITCReconciliationService {
                 portalData.availableITCFromGST) *
               100
             : 0,
-        hasDiscrepancy: Math.abs(record.claimedITC - portalData.availableITCFromGST) > 0.01,
+        hasDiscrepancy:
+          Math.abs(record.claimedITC - portalData.availableITCFromGST) > 0.01,
         needsReview,
       };
     } catch (error) {
-      logger.error("Failed to sync with GST portal", { error });
+      logger.error("Failed to sync with GST portal", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -279,18 +305,25 @@ export class ITCReconciliationService {
     claimedITC: number,
     availableITC: number,
     pendingITC: number,
-    rejectedITC: number
+    rejectedITC: number,
   ): boolean {
     const discrepancy = claimedITC - availableITC;
-    const discrepancyPercentage = availableITC > 0 ? (discrepancy / availableITC) * 100 : 100;
+    const discrepancyPercentage =
+      availableITC > 0 ? (discrepancy / availableITC) * 100 : 100;
 
     // Flag if discrepancy percentage exceeds threshold
-    if (Math.abs(discrepancyPercentage) > AUTO_REVIEW_THRESHOLDS.discrepancyPercentageThreshold) {
+    if (
+      Math.abs(discrepancyPercentage) >
+      AUTO_REVIEW_THRESHOLDS.discrepancyPercentageThreshold
+    ) {
       return true;
     }
 
     // Flag if absolute discrepancy exceeds threshold
-    if (Math.abs(discrepancy) > AUTO_REVIEW_THRESHOLDS.absoluteDiscrepancyThreshold) {
+    if (
+      Math.abs(discrepancy) >
+      AUTO_REVIEW_THRESHOLDS.absoluteDiscrepancyThreshold
+    ) {
       return true;
     }
 
@@ -311,31 +344,34 @@ export class ITCReconciliationService {
    * Generate comprehensive ITC reconciliation report
    */
   async generateClientReport(
-    clientId: ObjectId,
-    financialYear?: string
+    clientId: mongoose.Types.ObjectId,
+    financialYear?: string,
   ): Promise<DiscrepancyReport> {
     try {
       // Get statistics
-      const stats = await ITCReconciliationRepository.getClientStats(clientId, financialYear);
-
-      // Get discrepancy breakdown
-      const breakdown = await ITCReconciliationRepository.getDiscrepancyBreakdown(
+      const stats = await ITCReconciliationRepository.getClientStats(
         clientId,
-        financialYear
+        financialYear,
       );
 
-      // Get pending review count
-      const pendingReview = await ITCReconciliationRepository.getPendingReview(clientId);
+      // Get discrepancy breakdown
+      const breakdown =
+        await ITCReconciliationRepository.getDiscrepancyBreakdown(
+          clientId,
+          financialYear,
+        );
 
       // Get all reconciliations
       let reconciliations;
       if (financialYear) {
-        reconciliations = await ITCReconciliationRepository.getFinancialYearReconciliations(
-          clientId,
-          financialYear
-        );
+        reconciliations =
+          await ITCReconciliationRepository.getFinancialYearReconciliations(
+            clientId,
+            financialYear,
+          );
       } else {
-        reconciliations = await ITCReconciliationRepository.getClientReconciliations(clientId);
+        reconciliations =
+          await ITCReconciliationRepository.getClientReconciliations(clientId);
       }
 
       const report: DiscrepancyReport = {
@@ -358,7 +394,9 @@ export class ITCReconciliationService {
 
       return report;
     } catch (error) {
-      logger.error("Failed to generate report", { error });
+      logger.error("Failed to generate report", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -367,8 +405,8 @@ export class ITCReconciliationService {
    * Get detailed discrepancy analysis for a month
    */
   async getMonthDiscrepancyAnalysis(
-    clientId: ObjectId,
-    month: string
+    clientId: mongoose.Types.ObjectId,
+    month: string,
   ): Promise<{
     month: string;
     claimed: number;
@@ -382,7 +420,10 @@ export class ITCReconciliationService {
     recommendations: string[];
   }> {
     try {
-      const record = await ITCReconciliationRepository.getReconciliationByMonth(clientId, month);
+      const record = await ITCReconciliationRepository.getReconciliationByMonth(
+        clientId,
+        month,
+      );
 
       if (!record) {
         throw new Error(`Reconciliation record not found for ${month}`);
@@ -421,7 +462,9 @@ export class ITCReconciliationService {
         recommendations,
       };
     } catch (error) {
-      logger.error("Failed to get discrepancy analysis", { error });
+      logger.error("Failed to get discrepancy analysis", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -434,16 +477,20 @@ export class ITCReconciliationService {
 
     if (record.discrepancy > 0) {
       recommendations.push(
-        "Review purchase invoices to ensure all GSTs are correctly claimed"
+        "Review purchase invoices to ensure all GSTs are correctly claimed",
       );
-      recommendations.push("Check if invoices have been uploaded to GST portal in time");
+      recommendations.push(
+        "Check if invoices have been uploaded to GST portal in time",
+      );
       recommendations.push("Verify vendor GST registration status");
     }
 
     if (record.pendingITC && record.pendingITC > 0) {
-      recommendations.push("Monitor pending ITC acceptance status on GST portal");
       recommendations.push(
-        "Follow up with vendors for missing or incorrect invoice details"
+        "Monitor pending ITC acceptance status on GST portal",
+      );
+      recommendations.push(
+        "Follow up with vendors for missing or incorrect invoice details",
       );
     }
 
@@ -462,7 +509,10 @@ export class ITCReconciliationService {
   /**
    * Bulk calculate claimed ITC for all clients in a month
    */
-  async bulkCalculateClaimedITC(month: string, financialYear: string): Promise<number> {
+  async bulkCalculateClaimedITC(
+    month: string,
+    financialYear: string,
+  ): Promise<number> {
     try {
       // Get unique clients from purchase invoices
       const clients = await PurchaseInvoiceModel.distinct("clientId", {
@@ -480,7 +530,10 @@ export class ITCReconciliationService {
           });
           processed++;
         } catch (error) {
-          logger.error("Failed to calculate ITC for client", { clientId, error });
+          logger.error("Failed to calculate ITC for client", {
+            clientId,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
 
@@ -492,7 +545,9 @@ export class ITCReconciliationService {
 
       return processed;
     } catch (error) {
-      logger.error("Failed to bulk calculate claimed ITC", { error });
+      logger.error("Failed to bulk calculate claimed ITC", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }

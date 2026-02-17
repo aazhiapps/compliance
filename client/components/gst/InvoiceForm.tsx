@@ -82,7 +82,9 @@ export default function InvoiceForm({
     const file = e.target.files?.[0];
     if (!file || !invoice) {
       if (!invoice) {
-        toast.error("Please save the invoice first before uploading attachments");
+        toast.error(
+          "Please save the invoice first before uploading attachments",
+        );
       }
       return;
     }
@@ -212,7 +214,7 @@ export default function InvoiceForm({
       const endpoint = invoice
         ? `/api/gst/${type === "purchase" ? "purchases" : "sales"}/${invoice.id}`
         : `/api/gst/${type === "purchase" ? "purchases" : "sales"}`;
-      
+
       const response = await fetch(endpoint, {
         method: invoice ? "PATCH" : "POST",
         headers: {
@@ -225,7 +227,7 @@ export default function InvoiceForm({
       const data = await response.json();
       if (data.success) {
         toast.success(
-          `${type === "purchase" ? "Purchase" : "Sales"} invoice ${invoice ? "updated" : "created"} successfully`
+          `${type === "purchase" ? "Purchase" : "Sales"} invoice ${invoice ? "updated" : "created"} successfully`,
         );
         onSuccess();
       } else {
@@ -245,10 +247,7 @@ export default function InvoiceForm({
 
   const calculateTotal = () => {
     return (
-      formData.taxableAmount +
-      formData.cgst +
-      formData.sgst +
-      formData.igst
+      formData.taxableAmount + formData.cgst + formData.sgst + formData.igst
     );
   };
 
@@ -261,7 +260,8 @@ export default function InvoiceForm({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {invoice ? "Edit" : "Add"} {type === "purchase" ? "Purchase" : "Sales"} Invoice
+            {invoice ? "Edit" : "Add"}{" "}
+            {type === "purchase" ? "Purchase" : "Sales"} Invoice
           </DialogTitle>
         </DialogHeader>
 
@@ -390,7 +390,9 @@ export default function InvoiceForm({
                     className="flex-1"
                   />
                   {uploadingFile && (
-                    <span className="text-sm text-muted-foreground">Uploading...</span>
+                    <span className="text-sm text-muted-foreground">
+                      Uploading...
+                    </span>
                   )}
                 </div>
                 {attachedFiles.length > 0 && (
@@ -400,7 +402,9 @@ export default function InvoiceForm({
                         key={index}
                         className="flex items-center justify-between p-2 bg-muted rounded text-sm"
                       >
-                        <span className="truncate flex-1">{getFileName(file)}</span>
+                        <span className="truncate flex-1">
+                          {getFileName(file)}
+                        </span>
                         <Button
                           type="button"
                           size="sm"

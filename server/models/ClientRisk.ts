@@ -154,7 +154,7 @@ const ClientRiskSchema = new Schema<ClientRiskRecord>(
     },
     recommendedActions: [String],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for filtering and sorting

@@ -13,11 +13,22 @@ export interface WebhookEventRecord extends MongooseDocument {
   eventType: WebhookEventType;
   status: "pending" | "processing" | "delivered" | "failed";
   // Event data
-  entityType: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
+  entityType:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
   entityId: ObjectId;
   data: Record<string, any>;
   // Metadata about the event
-  source: "filing_service" | "itc_service" | "document_service" | "notification_service" | "manual";
+  source:
+    | "filing_service"
+    | "itc_service"
+    | "document_service"
+    | "notification_service"
+    | "manual";
   correlationId: string; // For tracing related events
   // Delivery tracking
   attemptCount: number;
@@ -66,7 +77,14 @@ const WebhookEventSchema = new Schema<WebhookEventRecord>(
     },
     entityType: {
       type: String,
-      enum: ["filing", "document", "invoice", "itc_reconciliation", "payment", "client"],
+      enum: [
+        "filing",
+        "document",
+        "invoice",
+        "itc_reconciliation",
+        "payment",
+        "client",
+      ],
       required: true,
     },
     entityId: {
@@ -105,7 +123,7 @@ const WebhookEventSchema = new Schema<WebhookEventRecord>(
       default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries

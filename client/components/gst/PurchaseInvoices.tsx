@@ -15,14 +15,16 @@ interface PurchaseInvoicesProps {
 
 export default function PurchaseInvoices({
   clientId,
-  
+
   month,
   financialYear,
 }: PurchaseInvoicesProps) {
   const [invoices, setInvoices] = useState<PurchaseInvoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingInvoice, setEditingInvoice] = useState<PurchaseInvoice | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<PurchaseInvoice | null>(
+    null,
+  );
 
   useEffect(() => {
     if (clientId && month) {
@@ -34,11 +36,14 @@ export default function PurchaseInvoices({
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`/api/gst/purchases/${clientId}?month=${month}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/gst/purchases/${clientId}?month=${month}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       const data = await response.json();
       if (data.success) {
         setInvoices(data.invoices || []);
@@ -79,11 +84,14 @@ export default function PurchaseInvoices({
   const handleDownloadFile = async (filePath: string) => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`/api/gst/documents/download?filePath=${encodeURIComponent(filePath)}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/gst/documents/download?filePath=${encodeURIComponent(filePath)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.ok) {
         const blob = await response.blob();
@@ -118,7 +126,10 @@ export default function PurchaseInvoices({
   };
 
   const totalAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const totalTax = invoices.reduce((sum, inv) => sum + inv.cgst + inv.sgst + inv.igst, 0);
+  const totalTax = invoices.reduce(
+    (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
+    0,
+  );
 
   return (
     <div className="space-y-4">
@@ -126,7 +137,12 @@ export default function PurchaseInvoices({
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Purchase Invoices</CardTitle>
-            <Button onClick={() => { setEditingInvoice(null); setShowForm(true); }}>
+            <Button
+              onClick={() => {
+                setEditingInvoice(null);
+                setShowForm(true);
+              }}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Purchase
             </Button>
@@ -134,7 +150,9 @@ export default function PurchaseInvoices({
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              Loading...
+            </div>
           ) : invoices.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No purchase invoices for this month
@@ -150,14 +168,14 @@ export default function PurchaseInvoices({
                     <div className="flex-1">
                       <div className="font-medium">{invoice.vendorName}</div>
                       <div className="text-sm text-muted-foreground">
-                        Invoice: {invoice.invoiceNumber} | Date: {invoice.invoiceDate} | 
-                        GSTIN: {invoice.vendorGSTIN}
+                        Invoice: {invoice.invoiceNumber} | Date:{" "}
+                        {invoice.invoiceDate} | GSTIN: {invoice.vendorGSTIN}
                       </div>
                       <div className="text-sm mt-1">
-                        Taxable: {formatCurrency(invoice.taxableAmount)} | 
-                        CGST: {formatCurrency(invoice.cgst)} | 
-                        SGST: {formatCurrency(invoice.sgst)} | 
-                        IGST: {formatCurrency(invoice.igst)}
+                        Taxable: {formatCurrency(invoice.taxableAmount)} | CGST:{" "}
+                        {formatCurrency(invoice.cgst)} | SGST:{" "}
+                        {formatCurrency(invoice.sgst)} | IGST:{" "}
+                        {formatCurrency(invoice.igst)}
                       </div>
                       {invoice.documents && invoice.documents.length > 0 && (
                         <div className="flex items-center gap-2 mt-2">
@@ -179,12 +197,17 @@ export default function PurchaseInvoices({
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right mr-4">
-                        <div className="font-bold">{formatCurrency(invoice.totalAmount)}</div>
+                        <div className="font-bold">
+                          {formatCurrency(invoice.totalAmount)}
+                        </div>
                       </div>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => { setEditingInvoice(invoice); setShowForm(true); }}
+                        onClick={() => {
+                          setEditingInvoice(invoice);
+                          setShowForm(true);
+                        }}
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -204,7 +227,9 @@ export default function PurchaseInvoices({
               <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Total Purchases:</span>
-                  <span className="font-bold text-lg">{formatCurrency(totalAmount)}</span>
+                  <span className="font-bold text-lg">
+                    {formatCurrency(totalAmount)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="font-medium">Total ITC Available:</span>
@@ -228,8 +253,15 @@ export default function PurchaseInvoices({
           month={month}
           financialYear={financialYear}
           invoice={editingInvoice}
-          onClose={() => { setShowForm(false); setEditingInvoice(null); }}
-          onSuccess={() => { setShowForm(false); setEditingInvoice(null); loadInvoices(); }}
+          onClose={() => {
+            setShowForm(false);
+            setEditingInvoice(null);
+          }}
+          onSuccess={() => {
+            setShowForm(false);
+            setEditingInvoice(null);
+            loadInvoices();
+          }}
         />
       )}
     </div>

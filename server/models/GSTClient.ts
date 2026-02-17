@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { GSTClient } from "@shared/gst";
 
-export interface IGSTClientDocument extends Omit<GSTClient, "id">, MongooseDocument {}
+export interface IGSTClientDocument
+  extends Omit<GSTClient, "id">, MongooseDocument {}
 
 const GSTClientSchema = new Schema<IGSTClientDocument>(
   {
@@ -95,7 +96,7 @@ const GSTClientSchema = new Schema<IGSTClientDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -106,5 +107,5 @@ GSTClientSchema.index({ assignedStaff: 1 });
 
 export const GSTClientModel = mongoose.model<IGSTClientDocument>(
   "GSTClient",
-  GSTClientSchema
+  GSTClientSchema,
 );

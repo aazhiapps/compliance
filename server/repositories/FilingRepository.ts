@@ -55,7 +55,10 @@ export class FilingRepository {
         currentStep: data.currentStep || "initialization",
         steps: [],
       });
-      logger.info("Filing created", { filingId: filing._id, clientId: data.clientId });
+      logger.info("Filing created", {
+        filingId: filing._id,
+        clientId: data.clientId,
+      });
       return filing.toJSON();
     } catch (error) {
       logger.error("Failed to create filing", error as Error, { data });
@@ -84,7 +87,10 @@ export class FilingRepository {
    */
   async getFilingByClientMonth(clientId: ObjectId, month: string) {
     try {
-      const filing = await GSTReturnFilingModel.findOne({ clientId, month }).lean();
+      const filing = await GSTReturnFilingModel.findOne({
+        clientId,
+        month,
+      }).lean();
       return filing;
     } catch (error) {
       logger.error("Failed to get filing by client-month", error as Error, {
@@ -109,7 +115,9 @@ export class FilingRepository {
         .lean();
       return filings;
     } catch (error) {
-      logger.error("Failed to get client filings", error as Error, { clientId });
+      logger.error("Failed to get client filings", error as Error, {
+        clientId,
+      });
       throw error;
     }
   }
@@ -119,9 +127,13 @@ export class FilingRepository {
    */
   async updateFiling(filingId: ObjectId, data: UpdateFilingInput) {
     try {
-      const filing = await GSTReturnFilingModel.findByIdAndUpdate(filingId, data, {
-        new: true,
-      }).lean();
+      const filing = await GSTReturnFilingModel.findByIdAndUpdate(
+        filingId,
+        data,
+        {
+          new: true,
+        },
+      ).lean();
       if (!filing) {
         throw new Error(`Filing not found: ${filingId}`);
       }
@@ -147,7 +159,7 @@ export class FilingRepository {
           lockReason,
           workflowStatus: "locked",
         },
-        { new: true }
+        { new: true },
       ).lean();
       if (!filing) {
         throw new Error(`Filing not found: ${filingId}`);
@@ -174,7 +186,7 @@ export class FilingRepository {
           lockReason: null,
           workflowStatus: "draft",
         },
-        { new: true }
+        { new: true },
       ).lean();
       if (!filing) {
         throw new Error(`Filing not found: ${filingId}`);
@@ -233,7 +245,7 @@ export class FilingRepository {
     stepId: ObjectId,
     status: string,
     completedBy?: ObjectId,
-    comments?: string
+    comments?: string,
   ) {
     try {
       const update: Record<string, any> = { status };
@@ -334,7 +346,9 @@ export class FilingRepository {
             filledFilings: {
               $sum: { $cond: [{ $eq: ["$workflowStatus", "filed"] }, 1, 0] },
             },
-            lockedFilings: { $sum: { $cond: [{ $eq: ["$isLocked", true] }, 1, 0] } },
+            lockedFilings: {
+              $sum: { $cond: [{ $eq: ["$isLocked", true] }, 1, 0] },
+            },
             overdueFilings: {
               $sum: {
                 $cond: [
@@ -355,14 +369,18 @@ export class FilingRepository {
         },
       ]);
 
-      return filings[0] || {
-        totalFilings: 0,
-        filledFilings: 0,
-        lockedFilings: 0,
-        overdueFilings: 0,
-      };
+      return (
+        filings[0] || {
+          totalFilings: 0,
+          filledFilings: 0,
+          lockedFilings: 0,
+          overdueFilings: 0,
+        }
+      );
     } catch (error) {
-      logger.error("Failed to get filing status report", error as Error, { clientId });
+      logger.error("Failed to get filing status report", error as Error, {
+        clientId,
+      });
       throw error;
     }
   }

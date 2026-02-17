@@ -48,7 +48,10 @@ export const handleGetAllApplications: RequestHandler = async (_req, res) => {
  * Update application status (admin only)
  * PATCH /api/admin/applications/:id
  */
-export const handleUpdateApplicationStatus: RequestHandler = async (req, res) => {
+export const handleUpdateApplicationStatus: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const { status, notes } = req.body;
@@ -60,8 +63,8 @@ export const handleUpdateApplicationStatus: RequestHandler = async (req, res) =>
       });
     }
 
-    const application = await applicationRepository.update(id, { 
-      status, 
+    const application = await applicationRepository.update(id, {
+      status,
       ...(notes && { notes }),
     });
 
@@ -76,19 +79,22 @@ export const handleUpdateApplicationStatus: RequestHandler = async (req, res) =>
     if (status === "approved" && application.serviceId === 1) {
       try {
         // Check if user already has a GST client
-        const existingClients = await gstRepository.findClientsByUserId(application.userId);
-        
+        const existingClients = await gstRepository.findClientsByUserId(
+          application.userId,
+        );
+
         if (existingClients.length === 0) {
           // Get user details
           const user = await userRepository.findById(application.userId);
-          
+
           if (user) {
             // Get current financial year (April to March in India)
             const now = new Date();
             const currentYear = now.getFullYear();
             const currentMonth = now.getMonth() + 1; // 1-12
-            const fyStartYear = currentMonth >= 4 ? currentYear : currentYear - 1;
-            
+            const fyStartYear =
+              currentMonth >= 4 ? currentYear : currentYear - 1;
+
             // Create a default GST client for the user
             // Note: businessName left empty for non-individual types - will be filled by user during setup
             const gstClient: GSTClient = {
@@ -96,7 +102,10 @@ export const handleUpdateApplicationStatus: RequestHandler = async (req, res) =>
               userId: application.userId,
               clientName: `${user.firstName} ${user.lastName}`,
               gstin: "", // To be filled by user
-              businessName: user.businessType === "individual" ? `${user.firstName} ${user.lastName}` : "",
+              businessName:
+                user.businessType === "individual"
+                  ? `${user.firstName} ${user.lastName}`
+                  : "",
               panNumber: "", // To be filled by user
               filingFrequency: "monthly",
               financialYearStart: `${fyStartYear}-04-01`,
@@ -108,16 +117,23 @@ export const handleUpdateApplicationStatus: RequestHandler = async (req, res) =>
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             };
-            
+
             await gstRepository.createClient(gstClient);
-            console.log(`✓ Auto-created GST client for user ${user.email} (Application: ${application.id})`);
+            console.log(
+              `✓ Auto-created GST client for user ${user.email} (Application: ${application.id})`,
+            );
           } else {
-            console.warn(`⚠ User not found for GST auto-enrollment (Application: ${application.id})`);
+            console.warn(
+              `⚠ User not found for GST auto-enrollment (Application: ${application.id})`,
+            );
           }
         }
       } catch (gstError) {
         // Log the error but don't fail the application approval
-        console.error(`✗ Failed to auto-create GST client for application ${application.id}:`, gstError);
+        console.error(
+          `✗ Failed to auto-create GST client for application ${application.id}:`,
+          gstError,
+        );
         // The application is still approved, user can create GST client manually
       }
     }
@@ -206,11 +222,20 @@ export const handleGetAdminStats: RequestHandler = async (_req, res) => {
     const stats = {
       totalUsers: users.length,
       totalApplications: applications.length,
-      pendingApplications: applications.filter(app => app.status === "submitted" || app.status === "under_review").length,
-      approvedApplications: applications.filter(app => app.status === "approved").length,
-      rejectedApplications: applications.filter(app => app.status === "rejected").length,
+      pendingApplications: applications.filter(
+        (app) => app.status === "submitted" || app.status === "under_review",
+      ).length,
+      approvedApplications: applications.filter(
+        (app) => app.status === "approved",
+      ).length,
+      rejectedApplications: applications.filter(
+        (app) => app.status === "rejected",
+      ).length,
       recentApplications: applications
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
         .slice(0, 5),
     };
 
@@ -239,8 +264,18 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
     // Helper function to get month name
     const getMonthName = (month: number): string => {
       const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ];
       return monthNames[month - 1] || "Unknown";
     };
@@ -250,7 +285,7 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
 
     applications.forEach((app) => {
       // Get user information
-      const user = users.find(u => u.id === app.userId);
+      const user = users.find((u) => u.id === app.userId);
       if (!user) return;
 
       // Initialize user entry if not exists
@@ -269,7 +304,9 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
       if (app.documents && app.documents.length > 0) {
         app.documents.forEach((doc) => {
           // Find or create service entry
-          let service = userDocs.services.find(s => s.serviceId === app.serviceId);
+          let service = userDocs.services.find(
+            (s) => s.serviceId === app.serviceId,
+          );
           if (!service) {
             service = {
               serviceId: app.serviceId,
@@ -285,7 +322,7 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
           const month = uploadDate.getMonth() + 1; // 1-12
 
           // Find or create year entry
-          let yearEntry = service.years.find(y => y.year === year);
+          let yearEntry = service.years.find((y) => y.year === year);
           if (!yearEntry) {
             yearEntry = {
               year,
@@ -295,7 +332,7 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
           }
 
           // Find or create month entry
-          let monthEntry = yearEntry.months.find(m => m.month === month);
+          let monthEntry = yearEntry.months.find((m) => m.month === month);
           if (!monthEntry) {
             monthEntry = {
               month,
@@ -313,22 +350,24 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
 
     // Sort the hierarchy
     const usersHierarchy = Array.from(userDocumentsMap.values());
-    usersHierarchy.forEach(user => {
+    usersHierarchy.forEach((user) => {
       // Sort services by name
       user.services.sort((a, b) => a.serviceName.localeCompare(b.serviceName));
-      
-      user.services.forEach(service => {
+
+      user.services.forEach((service) => {
         // Sort years descending (newest first)
         service.years.sort((a, b) => b.year - a.year);
-        
-        service.years.forEach(year => {
+
+        service.years.forEach((year) => {
           // Sort months descending (newest first)
           year.months.sort((a, b) => b.month - a.month);
-          
-          year.months.forEach(monthEntry => {
+
+          year.months.forEach((monthEntry) => {
             // Sort documents by upload date descending (newest first)
-            monthEntry.documents.sort((a, b) => 
-              new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+            monthEntry.documents.sort(
+              (a, b) =>
+                new Date(b.uploadedAt).getTime() -
+                new Date(a.uploadedAt).getTime(),
             );
           });
         });

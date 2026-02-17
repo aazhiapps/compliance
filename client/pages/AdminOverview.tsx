@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   TrendingUp,
@@ -81,32 +87,34 @@ export default function AdminOverview() {
     );
   }
 
-  const statCards = stats ? [
-    {
-      label: "Total Users",
-      value: stats.totalUsers.toString(),
-      change: "+12%",
-      icon: <Users className="w-6 h-6 text-primary" />,
-    },
-    {
-      label: "Active Applications",
-      value: stats.totalApplications.toString(),
-      change: "+23%",
-      icon: <FileText className="w-6 h-6 text-blue-600" />,
-    },
-    {
-      label: "Pending Review",
-      value: stats.pendingApplications.toString(),
-      change: "+5%",
-      icon: <Clock className="w-6 h-6 text-yellow-600" />,
-    },
-    {
-      label: "Approved",
-      value: stats.approvedApplications.toString(),
-      change: "+2.1%",
-      icon: <CheckCircle className="w-6 h-6 text-success" />,
-    },
-  ] : [];
+  const statCards = stats
+    ? [
+        {
+          label: "Total Users",
+          value: stats.totalUsers.toString(),
+          change: "+12%",
+          icon: <Users className="w-6 h-6 text-primary" />,
+        },
+        {
+          label: "Active Applications",
+          value: stats.totalApplications.toString(),
+          change: "+23%",
+          icon: <FileText className="w-6 h-6 text-blue-600" />,
+        },
+        {
+          label: "Pending Review",
+          value: stats.pendingApplications.toString(),
+          change: "+5%",
+          icon: <Clock className="w-6 h-6 text-yellow-600" />,
+        },
+        {
+          label: "Approved",
+          value: stats.approvedApplications.toString(),
+          change: "+2.1%",
+          icon: <CheckCircle className="w-6 h-6 text-success" />,
+        },
+      ]
+    : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,7 +144,9 @@ export default function AdminOverview() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome to the admin panel</p>
+          <p className="text-muted-foreground mt-1">
+            Welcome to the admin panel
+          </p>
         </div>
 
         {/* Stats Grid */}
@@ -146,8 +156,12 @@ export default function AdminOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {stat.value}
+                    </p>
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                       <TrendingUp className="w-3 h-3" /> {stat.change}
                     </p>
@@ -171,11 +185,15 @@ export default function AdminOverview() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Active Services</span>
+                    <span className="text-sm text-muted-foreground">
+                      Active Services
+                    </span>
                     <span className="font-bold">5</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Revenue</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Revenue
+                    </span>
                     <span className="font-bold">₹2.46L</span>
                   </div>
                   <Button size="sm" variant="outline" className="w-full mt-3">
@@ -196,11 +214,15 @@ export default function AdminOverview() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Compliant</span>
+                    <span className="text-sm text-muted-foreground">
+                      Compliant
+                    </span>
                     <span className="font-bold text-green-600">3</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">At Risk</span>
+                    <span className="text-sm text-muted-foreground">
+                      At Risk
+                    </span>
                     <span className="font-bold text-orange-600">2</span>
                   </div>
                   <Button size="sm" variant="outline" className="w-full mt-3">
@@ -221,11 +243,15 @@ export default function AdminOverview() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Docs</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Docs
+                    </span>
                     <span className="font-bold">156</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Pending Review</span>
+                    <span className="text-sm text-muted-foreground">
+                      Pending Review
+                    </span>
                     <span className="font-bold text-yellow-600">18</span>
                   </div>
                   <Button size="sm" variant="outline" className="w-full mt-3">
@@ -249,7 +275,11 @@ export default function AdminOverview() {
                     <CardDescription>Latest submissions</CardDescription>
                   </div>
                   <Link to="/admin/applications">
-                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
                       View All
                       <ChevronRight className="w-4 h-4" />
                     </Button>
@@ -265,24 +295,32 @@ export default function AdminOverview() {
                         className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <div className="flex-1">
-                          <p className="font-medium text-foreground">{app.serviceName}</p>
-                          <p className="text-sm text-muted-foreground">{new Date(app.createdAt).toLocaleDateString()}</p>
+                          <p className="font-medium text-foreground">
+                            {app.serviceName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(app.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <span
                             className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              app.status
+                              app.status,
                             )}`}
                           >
                             {getStatusIcon(app.status)}
                             {app.status.replace(/_/g, " ")}
                           </span>
-                          <span className="text-sm font-medium text-muted-foreground">₹{app.paymentAmount}</span>
+                          <span className="text-sm font-medium text-muted-foreground">
+                            ₹{app.paymentAmount}
+                          </span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-muted-foreground py-8">No recent applications</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      No recent applications
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -330,21 +368,27 @@ export default function AdminOverview() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Database</span>
+                  <span className="text-sm text-muted-foreground">
+                    Database
+                  </span>
                   <span className="flex items-center gap-2 text-sm font-medium">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
                     Online
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">API Server</span>
+                  <span className="text-sm text-muted-foreground">
+                    API Server
+                  </span>
                   <span className="flex items-center gap-2 text-sm font-medium">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
                     Running
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Payment Gateway</span>
+                  <span className="text-sm text-muted-foreground">
+                    Payment Gateway
+                  </span>
                   <span className="flex items-center gap-2 text-sm font-medium">
                     <div className="w-2 h-2 bg-success rounded-full"></div>
                     Connected
@@ -363,7 +407,9 @@ export default function AdminOverview() {
           </CardHeader>
           <CardContent>
             <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border border-border">
-              <p className="text-muted-foreground">Chart visualization coming soon</p>
+              <p className="text-muted-foreground">
+                Chart visualization coming soon
+              </p>
             </div>
           </CardContent>
         </Card>

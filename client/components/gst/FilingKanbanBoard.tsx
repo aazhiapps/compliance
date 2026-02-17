@@ -49,7 +49,9 @@ export const FilingKanbanBoard: React.FC<FilingKanbanBoardProps> = ({
   onFilingSelect,
 }) => {
   const { filings } = useGSTStore();
-  const [selectedFiling, setSelectedFiling] = useState<FilingCardData | null>(null);
+  const [selectedFiling, setSelectedFiling] = useState<FilingCardData | null>(
+    null,
+  );
   const [showDialog, setShowDialog] = useState(false);
   const [transitionLoading, setTransitionLoading] = useState(false);
   const { toast } = useToast();
@@ -63,7 +65,9 @@ export const FilingKanbanBoard: React.FC<FilingKanbanBoardProps> = ({
   const groupedByStatus = React.useMemo(() => {
     const grouped: Record<string, FilingCardData[]> = {};
     KANBAN_COLUMNS.forEach((col) => {
-      grouped[col.id] = displayFilings.filter((f) => f.workflowStatus === col.id);
+      grouped[col.id] = displayFilings.filter(
+        (f) => f.workflowStatus === col.id,
+      );
     });
     return grouped;
   }, [displayFilings]);
@@ -79,18 +83,21 @@ export const FilingKanbanBoard: React.FC<FilingKanbanBoardProps> = ({
 
     setTransitionLoading(true);
     try {
-      const response = await fetch(`/api/filings/${selectedFiling.id}/transition`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      const response = await fetch(
+        `/api/filings/${selectedFiling.id}/transition`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({
+            toStatus,
+            stepType: `${toStatus}_step`,
+            comments: `Transitioned to ${toStatus}`,
+          }),
         },
-        body: JSON.stringify({
-          toStatus,
-          stepType: `${toStatus}_step`,
-          comments: `Transitioned to ${toStatus}`,
-        }),
-      });
+      );
 
       if (!response.ok) throw new Error("Failed to transition filing");
 
@@ -201,11 +208,15 @@ export const FilingKanbanBoard: React.FC<FilingKanbanBoardProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">Month</label>
-                  <p className="text-sm text-gray-600">{selectedFiling.month}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedFiling.month}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Financial Year</label>
-                  <p className="text-sm text-gray-600">{selectedFiling.financialYear}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedFiling.financialYear}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Status</label>

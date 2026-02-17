@@ -58,11 +58,13 @@ export const services = [
 export const features = [
   {
     title: "Fast Turnaround",
-    description: "Get your documents ready in record time with our efficient process",
+    description:
+      "Get your documents ready in record time with our efficient process",
   },
   {
     title: "100% Secure",
-    description: "Your data is encrypted and stored securely with bank-level protection",
+    description:
+      "Your data is encrypted and stored securely with bank-level protection",
   },
   {
     title: "Expert Support",
@@ -70,7 +72,8 @@ export const features = [
   },
   {
     title: "Complete Tracking",
-    description: "Track your application status in real-time with detailed updates",
+    description:
+      "Track your application status in real-time with detailed updates",
   },
   {
     title: "Transparent Pricing",

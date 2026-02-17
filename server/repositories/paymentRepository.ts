@@ -23,7 +23,9 @@ class PaymentRepository {
   /**
    * Find payment by application ID
    */
-  async findByApplicationId(applicationId: string): Promise<PaymentRecord | undefined> {
+  async findByApplicationId(
+    applicationId: string,
+  ): Promise<PaymentRecord | undefined> {
     const payment = await PaymentModel.findOne({ applicationId });
     return payment ? this.toPaymentRecord(payment) : undefined;
   }
@@ -39,7 +41,9 @@ class PaymentRepository {
   /**
    * Find payment by transaction ID
    */
-  async findByTransactionId(transactionId: string): Promise<PaymentRecord | undefined> {
+  async findByTransactionId(
+    transactionId: string,
+  ): Promise<PaymentRecord | undefined> {
     const payment = await PaymentModel.findOne({ transactionId });
     return payment ? this.toPaymentRecord(payment) : undefined;
   }
@@ -55,12 +59,13 @@ class PaymentRepository {
   /**
    * Update a payment record
    */
-  async update(id: string, updates: Partial<PaymentRecord>): Promise<PaymentRecord | undefined> {
-    const payment = await PaymentModel.findByIdAndUpdate(
-      id,
-      updates,
-      { new: true }
-    );
+  async update(
+    id: string,
+    updates: Partial<PaymentRecord>,
+  ): Promise<PaymentRecord | undefined> {
+    const payment = await PaymentModel.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
     return payment ? this.toPaymentRecord(payment) : undefined;
   }
 
@@ -75,7 +80,9 @@ class PaymentRepository {
   /**
    * Find payments by status
    */
-  async findByStatus(status: PaymentRecord["status"]): Promise<PaymentRecord[]> {
+  async findByStatus(
+    status: PaymentRecord["status"],
+  ): Promise<PaymentRecord[]> {
     const payments = await PaymentModel.find({ status });
     return payments.map((payment) => this.toPaymentRecord(payment));
   }

@@ -42,7 +42,7 @@ export default function ClientForm({ onClose, onSuccess }: ClientFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate GSTIN format (15 characters)
     if (formData.gstin.length !== 15) {
       toast.error("GSTIN must be 15 characters long");
@@ -120,7 +120,9 @@ export default function ClientForm({ onClose, onSuccess }: ClientFormProps) {
               <Input
                 id="gstin"
                 value={formData.gstin}
-                onChange={(e) => handleChange("gstin", e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  handleChange("gstin", e.target.value.toUpperCase())
+                }
                 maxLength={15}
                 required
               />
@@ -131,7 +133,9 @@ export default function ClientForm({ onClose, onSuccess }: ClientFormProps) {
               <Input
                 id="panNumber"
                 value={formData.panNumber}
-                onChange={(e) => handleChange("panNumber", e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  handleChange("panNumber", e.target.value.toUpperCase())
+                }
                 maxLength={10}
                 required
               />
@@ -162,7 +166,9 @@ export default function ClientForm({ onClose, onSuccess }: ClientFormProps) {
                 id="financialYearStart"
                 type="date"
                 value={formData.financialYearStart}
-                onChange={(e) => handleChange("financialYearStart", e.target.value)}
+                onChange={(e) =>
+                  handleChange("financialYearStart", e.target.value)
+                }
                 required
               />
             </div>

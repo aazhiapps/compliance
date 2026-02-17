@@ -63,7 +63,8 @@ export const handleCreateService: RequestHandler = async (req, res) => {
     if (!serviceData.name || !serviceData.description || !serviceData.price) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: name, description, and price are required",
+        message:
+          "Missing required fields: name, description, and price are required",
       });
     }
 

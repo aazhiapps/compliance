@@ -28,7 +28,7 @@ export const getStaffApplications: RequestHandler = async (req, res) => {
       user.role === "admin"
         ? allApplications
         : allApplications.filter(
-            (app) => app.assignedStaff === userId || !app.assignedStaff
+            (app) => app.assignedStaff === userId || !app.assignedStaff,
           );
 
     return res.json({
@@ -52,7 +52,9 @@ export const updateApplicationStatus: RequestHandler = async (req, res) => {
     const { applicationId } = req.params;
     const { status, internalNotes } = req.body;
 
-    const application = await applicationRepository.findById(applicationId as string);
+    const application = await applicationRepository.findById(
+      applicationId as string,
+    );
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -69,7 +71,10 @@ export const updateApplicationStatus: RequestHandler = async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    await applicationRepository.update(applicationId as string, updatedApplication);
+    await applicationRepository.update(
+      applicationId as string,
+      updatedApplication,
+    );
 
     return res.json({
       success: true,
@@ -93,7 +98,9 @@ export const assignApplicationToStaff: RequestHandler = async (req, res) => {
     const { applicationId } = req.params;
     const { staffId } = req.body;
 
-    const application = await applicationRepository.findById(applicationId as string);
+    const application = await applicationRepository.findById(
+      applicationId as string,
+    );
 
     if (!application) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -119,7 +126,10 @@ export const assignApplicationToStaff: RequestHandler = async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    await applicationRepository.update(applicationId as string, updatedApplication);
+    await applicationRepository.update(
+      applicationId as string,
+      updatedApplication,
+    );
 
     return res.json({
       success: true,
@@ -145,7 +155,7 @@ export const getStaffStats: RequestHandler = async (req, res) => {
 
     // Get applications assigned to this staff member
     const myApplications = allApplications.filter(
-      (app) => app.assignedStaff === userId
+      (app) => app.assignedStaff === userId,
     );
 
     const stats = {
@@ -180,7 +190,7 @@ export const getAllStaff: RequestHandler = async (_req, res) => {
   try {
     const allUsers = await userRepository.findAll();
     const staffMembers = allUsers.filter(
-      (user) => user.role === "staff" || user.role === "admin"
+      (user) => user.role === "staff" || user.role === "admin",
     );
 
     return res.json({

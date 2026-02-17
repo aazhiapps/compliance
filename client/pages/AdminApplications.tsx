@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Search,
   Filter,
@@ -117,7 +123,7 @@ export default function AdminApplications() {
       } catch (error) {
         console.error("Failed to fetch services:", error);
       }
-      
+
       // Fallback to deriving services from applications for demo/mock data
       deriveServicesFromApplications();
     };
@@ -128,49 +134,21 @@ export default function AdminApplications() {
   // Helper to derive unique services from applications for demo mode
   const deriveServicesFromApplications = () => {
     const uniqueServices = Array.from(
-      new Set(applications.map((app) => app.service))
+      new Set(applications.map((app) => app.service)),
     ).map((serviceName) => ({
-      id: serviceName.toLowerCase().replace(/\s+/g, '-'),
+      id: serviceName.toLowerCase().replace(/\s+/g, "-"),
       name: serviceName,
     })) as Service[];
     setServices(uniqueServices);
   };
 
-  // Kept for future implementation
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleApprove = (appId: string) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === appId ? { ...app, status: "approved" as const } : app
-      )
-    );
-  };
-
-  // Kept for future implementation
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReject = (appId: string) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === appId ? { ...app, status: "rejected" as const } : app
-      )
-    );
-  };
-
-  // Kept for future implementation
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleAssignStaff = (appId: string, staff: string) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === appId ? { ...app, staffAssigned: staff } : app
-      )
-    );
-  };
-
   const handleBulkApprove = () => {
     setApplications((prev) =>
       prev.map((app) =>
-        selectedApps.has(app.id) ? { ...app, status: "approved" as const } : app
-      )
+        selectedApps.has(app.id)
+          ? { ...app, status: "approved" as const }
+          : app,
+      ),
     );
     setSelectedApps(new Set());
   };
@@ -178,8 +156,10 @@ export default function AdminApplications() {
   const handleBulkReject = () => {
     setApplications((prev) =>
       prev.map((app) =>
-        selectedApps.has(app.id) ? { ...app, status: "rejected" as const } : app
-      )
+        selectedApps.has(app.id)
+          ? { ...app, status: "rejected" as const }
+          : app,
+      ),
     );
     setSelectedApps(new Set());
   };
@@ -190,7 +170,8 @@ export default function AdminApplications() {
       app.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.service.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || app.status === filterStatus;
-    const matchesService = filterService === "all" || app.service === filterService;
+    const matchesService =
+      filterService === "all" || app.service === filterService;
     return matchesSearch && matchesStatus && matchesService;
   });
 
@@ -232,20 +213,34 @@ export default function AdminApplications() {
     }
   };
 
-  const approvedCount = applications.filter((a) => a.status === "approved").length;
-  const underReviewCount = applications.filter((a) => a.status === "under_review").length;
+  const approvedCount = applications.filter(
+    (a) => a.status === "approved",
+  ).length;
+  const underReviewCount = applications.filter(
+    (a) => a.status === "under_review",
+  ).length;
   const totalRevenue = applications
     .filter((a) => a.paymentStatus === "paid")
     .reduce((sum, a) => sum + a.amount, 0);
-  const recentApps = applications.sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime()).slice(0, 3);
+  const recentApps = applications
+    .sort(
+      (a, b) =>
+        new Date(b.submittedDate).getTime() -
+        new Date(a.submittedDate).getTime(),
+    )
+    .slice(0, 3);
 
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Application Management</h1>
-          <p className="text-muted-foreground mt-1">Review and manage all service applications</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Application Management
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Review and manage all service applications
+          </p>
         </div>
 
         {/* Key Metrics Cards */}
@@ -254,8 +249,12 @@ export default function AdminApplications() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Total Applications</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-1">{applications.length}</p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    Total Applications
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">
+                    {applications.length}
+                  </p>
                 </div>
                 <FileText className="w-10 h-10 text-blue-400 opacity-50" />
               </div>
@@ -267,7 +266,9 @@ export default function AdminApplications() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-green-600 font-medium">Approved</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{approvedCount}</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">
+                    {approvedCount}
+                  </p>
                 </div>
                 <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -278,8 +279,12 @@ export default function AdminApplications() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-yellow-600 font-medium">Under Review</p>
-                  <p className="text-3xl font-bold text-yellow-900 mt-1">{underReviewCount}</p>
+                  <p className="text-sm text-yellow-600 font-medium">
+                    Under Review
+                  </p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">
+                    {underReviewCount}
+                  </p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-50" />
               </div>
@@ -290,8 +295,12 @@ export default function AdminApplications() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium">Total Revenue</p>
-                  <p className="text-3xl font-bold text-purple-900 mt-1">₹{(totalRevenue / 100).toFixed(0)}</p>
+                  <p className="text-sm text-purple-600 font-medium">
+                    Total Revenue
+                  </p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">
+                    ₹{(totalRevenue / 100).toFixed(0)}
+                  </p>
                 </div>
                 <TrendingUp className="w-10 h-10 text-purple-400 opacity-50" />
               </div>
@@ -310,19 +319,32 @@ export default function AdminApplications() {
           <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {recentApps.map((app) => (
-                <div key={app.id} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                <div
+                  key={app.id}
+                  className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <p className="font-medium text-foreground">{app.service}</p>
-                      <p className="text-xs text-muted-foreground">{app.userName}</p>
+                      <p className="font-medium text-foreground">
+                        {app.service}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {app.userName}
+                      </p>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(app.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(app.status)}`}
+                    >
                       {app.status.replace(/_/g, " ")}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t">
                     <span className="text-sm font-medium">₹{app.amount}</span>
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/admin/applications/${app.id}`)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/admin/applications/${app.id}`)}
+                    >
                       Review
                     </Button>
                   </div>
@@ -387,7 +409,9 @@ export default function AdminApplications() {
               <div>
                 <CardTitle className="text-lg">All Applications</CardTitle>
                 <CardDescription>
-                  {selectedApps.size > 0 ? `${selectedApps.size} selected` : `${filteredApps.length} total applications`}
+                  {selectedApps.size > 0
+                    ? `${selectedApps.size} selected`
+                    : `${filteredApps.length} total applications`}
                 </CardDescription>
               </div>
               {selectedApps.size > 0 && (
@@ -421,7 +445,9 @@ export default function AdminApplications() {
                         type="checkbox"
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedApps(new Set(filteredApps.map((a) => a.id)));
+                            setSelectedApps(
+                              new Set(filteredApps.map((a) => a.id)),
+                            );
                           } else {
                             setSelectedApps(new Set());
                           }
@@ -429,18 +455,35 @@ export default function AdminApplications() {
                         className="rounded"
                       />
                     </th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">User</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Service</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Status</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Amount</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Payment</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Assigned To</th>
-                    <th className="text-left py-4 px-4 font-semibold text-foreground">Actions</th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      User
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Service
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Status
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Amount
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Payment
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Assigned To
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-foreground">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredApps.map((app) => (
-                    <tr key={app.id} className="border-b border-gray-200 hover:bg-purple-50 transition-colors">
+                    <tr
+                      key={app.id}
+                      className="border-b border-gray-200 hover:bg-purple-50 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         <input
                           type="checkbox"
@@ -451,8 +494,12 @@ export default function AdminApplications() {
                       </td>
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium text-foreground">{app.userName}</p>
-                          <p className="text-xs text-muted-foreground">{app.userEmail}</p>
+                          <p className="font-medium text-foreground">
+                            {app.userName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {app.userEmail}
+                          </p>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -464,7 +511,7 @@ export default function AdminApplications() {
                       <td className="py-3 px-4">
                         <span
                           className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                            app.status
+                            app.status,
                           )}`}
                         >
                           {getStatusIcon(app.status)}
@@ -480,14 +527,20 @@ export default function AdminApplications() {
                               : "bg-yellow-50 text-yellow-700"
                           }`}
                         >
-                          {app.paymentStatus === "paid" ? "✓ Paid" : "⏱ Pending"}
+                          {app.paymentStatus === "paid"
+                            ? "✓ Paid"
+                            : "⏱ Pending"}
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         {app.staffAssigned ? (
-                          <span className="text-sm font-medium">{app.staffAssigned}</span>
+                          <span className="text-sm font-medium">
+                            {app.staffAssigned}
+                          </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Unassigned</span>
+                          <span className="text-xs text-muted-foreground">
+                            Unassigned
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-4">
@@ -497,7 +550,9 @@ export default function AdminApplications() {
                             variant="outline"
                             title="View Details"
                             className="p-2 h-auto"
-                            onClick={() => navigate(`/admin/applications/${app.id}`)}
+                            onClick={() =>
+                              navigate(`/admin/applications/${app.id}`)
+                            }
                           >
                             <Eye className="w-4 h-4" />
                           </Button>

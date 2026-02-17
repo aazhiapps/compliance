@@ -16,7 +16,11 @@ declare global {
   }
 }
 
-export const correlationIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const correlationIdMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // Try to get existing correlation ID from header (if request came from another service)
   const existingId = req.headers["x-correlation-id"] as string;
 

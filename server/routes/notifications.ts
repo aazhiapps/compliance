@@ -23,7 +23,7 @@ router.get("/", authenticateToken, async (req: Request, res: Response) => {
         skip: parseInt(skip as string),
         unreadOnly: unreadOnly === "true",
         type: type as any,
-      }
+      },
     );
 
     res.json({
@@ -41,20 +41,24 @@ router.get("/", authenticateToken, async (req: Request, res: Response) => {
  * Get unread notification count
  * Requires: Authentication
  */
-router.get("/unread/count", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).userId;
+router.get(
+  "/unread/count",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).userId;
 
-    const unreadCount = await NotificationService.getUnreadCount(
-      new ObjectId(userId)
-    );
+      const unreadCount = await NotificationService.getUnreadCount(
+        new ObjectId(userId),
+      );
 
-    res.json({ unreadCount });
-  } catch (error) {
-    logger.error("Failed to get unread count:", { error });
-    res.status(500).json({ error: "Failed to get unread count" });
-  }
-});
+      res.json({ unreadCount });
+    } catch (error) {
+      logger.error("Failed to get unread count:", { error });
+      res.status(500).json({ error: "Failed to get unread count" });
+    }
+  },
+);
 
 /**
  * GET /api/notifications/stats
@@ -66,7 +70,7 @@ router.get("/stats", authenticateToken, async (req: Request, res: Response) => {
     const userId = (req as any).userId;
 
     const stats = await NotificationService.getNotificationStats(
-      new ObjectId(userId)
+      new ObjectId(userId),
     );
 
     res.json(stats);
@@ -89,7 +93,7 @@ router.patch(
       const { notificationId } = req.params;
 
       const notification = await NotificationService.markAsRead(
-        new ObjectId(notificationId)
+        new ObjectId(notificationId),
       );
 
       res.json(notification);
@@ -97,7 +101,7 @@ router.patch(
       logger.error("Failed to mark notification as read:", { error });
       res.status(500).json({ error: "Failed to mark as read" });
     }
-  }
+  },
 );
 
 /**
@@ -105,23 +109,27 @@ router.patch(
  * Mark all notifications as read
  * Requires: Authentication
  */
-router.patch("/read-all", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).userId;
+router.patch(
+  "/read-all",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).userId;
 
-    const modifiedCount = await NotificationService.markAllAsRead(
-      new ObjectId(userId)
-    );
+      const modifiedCount = await NotificationService.markAllAsRead(
+        new ObjectId(userId),
+      );
 
-    res.json({
-      message: "All notifications marked as read",
-      count: modifiedCount,
-    });
-  } catch (error) {
-    logger.error("Failed to mark all notifications as read:", { error });
-    res.status(500).json({ error: "Failed to mark all as read" });
-  }
-});
+      res.json({
+        message: "All notifications marked as read",
+        count: modifiedCount,
+      });
+    } catch (error) {
+      logger.error("Failed to mark all notifications as read:", { error });
+      res.status(500).json({ error: "Failed to mark all as read" });
+    }
+  },
+);
 
 /**
  * DELETE /api/notifications/:notificationId
@@ -135,14 +143,16 @@ router.delete(
     try {
       const { notificationId } = req.params;
 
-      await NotificationService.deleteNotification(new ObjectId(notificationId));
+      await NotificationService.deleteNotification(
+        new ObjectId(notificationId),
+      );
 
       res.json({ message: "Notification deleted" });
     } catch (error) {
       logger.error("Failed to delete notification:", { error });
       res.status(500).json({ error: "Failed to delete notification" });
     }
-  }
+  },
 );
 
 export default router;

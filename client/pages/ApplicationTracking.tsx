@@ -33,18 +33,23 @@ export default function ApplicationTracking() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"timeline" | "documents" | "chat">("timeline");
+  const [activeTab, setActiveTab] = useState<"timeline" | "documents" | "chat">(
+    "timeline",
+  );
   const [chatMessage, setChatMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<Array<{
-    id: string;
-    sender: "user" | "admin";
-    message: string;
-    timestamp: string;
-  }>>([
+  const [chatMessages, setChatMessages] = useState<
+    Array<{
+      id: string;
+      sender: "user" | "admin";
+      message: string;
+      timestamp: string;
+    }>
+  >([
     {
       id: "msg_1",
       sender: "admin",
-      message: "Hello! I'm reviewing your application. Please let me know if you have any questions.",
+      message:
+        "Hello! I'm reviewing your application. Please let me know if you have any questions.",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -65,8 +70,8 @@ export default function ApplicationTracking() {
       avatar: "RK",
     },
     documents: [
-      { 
-        id: "doc_1", 
+      {
+        id: "doc_1",
         applicationId: id || "app_1",
         fileName: "PAN Card",
         fileUrl: "/api/documents/pan-card.pdf",
@@ -74,8 +79,8 @@ export default function ApplicationTracking() {
         status: "approved" as const,
         uploadedAt: "2024-02-01T10:00:00Z",
       },
-      { 
-        id: "doc_2", 
+      {
+        id: "doc_2",
         applicationId: id || "app_1",
         fileName: "Aadhar Card",
         fileUrl: "/api/documents/aadhar-card.pdf",
@@ -83,8 +88,8 @@ export default function ApplicationTracking() {
         status: "approved" as const,
         uploadedAt: "2024-02-01T10:05:00Z",
       },
-      { 
-        id: "doc_3", 
+      {
+        id: "doc_3",
         applicationId: id || "app_1",
         fileName: "Business Address Proof",
         fileUrl: "/api/documents/address-proof.pdf",
@@ -92,8 +97,8 @@ export default function ApplicationTracking() {
         status: "verifying" as const,
         uploadedAt: "2024-02-02T11:00:00Z",
       },
-      { 
-        id: "doc_4", 
+      {
+        id: "doc_4",
         applicationId: id || "app_1",
         fileName: "Bank Statement",
         fileUrl: "/api/documents/bank-statement.pdf",
@@ -185,7 +190,7 @@ export default function ApplicationTracking() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast({
         title: "Download Started",
         description: `Downloading ${doc.fileName}...`,
@@ -202,17 +207,17 @@ export default function ApplicationTracking() {
 
   const handleSendMessage = () => {
     if (!chatMessage.trim()) return;
-    
+
     const newMessage = {
       id: `msg_${Date.now()}`,
       sender: "user" as const,
       message: chatMessage,
       timestamp: new Date().toISOString(),
     };
-    
+
     setChatMessages([...chatMessages, newMessage]);
     setChatMessage("");
-    
+
     // Simulate admin reply after 2 seconds
     setTimeout(() => {
       const adminReply = {
@@ -221,7 +226,7 @@ export default function ApplicationTracking() {
         message: "Thank you for your message. We'll get back to you shortly.",
         timestamp: new Date().toISOString(),
       };
-      setChatMessages(prev => [...prev, adminReply]);
+      setChatMessages((prev) => [...prev, adminReply]);
     }, 2000);
   };
 
@@ -244,13 +249,14 @@ export default function ApplicationTracking() {
                 {application.serviceName}
               </h1>
               <p className="text-muted-foreground">
-                Application ID: <span className="font-mono">{application.id}</span>
+                Application ID:{" "}
+                <span className="font-mono">{application.id}</span>
               </p>
             </div>
 
             <span
               className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold border ${getStatusColor(
-                application.status
+                application.status,
               )}`}
             >
               {getStatusIcon(application.status)}
@@ -264,12 +270,16 @@ export default function ApplicationTracking() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground mb-1">Submitted On</p>
-              <p className="font-semibold">{new Date(application.createdDate).toLocaleDateString()}</p>
+              <p className="font-semibold">
+                {new Date(application.createdDate).toLocaleDateString()}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Expected Date</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Expected Date
+              </p>
               <p className="font-semibold flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 {new Date(application.expectedDate).toLocaleDateString()}
@@ -278,7 +288,9 @@ export default function ApplicationTracking() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground mb-1">Payment Status</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Payment Status
+              </p>
               <p className="font-semibold text-success">
                 ✓ {application.paymentStatus === "paid" ? "Paid" : "Pending"}
               </p>
@@ -322,7 +334,9 @@ export default function ApplicationTracking() {
                   <Card>
                     <CardContent className="p-12 text-center">
                       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                      <p className="text-muted-foreground">Loading timeline...</p>
+                      <p className="text-muted-foreground">
+                        Loading timeline...
+                      </p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -342,20 +356,31 @@ export default function ApplicationTracking() {
                         <Card>
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-semibold text-foreground">{event.title}</h3>
+                              <h3 className="font-semibold text-foreground">
+                                {event.title}
+                              </h3>
                               <span className="text-xs text-muted-foreground">
                                 {new Date(event.timestamp).toLocaleDateString()}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground mb-3">{event.description}</p>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {event.description}
+                            </p>
                             {event.remarks && (
                               <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                                <p className="text-xs font-medium text-blue-900 mb-1">Remarks:</p>
-                                <p className="text-sm text-blue-900">{event.remarks}</p>
+                                <p className="text-xs font-medium text-blue-900 mb-1">
+                                  Remarks:
+                                </p>
+                                <p className="text-sm text-blue-900">
+                                  {event.remarks}
+                                </p>
                               </div>
                             )}
                             <p className="text-xs text-muted-foreground mt-3">
-                              Updated by: <span className="font-medium">{event.updatedBy}</span>
+                              Updated by:{" "}
+                              <span className="font-medium">
+                                {event.updatedBy}
+                              </span>
                             </p>
                           </CardContent>
                         </Card>
@@ -376,21 +401,26 @@ export default function ApplicationTracking() {
                         <div className="flex items-start gap-4 flex-1">
                           <FileText className="w-10 h-10 text-muted-foreground flex-shrink-0 mt-1" />
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-foreground mb-1">{doc.fileName}</h3>
+                            <h3 className="font-semibold text-foreground mb-1">
+                              {doc.fileName}
+                            </h3>
                             {doc.uploadedAt && (
                               <p className="text-sm text-muted-foreground">
-                                Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                                Uploaded:{" "}
+                                {new Date(doc.uploadedAt).toLocaleDateString()}
                               </p>
                             )}
                             {doc.remarks && (
-                              <p className="text-sm text-red-700 mt-2">{doc.remarks}</p>
+                              <p className="text-sm text-red-700 mt-2">
+                                {doc.remarks}
+                              </p>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getDocumentStatusColor(
-                              doc.status
+                              doc.status,
                             )}`}
                           >
                             {doc.status === "verifying" && "Verifying"}
@@ -398,7 +428,7 @@ export default function ApplicationTracking() {
                             {doc.status === "rejected" && "Rejected"}
                             {doc.status === "uploaded" && "Uploaded"}
                           </span>
-                          <button 
+                          <button
                             className="p-2 hover:bg-gray-100 rounded transition-colors"
                             onClick={() => handleDownloadDocument(doc)}
                             title="Download document"
@@ -456,7 +486,10 @@ export default function ApplicationTracking() {
                           placeholder="Type your message..."
                           className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
-                        <Button onClick={handleSendMessage} disabled={!chatMessage.trim()}>
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={!chatMessage.trim()}
+                        >
                           Send
                         </Button>
                       </div>
@@ -480,8 +513,12 @@ export default function ApplicationTracking() {
                     {application.assignedStaff.avatar}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">{application.assignedStaff.name}</h3>
-                    <p className="text-xs text-muted-foreground">GST Specialist</p>
+                    <h3 className="font-semibold text-sm">
+                      {application.assignedStaff.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      GST Specialist
+                    </p>
                   </div>
                 </div>
 
@@ -493,7 +530,9 @@ export default function ApplicationTracking() {
                     <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Call</p>
-                      <p className="text-sm font-medium">{application.assignedStaff.phone}</p>
+                      <p className="text-sm font-medium">
+                        {application.assignedStaff.phone}
+                      </p>
                     </div>
                   </a>
 
@@ -504,7 +543,9 @@ export default function ApplicationTracking() {
                     <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium break-all">{application.assignedStaff.email}</p>
+                      <p className="text-sm font-medium break-all">
+                        {application.assignedStaff.email}
+                      </p>
                     </div>
                   </a>
                 </div>
@@ -521,7 +562,8 @@ export default function ApplicationTracking() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Contact your assigned staff or our support team for any queries
+                  Contact your assigned staff or our support team for any
+                  queries
                 </p>
                 <Button variant="outline" className="w-full">
                   Contact Support
