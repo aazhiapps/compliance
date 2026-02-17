@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * ClientRisk tracks compliance risk metrics and calculates risk score
@@ -15,7 +14,7 @@ export interface RiskFactor {
 
 export interface ClientRiskRecord extends MongooseDocument {
   id: string;
-  clientId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
   // Risk score (0-100)
   riskScore: number; // Calculated from risk factors
   complianceStatus: "good" | "warning" | "critical";
@@ -41,7 +40,7 @@ export interface ClientRiskRecord extends MongooseDocument {
   itcComplianceScore: number; // % of correct ITC claims
   // Last assessment
   lastAssessedAt: Date;
-  assessedBy?: ObjectId;
+  assessedBy?: mongoose.Types.ObjectId;
   // Recommended actions
   recommendedActions?: string[];
   // Audit
@@ -166,7 +165,7 @@ ClientRiskSchema.index({ lastAssessedAt: -1 });
 // Convert to plain object with id field
 ClientRiskSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * Notification tracks all system notifications to users
@@ -8,8 +7,8 @@ import { ObjectId } from "mongodb";
 
 export interface NotificationRecord extends MongooseDocument {
   id: string;
-  userId: ObjectId;
-  clientId?: ObjectId;
+  userId: mongoose.Types.ObjectId;
+  clientId?: mongoose.Types.ObjectId;
   type:
     | "itc_discrepancy_detected"
     | "itc_sync_completed"
@@ -34,7 +33,7 @@ export interface NotificationRecord extends MongooseDocument {
     | "itc_reconciliation"
     | "payment"
     | "client";
-  entityId?: ObjectId;
+  entityId?: mongoose.Types.ObjectId;
   // Status
   status: "pending" | "sent" | "failed" | "read";
   readAt?: Date;
@@ -162,7 +161,7 @@ NotificationSchema.index({ type: 1, userId: 1 });
 // Convert to plain object with id field
 NotificationSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

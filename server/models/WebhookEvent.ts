@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 import { WebhookEventType } from "./WebhookEndpoint";
 
 /**
@@ -9,7 +8,7 @@ import { WebhookEventType } from "./WebhookEndpoint";
 
 export interface WebhookEventRecord extends MongooseDocument {
   id: string;
-  clientId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
   eventType: WebhookEventType;
   status: "pending" | "processing" | "delivered" | "failed";
   // Event data
@@ -20,7 +19,7 @@ export interface WebhookEventRecord extends MongooseDocument {
     | "itc_reconciliation"
     | "payment"
     | "client";
-  entityId: ObjectId;
+  entityId: mongoose.Types.ObjectId;
   data: Record<string, any>;
   // Metadata about the event
   source:
@@ -136,7 +135,7 @@ WebhookEventSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL in
 // Convert to plain object with id field
 WebhookEventSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

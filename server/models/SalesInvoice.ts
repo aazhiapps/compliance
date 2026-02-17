@@ -76,10 +76,14 @@ const SalesInvoiceSchema = new Schema<ISalesInvoiceDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
-        ret.createdAt = ret.createdAt.toISOString();
-        ret.updatedAt = ret.updatedAt.toISOString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
+        if (ret.createdAt && typeof ret.createdAt !== 'string') {
+          ret.createdAt = ret.createdAt.toISOString();
+        }
+        if (ret.updatedAt && typeof ret.updatedAt !== 'string') {
+          ret.updatedAt = ret.updatedAt.toISOString();
+        }
         delete ret._id;
         delete ret.__v;
         return ret;

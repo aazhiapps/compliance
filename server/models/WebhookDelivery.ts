@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * WebhookDelivery tracks individual delivery attempts for webhook events
@@ -8,9 +7,9 @@ import { ObjectId } from "mongodb";
 
 export interface WebhookDeliveryRecord extends MongooseDocument {
   id: string;
-  webhookEventId: ObjectId;
-  webhookEndpointId: ObjectId;
-  clientId: ObjectId;
+  webhookEventId: mongoose.Types.ObjectId;
+  webhookEndpointId: mongoose.Types.ObjectId;
+  clientId: mongoose.Types.ObjectId;
   // Attempt details
   attemptNumber: number;
   deliveryStatus: "success" | "failed" | "pending" | "timeout" | "invalid_url";
@@ -113,7 +112,7 @@ WebhookDeliverySchema.index(
 // Convert to plain object with id field
 WebhookDeliverySchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

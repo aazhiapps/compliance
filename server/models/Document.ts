@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * Document represents files with versioning, metadata extraction, and S3 storage
@@ -9,7 +8,7 @@ import { ObjectId } from "mongodb";
 export interface DocumentVersion {
   versionNum: number;
   uploadedAt: Date;
-  uploadedBy: ObjectId;
+  uploadedBy: mongoose.Types.ObjectId;
   changes: string; // Description of what changed
   fileSize: number;
   s3Path: string;
@@ -34,15 +33,15 @@ export interface DocumentMetadata {
 export interface DocumentRecord extends MongooseDocument {
   id: string;
   documentId: string; // UUID
-  clientId?: ObjectId; // For GST documents
-  userId?: ObjectId; // For application documents
+  clientId?: mongoose.Types.ObjectId; // For GST documents
+  userId?: mongoose.Types.ObjectId; // For application documents
   linkedEntityType:
     | "invoice_purchase"
     | "invoice_sales"
     | "filing"
     | "application"
     | "report";
-  linkedEntityId: ObjectId;
+  linkedEntityId: mongoose.Types.ObjectId;
   documentType:
     | "invoice"
     | "challan"
@@ -65,8 +64,8 @@ export interface DocumentRecord extends MongooseDocument {
   // Audit
   createdAt: Date;
   updatedAt: Date;
-  createdBy: ObjectId;
-  updatedBy?: ObjectId;
+  createdBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
 }
 
 const DocumentSchema = new Schema<DocumentRecord>(
@@ -173,7 +172,7 @@ DocumentSchema.index({ userId: 1, createdAt: -1 });
 // Convert to plain object with id field
 DocumentSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

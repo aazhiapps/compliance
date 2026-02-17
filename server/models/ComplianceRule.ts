@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * ComplianceRule stores configurable GST rules
@@ -42,8 +41,8 @@ export interface ComplianceRuleRecord extends MongooseDocument {
   effectiveFrom: Date;
   effectiveUntil?: Date;
   // Audit
-  createdBy: ObjectId;
-  updatedBy?: ObjectId;
+  createdBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,7 +100,7 @@ ComplianceRuleSchema.index({ effectiveFrom: 1, effectiveUntil: 1 });
 // Convert to plain object with id field
 ComplianceRuleSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
