@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   X,
-  User,
+  User as UserIcon,
   Mail,
   Phone,
   Shield,
@@ -11,7 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-interface User {
+export interface UserForEdit {
   id: string;
   name: string;
   email: string;
@@ -25,8 +25,8 @@ interface User {
 interface UserEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
-  onSave: (updatedUser: User) => void;
+  user: UserForEdit;
+  onSave: (updatedUser: UserForEdit) => void;
   onSuspend: (userId: string) => void;
   onApprove: (userId: string) => void;
 }
@@ -50,7 +50,7 @@ export default function UserEditModal({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    const updatedUser: User = {
+    const updatedUser: UserForEdit = {
       ...user,
       name: formData.name,
       email: formData.email,
@@ -114,7 +114,7 @@ export default function UserEditModal({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
+                <UserIcon className="w-5 h-5 text-primary" />
                 Personal Information
               </CardTitle>
             </CardHeader>

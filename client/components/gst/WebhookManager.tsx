@@ -24,13 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { Badge } from "../ui/badge";
 import {
   AlertCircle,

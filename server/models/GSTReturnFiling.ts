@@ -114,10 +114,10 @@ const GSTReturnFilingSchema = new Schema<IGSTReturnFilingDocument>(
     toJSON: {
       transform: function (_doc, ret: any) {
         ret.id = ret._id?.toString();
-        if (ret.createdAt && typeof ret.createdAt !== 'string') {
+        if (ret.createdAt && typeof ret.createdAt !== "string") {
           ret.createdAt = ret.createdAt.toISOString();
         }
-        if (ret.updatedAt && typeof ret.updatedAt !== 'string') {
+        if (ret.updatedAt && typeof ret.updatedAt !== "string") {
           ret.updatedAt = ret.updatedAt.toISOString();
         }
         delete ret._id;

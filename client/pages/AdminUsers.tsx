@@ -23,6 +23,7 @@ import {
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
 import { User as ApiUser } from "@shared/auth";
+import type { UserForEdit } from "@/components/UserEditModal";
 
 // Extended User interface for display purposes
 interface User extends ApiUser {
@@ -32,6 +33,18 @@ interface User extends ApiUser {
   applications: number;
   verified: boolean; // isEmailVerified
 }
+
+// Helper to convert User to UserForEdit
+const toUserForEdit = (user: User): UserForEdit => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  businessType: user.businessType,
+  joinedDate: user.joinedDate,
+  status: user.status,
+  applications: user.applications,
+  verified: user.verified,
+});
 
 export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -647,15 +660,23 @@ export default function AdminUsers() {
       </div>
 
       {/* User Edit Modal */}
-      {selectedUserId && (
+      {selectedUserId && users.find((u) => u.id === selectedUserId) && (
         <UserEditModal
           isOpen={modalOpen}
           onClose={() => {
             setModalOpen(false);
             setSelectedUserId(null);
           }}
-          user={users.find((u) => u.id === selectedUserId)!}
-          onSave={handleSaveUser}
+          user={toUserForEdit(users.find((u) => u.id === selectedUserId)!)}
+          onSave={(updatedUser) => {
+            // Merge the updated fields back into the full User object
+            handleSaveUser({
+              ...users.find((u) => u.id === selectedUserId)!,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              status: updatedUser.status,
+            });
+          }}
           onApprove={handleApproveUser}
           onSuspend={handleSuspendUser}
         />
