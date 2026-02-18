@@ -1,9 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { createServer } from "./server";
-import { dbConnection } from "./server/config/database";
-import { seedAllData } from "./server/utils/seedData";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
@@ -18,7 +16,7 @@ export default defineConfig(() => ({
   build: {
     outDir: "dist/spa",
   },
-  plugins: [react(), expressPlugin()],
+  plugins: [tsconfigPaths(), react(), expressPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client"),
@@ -33,9 +31,14 @@ function expressPlugin(): Plugin {
   return {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
-    async configureServer(server) {
+    async configureServer(viteServer) {
       if (databaseInitialized) return;
       databaseInitialized = true;
+
+      // Use Vite's ssrLoadModule to load TypeScript files with path alias support
+      const { createServer } = await viteServer.ssrLoadModule("/server/index.ts");
+      const { dbConnection } = await viteServer.ssrLoadModule("/server/config/database.ts");
+      const { seedAllData } = await viteServer.ssrLoadModule("/server/utils/seedData.ts");
 
       // Connect to MongoDB before starting the server
       try {
@@ -54,7 +57,7 @@ function expressPlugin(): Plugin {
       const app = createServer();
 
       // Add Express app as middleware to Vite dev server
-      server.middlewares.use(app);
+      viteServer.middlewares.use(app);
     },
   };
 }
