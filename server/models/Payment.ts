@@ -45,6 +45,44 @@ const PaymentSchema = new Schema<IPaymentDocument>(
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
+    // PHASE 1: Payment Security Enhancement
+    signatureVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    reconciliationStatus: {
+      type: String,
+      enum: ["pending", "reconciled", "disputed", "failed"],
+      default: "pending",
+      index: true,
+    },
+    reconciledAt: { type: Date },
+    reconciledBy: { type: String },
+    retryCount: {
+      type: Number,
+      default: 0,
+    },
+    nextRetryAt: { type: Date },
+    failureReason: { type: String },
+    reversalId: { type: String }, // For refunds
+    statementReference: { type: String }, // Bank reconciliation
+    webhookReceived: {
+      type: Boolean,
+      default: false,
+    },
+    webhookVerified: {
+      type: Boolean,
+      default: false,
+    },
+    webhookPayload: { type: Schema.Types.Mixed },
+    // Manual override protection (PHASE 1)
+    canManuallyOverride: {
+      type: Boolean,
+      default: false,
+    },
+    manualOverrideApprovedBy: { type: String },
+    manualOverrideReason: { type: String },
     date: {
       type: String,
       required: true,
@@ -73,6 +111,8 @@ PaymentSchema.index({ applicationId: 1 });
 PaymentSchema.index({ applicantEmail: 1 });
 PaymentSchema.index({ status: 1 });
 PaymentSchema.index({ date: -1 });
+PaymentSchema.index({ reconciliationStatus: 1 }); // PHASE 1
+PaymentSchema.index({ signatureVerified: 1, status: 1 }); // PHASE 1
 
 export const PaymentModel = mongoose.model<IPaymentDocument>(
   "Payment",

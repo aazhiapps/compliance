@@ -1,10 +1,13 @@
 import { RequestHandler } from "express";
 import { HTTP_STATUS } from "../utils/constants";
 import { ApplicationStatus, isValidStatusTransition } from "@shared/client";
+import { StateTransitionLogModel } from "../models/StateTransitionLog";
+import { AuditLogService } from "../services/AuditLogService";
 
 /**
  * Middleware to validate application status transitions
  * Ensures that status changes follow the defined state machine
+ * PHASE 1: Enhanced with StateTransitionLog tracking
  */
 export const validateStatusTransition: RequestHandler = async (req, res, next) => {
   try {
@@ -39,12 +42,39 @@ export const validateStatusTransition: RequestHandler = async (req, res, next) =
     const currentStatus = application.status as ApplicationStatus;
     
     // Validate transition
-    if (!isValidStatusTransition(currentStatus, newStatus)) {
+    const isValid = isValidStatusTransition(currentStatus, newStatus);
+    
+    // Log the transition attempt
+    const userId = (req as any).userId || "system";
+    const userName = (req as any).userName;
+    
+    await StateTransitionLogModel.create({
+      entityType: "application",
+      entityId: applicationId,
+      fromState: currentStatus,
+      toState: newStatus,
+      transitionType: "manual",
+      reason: req.body.reason,
+      comment: req.body.comment,
+      triggeredBy: userId,
+      triggeredByName: userName,
+      triggeredAt: new Date(),
+      metadata: {
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      },
+      isValid,
+      validationErrors: isValid ? [] : [`Invalid transition from '${currentStatus}' to '${newStatus}'`],
+      canRollback: false,
+    });
+    
+    if (!isValid) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         message: `Invalid status transition from '${currentStatus}' to '${newStatus}'`,
         currentStatus,
         attemptedStatus: newStatus,
+        errorCode: "BUSINESS_INVALID_STATE_TRANSITION",
       });
     }
 

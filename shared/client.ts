@@ -53,6 +53,18 @@ export interface Client {
   status: ClientStatus;
   kycStatus: VerificationStatus;
   
+  // Risk Scoring (PHASE 1)
+  riskScore?: number; // 0-100
+  riskLevel?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  riskFactors?: string[];
+  lastRiskAssessment?: string;
+  
+  // Compliance Metrics (PHASE 1)
+  missedComplianceCount?: number;
+  rejectedApplicationsCount?: number;
+  pendingQueriesCount?: number;
+  overdueFilingsCount?: number;
+  
   // Metadata
   createdAt: string;
   updatedAt: string;
@@ -216,6 +228,7 @@ export interface ComplianceAlert {
 
 /**
  * Application status enum with state machine support
+ * PHASE 1: Enhanced with new statuses for enterprise compliance
  */
 export type ApplicationStatus =
   | "draft"
@@ -223,13 +236,17 @@ export type ApplicationStatus =
   | "under_review"
   | "query_raised"
   | "query_responded"
+  | "resubmitted" // PHASE 1: After query response
   | "approved"
   | "rejected"
   | "completed"
-  | "monitoring";
+  | "monitoring"
+  | "active_monitoring" // PHASE 1: Ongoing compliance monitoring
+  | "suspended"; // PHASE 1: Temporarily suspended
 
 /**
  * Valid status transitions
+ * PHASE 1: Updated state machine with new transitions
  */
 export const APPLICATION_STATUS_TRANSITIONS: Record<
   ApplicationStatus,
@@ -239,11 +256,14 @@ export const APPLICATION_STATUS_TRANSITIONS: Record<
   submitted: ["under_review", "rejected"],
   under_review: ["query_raised", "approved", "rejected"],
   query_raised: ["query_responded", "rejected"],
-  query_responded: ["under_review", "approved", "rejected"],
-  approved: ["completed", "monitoring"],
-  rejected: [],
-  completed: ["monitoring"],
-  monitoring: [],
+  query_responded: ["resubmitted", "rejected"],
+  resubmitted: ["under_review", "approved", "rejected"],
+  approved: ["completed", "monitoring", "active_monitoring"],
+  rejected: ["resubmitted"], // Can resubmit after rejection
+  completed: ["active_monitoring"],
+  monitoring: ["active_monitoring", "completed", "suspended"],
+  active_monitoring: ["suspended", "completed"],
+  suspended: ["active_monitoring", "rejected"], // Can resume or close
 };
 
 /**

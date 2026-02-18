@@ -109,6 +109,44 @@ const ClientSchema = new Schema<IClientDocument>(
       required: true,
       index: true,
     },
+    // Risk Scoring (PHASE 1 - Enterprise Enhancement)
+    riskScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+      index: true,
+    },
+    riskLevel: {
+      type: String,
+      enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      default: "LOW",
+      index: true,
+    },
+    riskFactors: {
+      type: [String],
+      default: [],
+    },
+    lastRiskAssessment: {
+      type: Date,
+    },
+    // Compliance Metrics
+    missedComplianceCount: {
+      type: Number,
+      default: 0,
+    },
+    rejectedApplicationsCount: {
+      type: Number,
+      default: 0,
+    },
+    pendingQueriesCount: {
+      type: Number,
+      default: 0,
+    },
+    overdueFilingsCount: {
+      type: Number,
+      default: 0,
+    },
     // Metadata
     createdBy: {
       type: String,
@@ -142,6 +180,8 @@ ClientSchema.index({ userId: 1, status: 1 });
 ClientSchema.index({ userId: 1, createdAt: -1 });
 ClientSchema.index({ email: 1, status: 1 });
 ClientSchema.index({ kycStatus: 1, status: 1 });
+ClientSchema.index({ riskScore: -1 }); // PHASE 1: Risk-based filtering
+ClientSchema.index({ riskLevel: 1, status: 1 }); // PHASE 1: Risk level queries
 
 // Unique constraint on PAN within active clients
 ClientSchema.index(
