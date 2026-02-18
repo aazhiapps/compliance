@@ -51,10 +51,13 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
         "under_review",
         "query_raised",
         "query_responded",
+        "resubmitted", // PHASE 1: New status
         "approved",
         "rejected",
         "completed",
         "monitoring",
+        "active_monitoring", // PHASE 1: New status for ongoing compliance
+        "suspended", // PHASE 1: New status for suspended applications
       ],
       default: "draft",
       required: true,

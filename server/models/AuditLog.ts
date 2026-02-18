@@ -20,6 +20,9 @@ const AuditLogSchema = new Schema<IAuditLogDocument>(
         "invoice_purchase",
         "invoice_sales",
         "report",
+        "compliance_event", // PHASE 1
+        "role_permission", // PHASE 1
+        "state_transition", // PHASE 1
       ],
       required: true,
       index: true,
@@ -74,6 +77,32 @@ const AuditLogSchema = new Schema<IAuditLogDocument>(
     },
     metadata: {
       type: Schema.Types.Mixed,
+    },
+    // PHASE 1: Compliance Impact Tracking
+    complianceImpact: {
+      type: String,
+      enum: ["none", "info", "warning", "critical"],
+      default: "none",
+      index: true,
+    },
+    requiresApproval: {
+      type: Boolean,
+      default: false,
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "not_required"],
+      default: "not_required",
+      index: true,
+    },
+    approvedBy: {
+      type: String,
+    },
+    approvedAt: {
+      type: Date,
+    },
+    changeReason: {
+      type: String,
     },
   },
   {
