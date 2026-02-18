@@ -3,8 +3,12 @@
  * Handles reminders, alerts, and notifications for GST compliance
  */
 
-import { GSTReminder, GSTNotification, GSTClient, GSTReturnFiling } from "@shared/gst";
-import { calculateDueDates, isMonthOverdue } from "../utils/gstValidation";
+import {
+  GSTReminder,
+  GSTNotification,
+  GSTClient,
+  GSTReturnFiling,
+} from "@shared/gst";
 
 /**
  * Notification Service for GST reminders and alerts
@@ -25,7 +29,7 @@ export class GSTNotificationService {
   createRemindersForMonth(
     client: GSTClient,
     month: string,
-    filing: GSTReturnFiling
+    filing: GSTReturnFiling,
   ): GSTReminder[] {
     const createdReminders: GSTReminder[] = [];
 
@@ -35,7 +39,7 @@ export class GSTNotificationService {
         client,
         month,
         "GSTR-1",
-        filing.gstr1DueDate
+        filing.gstr1DueDate,
       );
       createdReminders.push(gstr1Reminder);
     }
@@ -46,7 +50,7 @@ export class GSTNotificationService {
         client,
         month,
         "GSTR-3B",
-        filing.gstr3bDueDate
+        filing.gstr3bDueDate,
       );
       createdReminders.push(gstr3bReminder);
     }
@@ -61,7 +65,7 @@ export class GSTNotificationService {
     client: GSTClient,
     month: string,
     returnType: "GSTR-1" | "GSTR-3B" | "GSTR-9",
-    dueDate: string
+    dueDate: string,
   ): GSTReminder {
     // Calculate reminder date (5 days before due date)
     const due = new Date(dueDate);
@@ -75,10 +79,10 @@ export class GSTNotificationService {
       month,
       returnType,
       dueDate,
-      reminderDate: reminderDate.toISOString().split('T')[0],
+      reminderDate: reminderDate.toISOString().split("T")[0],
       status: "pending",
       notificationChannels: ["dashboard", "email"],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     this.reminders.set(reminder.id, reminder);
@@ -91,12 +95,11 @@ export class GSTNotificationService {
   getPendingRemindersForToday(): GSTReminder[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = today.toISOString().split("T")[0];
 
     return Array.from(this.reminders.values()).filter(
-      reminder => 
-        reminder.status === "pending" && 
-        reminder.reminderDate === todayStr
+      (reminder) =>
+        reminder.status === "pending" && reminder.reminderDate === todayStr,
     );
   }
 
@@ -107,7 +110,7 @@ export class GSTNotificationService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return Array.from(this.reminders.values()).filter(reminder => {
+    return Array.from(this.reminders.values()).filter((reminder) => {
       const dueDate = new Date(reminder.dueDate);
       return reminder.status !== "sent" && today > dueDate;
     });
@@ -142,11 +145,15 @@ export class GSTNotificationService {
   createNotification(
     clientId: string,
     userId: string,
-    type: "due_date_reminder" | "overdue_alert" | "filing_success" | "escalation",
+    type:
+      | "due_date_reminder"
+      | "overdue_alert"
+      | "filing_success"
+      | "escalation",
     title: string,
     message: string,
     priority: "low" | "medium" | "high" = "medium",
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): GSTNotification {
     const notification: GSTNotification = {
       id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -158,7 +165,7 @@ export class GSTNotificationService {
       priority,
       isRead: false,
       metadata,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     this.notifications.set(notification.id, notification);
@@ -170,7 +177,7 @@ export class GSTNotificationService {
    */
   getUnreadNotifications(userId: string): GSTNotification[] {
     return Array.from(this.notifications.values()).filter(
-      notif => notif.userId === userId && !notif.isRead
+      (notif) => notif.userId === userId && !notif.isRead,
     );
   }
 
@@ -179,8 +186,11 @@ export class GSTNotificationService {
    */
   getUserNotifications(userId: string, limit?: number): GSTNotification[] {
     const notifications = Array.from(this.notifications.values())
-      .filter(notif => notif.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .filter((notif) => notif.userId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
 
     return limit ? notifications.slice(0, limit) : notifications;
   }
@@ -205,8 +215,8 @@ export class GSTNotificationService {
   markAllNotificationsRead(userId: string): number {
     let count = 0;
     Array.from(this.notifications.values())
-      .filter(notif => notif.userId === userId && !notif.isRead)
-      .forEach(notif => {
+      .filter((notif) => notif.userId === userId && !notif.isRead)
+      .forEach((notif) => {
         notif.isRead = true;
         notif.readAt = new Date().toISOString();
         this.notifications.set(notif.id, notif);
@@ -223,7 +233,7 @@ export class GSTNotificationService {
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
     let deleted = 0;
-    Array.from(this.notifications.values()).forEach(notif => {
+    Array.from(this.notifications.values()).forEach((notif) => {
       const createdDate = new Date(notif.createdAt);
       if (createdDate < cutoffDate && notif.isRead) {
         this.notifications.delete(notif.id);
@@ -239,86 +249,104 @@ export class GSTNotificationService {
    */
   processDueDateReminders(
     clients: GSTClient[],
-    filings: Map<string, GSTReturnFiling>
+    filings: Map<string, GSTReturnFiling>,
   ): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Process each active client
-    clients.filter(c => c.status === "active").forEach(client => {
-      // Get all filings for this client
-      const clientFilings = Array.from(filings.values()).filter(
-        f => f.clientId === client.id
-      );
+    clients
+      .filter((c) => c.status === "active")
+      .forEach((client) => {
+        // Get all filings for this client
+        const clientFilings = Array.from(filings.values()).filter(
+          (f) => f.clientId === client.id,
+        );
 
-      clientFilings.forEach(filing => {
-        // Check GSTR-1 reminder
-        if (!filing.gstr1Filed && filing.gstr1DueDate) {
-          const dueDate = new Date(filing.gstr1DueDate);
-          const reminderDate = new Date(dueDate);
-          reminderDate.setDate(reminderDate.getDate() - 5);
+        clientFilings.forEach((filing) => {
+          // Check GSTR-1 reminder
+          if (!filing.gstr1Filed && filing.gstr1DueDate) {
+            const dueDate = new Date(filing.gstr1DueDate);
+            const reminderDate = new Date(dueDate);
+            reminderDate.setDate(reminderDate.getDate() - 5);
 
-          if (today.toDateString() === reminderDate.toDateString()) {
-            // Send reminder
-            this.createNotification(
-              client.id,
-              client.userId,
-              "due_date_reminder",
-              `GSTR-1 Due Soon - ${client.clientName}`,
-              `GSTR-1 for ${filing.month} is due on ${filing.gstr1DueDate}. Please file before the deadline to avoid late fees.`,
-              "high",
-              { month: filing.month, returnType: "GSTR-1", dueDate: filing.gstr1DueDate }
-            );
+            if (today.toDateString() === reminderDate.toDateString()) {
+              // Send reminder
+              this.createNotification(
+                client.id,
+                client.userId,
+                "due_date_reminder",
+                `GSTR-1 Due Soon - ${client.clientName}`,
+                `GSTR-1 for ${filing.month} is due on ${filing.gstr1DueDate}. Please file before the deadline to avoid late fees.`,
+                "high",
+                {
+                  month: filing.month,
+                  returnType: "GSTR-1",
+                  dueDate: filing.gstr1DueDate,
+                },
+              );
+            }
+
+            // Check if overdue
+            if (today > dueDate) {
+              this.createNotification(
+                client.id,
+                client.userId,
+                "overdue_alert",
+                `GSTR-1 OVERDUE - ${client.clientName}`,
+                `GSTR-1 for ${filing.month} is overdue! Due date was ${filing.gstr1DueDate}. Late fees are applicable.`,
+                "high",
+                {
+                  month: filing.month,
+                  returnType: "GSTR-1",
+                  dueDate: filing.gstr1DueDate,
+                },
+              );
+            }
           }
 
-          // Check if overdue
-          if (today > dueDate) {
-            this.createNotification(
-              client.id,
-              client.userId,
-              "overdue_alert",
-              `GSTR-1 OVERDUE - ${client.clientName}`,
-              `GSTR-1 for ${filing.month} is overdue! Due date was ${filing.gstr1DueDate}. Late fees are applicable.`,
-              "high",
-              { month: filing.month, returnType: "GSTR-1", dueDate: filing.gstr1DueDate }
-            );
-          }
-        }
+          // Check GSTR-3B reminder
+          if (!filing.gstr3bFiled && filing.gstr3bDueDate) {
+            const dueDate = new Date(filing.gstr3bDueDate);
+            const reminderDate = new Date(dueDate);
+            reminderDate.setDate(reminderDate.getDate() - 5);
 
-        // Check GSTR-3B reminder
-        if (!filing.gstr3bFiled && filing.gstr3bDueDate) {
-          const dueDate = new Date(filing.gstr3bDueDate);
-          const reminderDate = new Date(dueDate);
-          reminderDate.setDate(reminderDate.getDate() - 5);
+            if (today.toDateString() === reminderDate.toDateString()) {
+              // Send reminder
+              this.createNotification(
+                client.id,
+                client.userId,
+                "due_date_reminder",
+                `GSTR-3B Due Soon - ${client.clientName}`,
+                `GSTR-3B for ${filing.month} is due on ${filing.gstr3bDueDate}. Please file before the deadline to avoid late fees.`,
+                "high",
+                {
+                  month: filing.month,
+                  returnType: "GSTR-3B",
+                  dueDate: filing.gstr3bDueDate,
+                },
+              );
+            }
 
-          if (today.toDateString() === reminderDate.toDateString()) {
-            // Send reminder
-            this.createNotification(
-              client.id,
-              client.userId,
-              "due_date_reminder",
-              `GSTR-3B Due Soon - ${client.clientName}`,
-              `GSTR-3B for ${filing.month} is due on ${filing.gstr3bDueDate}. Please file before the deadline to avoid late fees.`,
-              "high",
-              { month: filing.month, returnType: "GSTR-3B", dueDate: filing.gstr3bDueDate }
-            );
+            // Check if overdue
+            if (today > dueDate) {
+              this.createNotification(
+                client.id,
+                client.userId,
+                "overdue_alert",
+                `GSTR-3B OVERDUE - ${client.clientName}`,
+                `GSTR-3B for ${filing.month} is overdue! Due date was ${filing.gstr3bDueDate}. Late fees and interest are applicable.`,
+                "high",
+                {
+                  month: filing.month,
+                  returnType: "GSTR-3B",
+                  dueDate: filing.gstr3bDueDate,
+                },
+              );
+            }
           }
-
-          // Check if overdue
-          if (today > dueDate) {
-            this.createNotification(
-              client.id,
-              client.userId,
-              "overdue_alert",
-              `GSTR-3B OVERDUE - ${client.clientName}`,
-              `GSTR-3B for ${filing.month} is overdue! Due date was ${filing.gstr3bDueDate}. Late fees and interest are applicable.`,
-              "high",
-              { month: filing.month, returnType: "GSTR-3B", dueDate: filing.gstr3bDueDate }
-            );
-          }
-        }
+        });
       });
-    });
   }
 
   /**
@@ -331,12 +359,12 @@ export class GSTNotificationService {
     overdueReminders: number;
   } {
     const all = Array.from(this.reminders.values());
-    
+
     return {
       totalReminders: all.length,
-      pendingReminders: all.filter(r => r.status === "pending").length,
-      sentReminders: all.filter(r => r.status === "sent").length,
-      overdueReminders: all.filter(r => r.status === "overdue").length
+      pendingReminders: all.filter((r) => r.status === "pending").length,
+      sentReminders: all.filter((r) => r.status === "sent").length,
+      overdueReminders: all.filter((r) => r.status === "overdue").length,
     };
   }
 
@@ -349,13 +377,15 @@ export class GSTNotificationService {
     highPriorityUnread: number;
   } {
     const userNotifs = Array.from(this.notifications.values()).filter(
-      n => n.userId === userId
+      (n) => n.userId === userId,
     );
-    
+
     return {
       totalNotifications: userNotifs.length,
-      unreadNotifications: userNotifs.filter(n => !n.isRead).length,
-      highPriorityUnread: userNotifs.filter(n => !n.isRead && n.priority === "high").length
+      unreadNotifications: userNotifs.filter((n) => !n.isRead).length,
+      highPriorityUnread: userNotifs.filter(
+        (n) => !n.isRead && n.priority === "high",
+      ).length,
     };
   }
 
@@ -364,7 +394,7 @@ export class GSTNotificationService {
    */
   getClientReminders(clientId: string): GSTReminder[] {
     return Array.from(this.reminders.values()).filter(
-      r => r.clientId === clientId
+      (r) => r.clientId === clientId,
     );
   }
 

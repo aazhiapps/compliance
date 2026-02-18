@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import crypto from "crypto";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import WebhookRepository from "../repositories/WebhookRepository";
 import QueueService from "./QueueService";
@@ -8,12 +8,23 @@ import { WebhookEventType } from "../models/WebhookEndpoint";
 import logger from "../utils/logger";
 
 export interface PublishWebhookEventInput {
-  clientId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
   eventType: WebhookEventType;
-  entityType: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
-  entityId: ObjectId;
+  entityType:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
+  entityId: mongoose.Types.ObjectId;
   data: Record<string, any>;
-  source: "filing_service" | "itc_service" | "document_service" | "notification_service" | "manual";
+  source:
+    | "filing_service"
+    | "itc_service"
+    | "document_service"
+    | "notification_service"
+    | "manual";
 }
 
 export interface WebhookDeliveryConfig {
@@ -62,7 +73,7 @@ export class WebhookService {
     } catch (error) {
       logger.error("Failed to publish webhook event", {
         eventType: input.eventType,
-        clientId: input.clientId,
+        clientId: input.clientId.toString(),
         error: (error as Error).message,
       });
       throw error;
@@ -73,7 +84,7 @@ export class WebhookService {
    * Process webhook event delivery
    * Sends the event to all subscribed endpoints
    */
-  async processWebhookEventDelivery(eventId: ObjectId) {
+  async processWebhookEventDelivery(eventId: mongoose.Types.ObjectId) {
     try {
       const event = await WebhookRepository.getWebhookEventById(eventId);
       if (!event) {
@@ -87,7 +98,7 @@ export class WebhookService {
       // Get all subscribed endpoints for this event
       const endpoints = await WebhookRepository.getSubscribedEndpoints(
         event.clientId,
-        event.eventType
+        event.eventType,
       );
 
       if (endpoints.length === 0) {
@@ -118,8 +129,8 @@ export class WebhookService {
           await this.deliverToEndpoint(event._id, endpoint, payload);
         } catch (error) {
           logger.error("Failed to deliver webhook to endpoint", {
-            eventId,
-            endpointId: endpoint._id,
+            eventId: eventId.toString(),
+            endpointId: endpoint._id.toString(),
             error: (error as Error).message,
           });
           allDelivered = false;
@@ -137,10 +148,14 @@ export class WebhookService {
       });
     } catch (error) {
       logger.error("Error processing webhook event delivery", {
-        eventId,
+        eventId: eventId.toString(),
         error: (error as Error).message,
       });
-      await WebhookRepository.updateEventStatus(eventId, "failed", (error as Error).message);
+      await WebhookRepository.updateEventStatus(
+        eventId,
+        "failed",
+        (error as Error).message,
+      );
     }
   }
 
@@ -148,20 +163,25 @@ export class WebhookService {
    * Deliver webhook to a specific endpoint
    */
   private async deliverToEndpoint(
-    eventId: ObjectId,
+    eventId: mongoose.Types.ObjectId,
     endpoint: any,
-    payload: Record<string, any>
+    payload: Record<string, any>,
   ) {
     const attemptNumber = 1; // First attempt
 
     // Get endpoint secret (fetch with select: false)
-    const endpointWithSecret = await endpoint.constructor.findById(endpoint._id).select("+secret");
+    const endpointWithSecret = await endpoint.constructor
+      .findById(endpoint._id)
+      .select("+secret");
     if (!endpointWithSecret) {
       throw new Error("Endpoint secret not found");
     }
 
     // Generate signature
-    const signature = this.generateSignature(payload, endpointWithSecret.secret);
+    const signature = this.generateSignature(
+      payload,
+      endpointWithSecret.secret,
+    );
 
     // Create delivery record
     const delivery = await WebhookRepository.createWebhookDelivery({
@@ -218,9 +238,15 @@ export class WebhookService {
       let deliveryStatus: "failed" | "timeout" | "invalid_url" = "failed";
       let errorMessage = (error as Error).message;
 
-      if (axiosError.code === "ECONNABORTED" || axiosError.code === "ETIMEDOUT") {
+      if (
+        axiosError.code === "ECONNABORTED" ||
+        axiosError.code === "ETIMEDOUT"
+      ) {
         deliveryStatus = "timeout";
-      } else if (axiosError.code === "ENOTFOUND" || axiosError.code === "ECONNREFUSED") {
+      } else if (
+        axiosError.code === "ENOTFOUND" ||
+        axiosError.code === "ECONNREFUSED"
+      ) {
         deliveryStatus = "invalid_url";
       }
 
@@ -230,19 +256,28 @@ export class WebhookService {
       if (willRetry) {
         const backoffMs =
           (endpoint.retryPolicy?.initialBackoffMs || 2000) *
-          Math.pow(endpoint.retryPolicy?.initialBackoffMs || 2, attemptNumber - 1);
+          Math.pow(
+            endpoint.retryPolicy?.initialBackoffMs || 2,
+            attemptNumber - 1,
+          );
         nextRetryAt = new Date(Date.now() + backoffMs);
       }
 
       // Update delivery as failed
-      await WebhookRepository.updateDeliveryResponse(delivery._id, deliveryStatus, {
-        httpStatusCode: axiosError.response?.status,
-        responsePayload: axiosError.response?.data,
-        errorMessage,
-        errorStack: axiosError.stack,
-        nextRetryAt,
-        willRetry,
-      });
+      await WebhookRepository.updateDeliveryResponse(
+        delivery._id,
+        deliveryStatus,
+        {
+          httpStatusCode: axiosError.response?.status,
+          responsePayload: axiosError.response?.data as
+            | Record<string, any>
+            | undefined,
+          errorMessage,
+          errorStack: axiosError.stack,
+          nextRetryAt,
+          willRetry,
+        },
+      );
 
       // Update endpoint stats
       await WebhookRepository.updateEndpointStats(endpoint._id, false);
@@ -267,19 +302,26 @@ export class WebhookService {
   /**
    * Retry failed webhook delivery
    */
-  async retryWebhookDelivery(deliveryId: ObjectId) {
+  async retryWebhookDelivery(deliveryId: mongoose.Types.ObjectId) {
     try {
-      const delivery = await WebhookRepository.getWebhookDeliveryById(deliveryId);
+      const delivery =
+        await WebhookRepository.getWebhookDeliveryById(deliveryId);
       if (!delivery) {
         logger.warn("Webhook delivery not found", { deliveryId });
         return;
       }
 
-      const event = await WebhookRepository.getWebhookEventById(delivery.webhookEventId);
-      const endpoint = await WebhookRepository.getWebhookEndpointById(delivery.webhookEndpointId);
+      const event = await WebhookRepository.getWebhookEventById(
+        delivery.webhookEventId,
+      );
+      const endpoint = await WebhookRepository.getWebhookEndpointById(
+        delivery.webhookEndpointId,
+      );
 
       if (!event || !endpoint) {
-        logger.warn("Webhook event or endpoint not found for retry", { deliveryId });
+        logger.warn("Webhook event or endpoint not found for retry", {
+          deliveryId,
+        });
         return;
       }
 
@@ -302,7 +344,10 @@ export class WebhookService {
       };
 
       // Generate signature
-      const signature = this.generateSignature(payload, endpointWithSecret.secret);
+      const signature = this.generateSignature(
+        payload,
+        endpointWithSecret.secret,
+      );
 
       // Create new delivery record
       const newDelivery = await WebhookRepository.createWebhookDelivery({
@@ -336,11 +381,15 @@ export class WebhookService {
         });
         const responseTime = Date.now() - startTime;
 
-        await WebhookRepository.updateDeliveryResponse(newDelivery._id, "success", {
-          httpStatusCode: response.status,
-          responseTime,
-          responsePayload: response.data,
-        });
+        await WebhookRepository.updateDeliveryResponse(
+          newDelivery._id,
+          "success",
+          {
+            httpStatusCode: response.status,
+            responseTime,
+            responsePayload: response.data,
+          },
+        );
 
         await WebhookRepository.updateEndpointStats(endpoint._id, true);
 
@@ -353,41 +402,60 @@ export class WebhookService {
         const axiosError = error as AxiosError;
         let deliveryStatus: "failed" | "timeout" | "invalid_url" = "failed";
 
-        if (axiosError.code === "ECONNABORTED" || axiosError.code === "ETIMEDOUT") {
+        if (
+          axiosError.code === "ECONNABORTED" ||
+          axiosError.code === "ETIMEDOUT"
+        ) {
           deliveryStatus = "timeout";
-        } else if (axiosError.code === "ENOTFOUND" || axiosError.code === "ECONNREFUSED") {
+        } else if (
+          axiosError.code === "ENOTFOUND" ||
+          axiosError.code === "ECONNREFUSED"
+        ) {
           deliveryStatus = "invalid_url";
         }
 
-        const willRetry = newAttemptNumber < (endpoint.retryPolicy?.maxRetries || 5);
+        const willRetry =
+          newAttemptNumber < (endpoint.retryPolicy?.maxRetries || 5);
 
         let nextRetryAt: Date | undefined;
         if (willRetry) {
           const backoffMs =
             (endpoint.retryPolicy?.initialBackoffMs || 2000) *
-            Math.pow(endpoint.retryPolicy?.initialBackoffMs || 2, newAttemptNumber - 1);
+            Math.pow(
+              endpoint.retryPolicy?.initialBackoffMs || 2,
+              newAttemptNumber - 1,
+            );
           nextRetryAt = new Date(Date.now() + backoffMs);
         }
 
-        await WebhookRepository.updateDeliveryResponse(newDelivery._id, deliveryStatus, {
-          httpStatusCode: axiosError.response?.status,
-          responsePayload: axiosError.response?.data,
-          errorMessage: (error as Error).message,
-          nextRetryAt,
-          willRetry,
-        });
+        await WebhookRepository.updateDeliveryResponse(
+          newDelivery._id,
+          deliveryStatus,
+          {
+            httpStatusCode: axiosError.response?.status,
+            responsePayload: axiosError.response?.data as
+              | Record<string, any>
+              | undefined,
+            errorMessage: (error as Error).message,
+            nextRetryAt,
+            willRetry,
+          },
+        );
 
         await WebhookRepository.updateEndpointStats(endpoint._id, false);
 
         if (willRetry) {
           const backoffMs =
             (endpoint.retryPolicy?.initialBackoffMs || 2000) *
-            Math.pow(endpoint.retryPolicy?.initialBackoffMs || 2, newAttemptNumber - 1);
+            Math.pow(
+              endpoint.retryPolicy?.initialBackoffMs || 2,
+              newAttemptNumber - 1,
+            );
           await QueueService.addJob(
             "webhooks",
             "retry-webhook-delivery",
             { deliveryId: newDelivery._id },
-            { delay: backoffMs }
+            { delay: backoffMs },
           );
         }
 
@@ -400,7 +468,7 @@ export class WebhookService {
       }
     } catch (error) {
       logger.error("Error retrying webhook delivery", {
-        deliveryId,
+        deliveryId: deliveryId.toString(),
         error: (error as Error).message,
       });
     }
@@ -409,26 +477,39 @@ export class WebhookService {
   /**
    * Generate HMAC-SHA256 signature for webhook payload
    */
-  private generateSignature(payload: Record<string, any>, secret: string): string {
+  private generateSignature(
+    payload: Record<string, any>,
+    secret: string,
+  ): string {
     const payloadString = JSON.stringify(payload);
-    return crypto.createHmac("sha256", secret).update(payloadString).digest("hex");
+    return crypto
+      .createHmac("sha256", secret)
+      .update(payloadString)
+      .digest("hex");
   }
 
   /**
    * Verify webhook signature
    */
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+  verifyWebhookSignature(
+    payload: string,
+    signature: string,
+    secret: string,
+  ): boolean {
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(payload)
       .digest("hex");
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature),
+    );
   }
 
   /**
    * Test webhook delivery
    */
-  async testWebhookEndpoint(endpointId: ObjectId) {
+  async testWebhookEndpoint(endpointId: mongoose.Types.ObjectId) {
     const endpoint = await WebhookRepository.getWebhookEndpointById(endpointId);
     if (!endpoint) {
       throw new Error("Webhook endpoint not found");
@@ -452,7 +533,10 @@ export class WebhookService {
       .findById(endpoint._id)
       .select("+secret");
 
-    const signature = this.generateSignature(testPayload, endpointWithSecret.secret);
+    const signature = this.generateSignature(
+      testPayload,
+      endpointWithSecret.secret,
+    );
 
     try {
       const headers: Record<string, string> = {
@@ -489,7 +573,7 @@ export class WebhookService {
       };
     } catch (error) {
       logger.error("Test webhook failed", {
-        endpointId,
+        endpointId: endpointId.toString(),
         error: (error as Error).message,
       });
 

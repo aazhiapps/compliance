@@ -22,7 +22,7 @@ const clientIds = {
 };
 
 // Generate ObjectIds for invoices and filings
-const generateObjectIds = (count: number) => 
+const generateObjectIds = (count: number) =>
   Array.from({ length: count }, () => new mongoose.Types.ObjectId().toString());
 
 const purchaseIds = generateObjectIds(9);
@@ -93,17 +93,23 @@ export const seedGSTClients = async () => {
   for (const client of demoClients) {
     try {
       // Check if client with same GSTIN already exists
-      const existingClient = await gstRepository.findClientByGSTIN(client.gstin);
+      const existingClient = await gstRepository.findClientByGSTIN(
+        client.gstin,
+      );
       if (!existingClient) {
         // Only upsert if client doesn't already exist
         await gstRepository.upsertClient(client);
       } else {
-        console.log(`⚠ Skipping GST client ${client.clientName} (GSTIN ${client.gstin} already exists)`);
+        console.log(
+          `⚠ Skipping GST client ${client.clientName} (GSTIN ${client.gstin} already exists)`,
+        );
       }
     } catch (error) {
       // Silently skip if error is duplicate key (client already exists)
       if ((error as any).code === 11000) {
-        console.log(`⚠ Skipping GST client ${client.clientName} (already exists)`);
+        console.log(
+          `⚠ Skipping GST client ${client.clientName} (already exists)`,
+        );
       } else {
         throw error;
       }
@@ -302,7 +308,9 @@ export const seedPurchaseInvoices = async () => {
     } catch (error) {
       // Silently skip if error is duplicate key (invoice already exists)
       if ((error as any).code === 11000) {
-        console.log(`⚠ Skipping purchase invoice ${purchase.invoiceNumber} (already exists)`);
+        console.log(
+          `⚠ Skipping purchase invoice ${purchase.invoiceNumber} (already exists)`,
+        );
       } else {
         throw error;
       }
@@ -520,7 +528,9 @@ export const seedSalesInvoices = async () => {
     } catch (error) {
       // Silently skip if error is duplicate key (invoice already exists)
       if ((error as any).code === 11000) {
-        console.log(`⚠ Skipping sales invoice ${sale.invoiceNumber} (already exists)`);
+        console.log(
+          `⚠ Skipping sales invoice ${sale.invoiceNumber} (already exists)`,
+        );
       } else {
         throw error;
       }
@@ -571,8 +581,11 @@ export const seedGSTFilings = async () => {
       gstr3bFiled: false,
       taxPaid: 0,
       lateFee: 0,
+      lateFeeCalculated: false,
       interest: 0,
+      interestCalculated: false,
       filingStatus: "pending",
+      isLocked: false,
       returnDocuments: [],
       challanDocuments: [],
       workingSheets: [],
@@ -662,7 +675,9 @@ export const seedGSTFilings = async () => {
     } catch (error) {
       // Silently skip if error is duplicate key (filing already exists)
       if ((error as any).code === 11000) {
-        console.log(`⚠ Skipping GST filing ${filing.month} for client ${filing.clientId} (already exists)`);
+        console.log(
+          `⚠ Skipping GST filing ${filing.month} for client ${filing.clientId} (already exists)`,
+        );
       } else {
         throw error;
       }

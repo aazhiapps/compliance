@@ -1,5 +1,10 @@
 import { RequestHandler } from "express";
-import { PaymentRecord, RecordPaymentRequest, PaymentResponse, PaymentsListResponse } from "@shared/api";
+import {
+  PaymentRecord,
+  RecordPaymentRequest,
+  PaymentResponse,
+  PaymentsListResponse,
+} from "@shared/api";
 import { paymentRepository } from "../repositories/paymentRepository";
 import { applicationRepository } from "../repositories/applicationRepository";
 import { userRepository } from "../repositories/userRepository";
@@ -37,7 +42,9 @@ export const handleRecordPayment: RequestHandler = async (req, res) => {
     const currentUser = (req as any).user;
 
     // Check if application exists
-    const application = await applicationRepository.findById(paymentData.applicationId);
+    const application = await applicationRepository.findById(
+      paymentData.applicationId,
+    );
     if (!application) {
       res.status(404).json({
         success: false,
@@ -47,7 +54,9 @@ export const handleRecordPayment: RequestHandler = async (req, res) => {
     }
 
     // Check if payment already exists for this application
-    const existingPayment = await paymentRepository.findByApplicationId(paymentData.applicationId);
+    const existingPayment = await paymentRepository.findByApplicationId(
+      paymentData.applicationId,
+    );
     if (existingPayment) {
       res.status(400).json({
         success: false,
@@ -125,13 +134,15 @@ export const handleGetPayments: RequestHandler = async (req, res) => {
 
     // Filter by email if provided
     if (email && typeof email === "string") {
-      payments = payments.filter((p) => 
-        p.applicantEmail.toLowerCase().includes(email.toLowerCase())
+      payments = payments.filter((p) =>
+        p.applicantEmail.toLowerCase().includes(email.toLowerCase()),
       );
     }
 
     // Sort by date (newest first)
-    payments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    payments.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
 
     const response: PaymentsListResponse = {
       success: true,
@@ -188,7 +199,10 @@ export const handleGetPaymentById: RequestHandler = async (req, res) => {
  * GET /api/payments/application/:applicationId
  * Get payment for a specific application
  */
-export const handleGetPaymentByApplicationId: RequestHandler = async (req, res) => {
+export const handleGetPaymentByApplicationId: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { applicationId } = req.params;
 
@@ -227,7 +241,12 @@ export const handleUpdatePaymentStatus: RequestHandler = async (req, res) => {
     const { status, notes } = req.body;
 
     // Validate status
-    const validStatuses: PaymentRecord["status"][] = ["pending", "completed", "failed", "refunded"];
+    const validStatuses: PaymentRecord["status"][] = [
+      "pending",
+      "completed",
+      "failed",
+      "refunded",
+    ];
     if (!status || !validStatuses.includes(status)) {
       res.status(400).json({
         success: false,

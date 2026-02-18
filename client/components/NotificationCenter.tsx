@@ -16,7 +16,6 @@ import {
   Clock,
   Trash2,
   Eye,
-  Zap,
   Mail,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -62,10 +61,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
-  const [filterType, setFilterType] = useState<"all" | "unread" | "read">("unread");
+  const [loading] = useState(false);
+  const [selectedNotification, setSelectedNotification] =
+    useState<Notification | null>(null);
+  const [filterType, setFilterType] = useState<"all" | "unread" | "read">(
+    "unread",
+  );
   const { toast } = useToast();
 
   // Fetch notifications on mount and set up polling
@@ -96,7 +97,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       // Update unread count
       const unread = data.notifications.filter(
-        (n: Notification) => n.status !== "read"
+        (n: Notification) => n.status !== "read",
       ).length;
       setUnreadCount(unread);
     } catch (error) {
@@ -120,15 +121,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     try {
       const response = await fetch(
         `/api/notifications/${notificationId}/read`,
-        { method: "PATCH" }
+        { method: "PATCH" },
       );
 
       if (!response.ok) throw new Error("Failed to mark as read");
 
       setNotifications((prev) =>
         prev.map((n) =>
-          n.id === notificationId ? { ...n, status: "read" as const } : n
-        )
+          n.id === notificationId ? { ...n, status: "read" as const } : n,
+        ),
       );
 
       setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -148,10 +149,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const handleDelete = async (notificationId: string) => {
     try {
-      const response = await fetch(
-        `/api/notifications/${notificationId}`,
-        { method: "DELETE" }
-      );
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) throw new Error("Failed to delete notification");
 
@@ -180,7 +180,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       if (!response.ok) throw new Error("Failed to mark all as read");
 
       setNotifications((prev) =>
-        prev.map((n) => ({ ...n, status: "read" as const }))
+        prev.map((n) => ({ ...n, status: "read" as const })),
       );
       setUnreadCount(0);
 
@@ -262,7 +262,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </Card>
           <Card className="p-3">
             <div className="text-xs text-gray-600">Unread</div>
-            <div className="text-xl font-bold text-amber-600">{stats.unread}</div>
+            <div className="text-xl font-bold text-amber-600">
+              {stats.unread}
+            </div>
           </Card>
           <Card className="p-3">
             <div className="text-xs text-gray-600">Read</div>
@@ -334,7 +336,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                       {getStatusIcon(notification.status)}
                     </div>
 
-                    <p className="text-sm text-gray-700">{notification.message}</p>
+                    <p className="text-sm text-gray-700">
+                      {notification.message}
+                    </p>
 
                     {notification.description && (
                       <p className="text-xs text-gray-600 mt-1">
@@ -355,7 +359,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                               className="text-xs px-2 py-0.5 bg-gray-200 rounded"
                             >
                               {channel === "in_app" && "App"}
-                              {channel === "email" && <Mail className="w-3 h-3" />}
+                              {channel === "email" && (
+                                <Mail className="w-3 h-3" />
+                              )}
                               {channel === "sms" && "SMS"}
                             </span>
                           ))}
@@ -406,11 +412,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       {/* Details Dialog */}
       {selectedNotification && (
-        <Dialog open={!!selectedNotification} onOpenChange={() => setSelectedNotification(null)}>
+        <Dialog
+          open={!!selectedNotification}
+          onOpenChange={() => setSelectedNotification(null)}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{selectedNotification.title}</DialogTitle>
-              <DialogDescription>{selectedNotification.message}</DialogDescription>
+              <DialogDescription>
+                {selectedNotification.message}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
@@ -428,7 +439,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Priority</label>
-                  <p className="font-semibold">{selectedNotification.priority}</p>
+                  <p className="font-semibold">
+                    {selectedNotification.priority}
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Created</label>

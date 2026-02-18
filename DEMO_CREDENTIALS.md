@@ -9,6 +9,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 ## 👤 Demo User Accounts
 
 ### 1. Regular User - Basic Demo Account
+
 **Email:** `demo@example.com`  
 **Password:** `Demo@1234`  
 **Role:** User  
@@ -17,6 +18,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 **Phone:** +91 98765 43210
 
 **What you can do:**
+
 - ✅ Access user dashboard at `/dashboard`
 - ✅ View sample applications
 - ✅ Track application status
@@ -25,12 +27,14 @@ The application comes pre-seeded with demo users for testing all features. All d
 - ✅ Make payments via Razorpay
 
 **Pre-seeded Applications:**
+
 - GST Registration (Status: Approved)
 - Company Registration (Status: Under Review)
 
 ---
 
 ### 2. Regular User - Startup Business
+
 **Email:** `rajesh@example.com`  
 **Password:** `Rajesh@1234`  
 **Role:** User  
@@ -39,16 +43,19 @@ The application comes pre-seeded with demo users for testing all features. All d
 **Phone:** +91 98765 43211
 
 **What you can do:**
+
 - ✅ All user features (see above)
 - ✅ Create and manage startup registrations
 - ✅ Access startup-specific services
 
 **Pre-seeded Applications:**
+
 - PAN Registration (Status: Submitted)
 
 ---
 
 ### 3. Regular User - Company Account
+
 **Email:** `priya@example.com`  
 **Password:** `Priya@1234`  
 **Role:** User  
@@ -57,6 +64,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 **Phone:** +91 98765 43212
 
 **What you can do:**
+
 - ✅ All user features
 - ✅ Company-specific compliance services
 - ✅ Multi-user management (future feature)
@@ -64,6 +72,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 ---
 
 ### 4. Admin Account
+
 **Email:** `admin@example.com`  
 **Password:** `Admin@1234`  
 **Role:** Admin  
@@ -72,6 +81,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 **Phone:** +91 98765 50000
 
 **What you can do:**
+
 - ✅ Access admin dashboard at `/admin`
 - ✅ View all customers and applications
 - ✅ Manage customer accounts
@@ -82,6 +92,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 - ✅ Manage staff members
 
 **Admin Features:**
+
 - Customer management with search/filter
 - Application review panel
 - Payment tracking
@@ -91,6 +102,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 ---
 
 ### 5. Staff Account 1
+
 **Email:** `staff@example.com`  
 **Password:** `Staff@1234`  
 **Role:** Staff  
@@ -99,6 +111,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 **Phone:** +91 98765 60000
 
 **What you can do:**
+
 - ✅ Access staff dashboard at `/staff`
 - ✅ View assigned applications
 - ✅ Update application status
@@ -107,6 +120,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 - ✅ Track staff performance metrics
 
 **Staff Features:**
+
 - View assigned applications
 - Update application status
 - Add internal processing notes
@@ -115,6 +129,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 ---
 
 ### 6. Staff Account 2
+
 **Email:** `sarah@example.com`  
 **Password:** `Sarah@1234`  
 **Role:** Staff  
@@ -129,6 +144,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 ## 🧪 Testing Scenarios
 
 ### Scenario 1: Complete User Journey
+
 1. Sign up with new account at `/signup`
 2. Log in at `/login`
 3. Go to `/` → Click on a service
@@ -139,6 +155,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 8. Track status at `/application/:id`
 
 ### Scenario 2: Admin Review
+
 1. Log in with admin account
 2. Go to `/admin`
 3. View "Overview" tab - see customers and applications
@@ -148,6 +165,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 7. See application details and update status
 
 ### Scenario 3: Staff Processing
+
 1. Log in with staff account (`staff@example.com`)
 2. Go to `/staff` to access staff dashboard
 3. View assigned applications
@@ -157,6 +175,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 7. View personal statistics
 
 ### Scenario 4: Service Browsing
+
 1. Visit homepage `/`
 2. View service catalog
 3. Click on service cards (expandable)
@@ -165,6 +184,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 6. Click "Begin Application" to start checkout
 
 ### Scenario 5: Dashboard Management
+
 1. Log in as regular user
 2. View `/dashboard`
 3. See application statistics
@@ -179,6 +199,7 @@ The application comes pre-seeded with demo users for testing all features. All d
 The checkout flow is configured for **Razorpay test mode**.
 
 ### Test Cards (from Razorpay documentation):
+
 - **Visa Success:** 4111 1111 1111 1111
 - **Mastercard Success:** 5555 5555 5555 4444
 - **Amex Success:** 3782 822463 10005
@@ -193,6 +214,7 @@ The checkout flow is configured for **Razorpay test mode**.
 ## 🎨 Feature Showcase
 
 ### User Features
+
 - ✅ Multi-language support (English/Hindi)
 - ✅ Service catalog with pricing
 - ✅ Multi-step checkout wizard
@@ -203,6 +225,7 @@ The checkout flow is configured for **Razorpay test mode**.
 - ✅ Executive assignment
 
 ### Admin Features
+
 - ✅ Customer management panel
 - ✅ Application review interface
 - ✅ Payment tracking
@@ -212,6 +235,7 @@ The checkout flow is configured for **Razorpay test mode**.
 - ✅ Staff management and assignment
 
 ### Staff Features
+
 - ✅ Staff dashboard with personal statistics
 - ✅ View assigned applications
 - ✅ Update application status
@@ -226,6 +250,7 @@ The checkout flow is configured for **Razorpay test mode**.
 All API endpoints require authentication token (except signup/login).
 
 ### Auth Endpoints
+
 ```
 POST   /api/auth/signup          - Create new account
 POST   /api/auth/login           - Login and get token
@@ -234,6 +259,7 @@ POST   /api/auth/logout          - Logout
 ```
 
 ### Staff Endpoints (Requires Staff or Admin Role)
+
 ```
 GET    /api/staff/applications   - Get staff member's assigned applications
 PATCH  /api/staff/applications/:id - Update application status and add notes
@@ -243,6 +269,7 @@ POST   /api/staff/assign/:id     - Assign application to staff (admin only)
 ```
 
 ### Application Endpoints
+
 ```
 GET    /api/applications         - Get user's applications
 POST   /api/applications         - Create new application
@@ -250,6 +277,7 @@ POST   /api/applications/:id/documents - Upload document
 ```
 
 ### Authorization Header
+
 ```
 Authorization: Bearer <token_from_login>
 ```
@@ -261,6 +289,7 @@ Authorization: Bearer <token_from_login>
 ⚠️ **This is a DEMO application with mock authentication**
 
 In production, you should:
+
 - Use bcrypt for password hashing
 - Use proper JWT tokens with signing
 - Store users in a real database (MongoDB, PostgreSQL, etc.)
@@ -276,9 +305,11 @@ In production, you should:
 ## 🛠️ Developer Notes
 
 ### In-Memory Storage
+
 Currently using JavaScript Maps for storage (not persisted between restarts).
 
 To upgrade:
+
 ```typescript
 // Replace Maps with database calls
 // users.set() → db.users.create()
@@ -286,7 +317,9 @@ To upgrade:
 ```
 
 ### Environment Variables
+
 Add to `.env`:
+
 ```
 RAZORPAY_KEY_ID=your_test_key
 RAZORPAY_KEY_SECRET=your_test_secret
@@ -318,6 +351,7 @@ JWT_SECRET=your_secret
 ## 📞 Support
 
 For issues or questions:
+
 1. Check browser console for errors
 2. Review backend logs
 3. Verify all imports are correct

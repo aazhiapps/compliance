@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * JobLog tracks all background job executions
@@ -19,7 +18,7 @@ export interface JobLogRecord extends MongooseDocument {
     | "webhook_retry"
     | "custom";
   status: "queued" | "running" | "completed" | "failed" | "retrying";
-  clientId?: ObjectId;
+  clientId?: mongoose.Types.ObjectId;
   // Execution details
   startedAt?: Date;
   completedAt?: Date;
@@ -131,7 +130,7 @@ const JobLogSchema = new Schema<JobLogRecord>(
     summary: Schema.Types.Mixed,
     metadata: Schema.Types.Mixed,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -143,15 +142,12 @@ JobLogSchema.index({ nextRetryAt: 1, status: 1 });
 JobLogSchema.index({ triggeredBy: 1, createdAt: -1 });
 
 // TTL index - auto-delete logs older than 90 days
-JobLogSchema.index(
-  { createdAt: 1 },
-  { expireAfterSeconds: 90 * 24 * 60 * 60 }
-);
+JobLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 // Convert to plain object with id field
 JobLogSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

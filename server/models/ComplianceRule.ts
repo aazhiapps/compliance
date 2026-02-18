@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * ComplianceRule stores configurable GST rules
@@ -18,22 +17,22 @@ export interface ComplianceRuleRecord extends MongooseDocument {
     dueHour?: number; // Hour of day (e.g., 23:59)
     applicableTo?: string[]; // ["monthly", "quarterly", "annual"]
     formType?: string[]; // ["gstr1", "gstr3b", "gstr2a", "gstr2b"]
-    
+
     // For late fees
     lateFeeBase?: number; // Base amount (e.g., 100 for ₹100)
     lateFeePerDay?: number; // Fee per day of delay
     lateFeeMaxDays?: number; // Max number of days to apply fee
     lateFeeMax?: number; // Maximum total late fee
-    
+
     // For interest
     interestRate?: number; // Interest rate % per annum
     interestAppliedFrom?: string; // "due_date" or "filing_date"
-    
+
     // For filing requirements
     minimumTurnover?: number; // If applicable
     filingFrequency?: string; // "monthly", "quarterly", etc.
     exemptionCriteria?: string; // Conditions for exemption
-    
+
     // Generic
     [key: string]: any;
   };
@@ -42,8 +41,8 @@ export interface ComplianceRuleRecord extends MongooseDocument {
   effectiveFrom: Date;
   effectiveUntil?: Date;
   // Audit
-  createdBy: ObjectId;
-  updatedBy?: ObjectId;
+  createdBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -91,7 +90,7 @@ const ComplianceRuleSchema = new Schema<ComplianceRuleRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for finding active rules
@@ -101,7 +100,7 @@ ComplianceRuleSchema.index({ effectiveFrom: 1, effectiveUntil: 1 });
 // Convert to plain object with id field
 ComplianceRuleSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

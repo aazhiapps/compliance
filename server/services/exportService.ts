@@ -221,7 +221,7 @@ function addWatermark(doc: PDFKit.PDFDocument, status: string) {
 /**
  * Add header with firm branding
  */
-function addHeader(doc: PDFKit.PDFDocument, report: Report) {
+function addHeader(doc: PDFKit.PDFDocument, _report: Report) {
   // Firm details (top left)
   doc
     .fontSize(14)
@@ -247,7 +247,10 @@ function addHeader(doc: PDFKit.PDFDocument, report: Report) {
  * Add client details section
  */
 function addClientDetails(doc: PDFKit.PDFDocument, report: Report) {
-  doc.fontSize(12).font("Helvetica-Bold").text("CLIENT DETAILS", { underline: true });
+  doc
+    .fontSize(12)
+    .font("Helvetica-Bold")
+    .text("CLIENT DETAILS", { underline: true });
 
   doc.fontSize(10).font("Helvetica");
   doc.text(`Client Name: ${report.clientName}`);
@@ -262,7 +265,10 @@ function addClientDetails(doc: PDFKit.PDFDocument, report: Report) {
  * Add report body with data tables
  */
 function addReportBody(doc: PDFKit.PDFDocument, report: Report) {
-  doc.fontSize(12).font("Helvetica-Bold").text("REPORT DETAILS", { underline: true });
+  doc
+    .fontSize(12)
+    .font("Helvetica-Bold")
+    .text("REPORT DETAILS", { underline: true });
 
   doc.moveDown(0.5);
   doc.fontSize(10).font("Helvetica");
@@ -309,10 +315,7 @@ function addReportBody(doc: PDFKit.PDFDocument, report: Report) {
         ["Turnover", formatCurrency(data.turnover)],
         ["Taxable Profit", formatCurrency(data.taxableProfit)],
         ["Tax Paid", formatCurrency(data.taxPaid)],
-        [
-          "Audit Observations",
-          data.auditObservations?.join("; ") || "None",
-        ],
+        ["Audit Observations", data.auditObservations?.join("; ") || "None"],
       ]);
       break;
 
@@ -338,7 +341,7 @@ function addReportBody(doc: PDFKit.PDFDocument, report: Report) {
 function addTable(
   doc: PDFKit.PDFDocument,
   rows: string[][],
-  colWidths = [250, 200]
+  colWidths = [250, 200],
 ) {
   const startX = 50;
   let currentY = doc.y;
@@ -389,7 +392,7 @@ function addCertification(doc: PDFKit.PDFDocument) {
     .fontSize(9)
     .font("Helvetica")
     .text(
-      "This report has been prepared based on the information and documents provided by the client. We certify that the information presented is accurate to the best of our knowledge."
+      "This report has been prepared based on the information and documents provided by the client. We certify that the information presented is accurate to the best of our knowledge.",
     );
 
   doc.moveDown(2);
@@ -418,12 +421,9 @@ function addFooter(doc: PDFKit.PDFDocument) {
     doc
       .fontSize(8)
       .font("Helvetica")
-      .text(
-        `Page ${i + 1} of ${pages.count}`,
-        50,
-        doc.page.height - 50,
-        { align: "center" }
-      );
+      .text(`Page ${i + 1} of ${pages.count}`, 50, doc.page.height - 50, {
+        align: "center",
+      });
   }
 }
 

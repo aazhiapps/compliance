@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Settings, Bell, Lock, CheckCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -25,7 +31,7 @@ export default function AdminSettings() {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('adminSettings');
+    const savedSettings = localStorage.getItem("adminSettings");
     if (savedSettings) {
       try {
         setSettings(JSON.parse(savedSettings));
@@ -46,7 +52,7 @@ export default function AdminSettings() {
     setIsSaving(true);
     try {
       // Store in localStorage for persistence (in a real app, save to backend)
-      localStorage.setItem('adminSettings', JSON.stringify(settings));
+      localStorage.setItem("adminSettings", JSON.stringify(settings));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
@@ -62,7 +68,9 @@ export default function AdminSettings() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground mt-1">Manage system configuration and preferences</p>
+          <p className="text-muted-foreground mt-1">
+            Manage system configuration and preferences
+          </p>
         </div>
 
         {/* Success Message */}
@@ -70,7 +78,9 @@ export default function AdminSettings() {
           <Card className="border-success/50 bg-success/5">
             <CardContent className="p-4 flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-success" />
-              <p className="text-success font-medium">Settings saved successfully</p>
+              <p className="text-success font-medium">
+                Settings saved successfully
+              </p>
             </CardContent>
           </Card>
         )}
@@ -82,45 +92,63 @@ export default function AdminSettings() {
               <Settings className="w-5 h-5 text-blue-600" />
               General Settings
             </CardTitle>
-            <CardDescription>Basic system configuration and application details</CardDescription>
+            <CardDescription>
+              Basic system configuration and application details
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">System Name</label>
+                <label className="block text-sm font-medium mb-2">
+                  System Name
+                </label>
                 <input
                   type="text"
                   value={settings.systemName}
-                  onChange={(e) => handleInputChange("systemName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("systemName", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Business Phone</label>
+                <label className="block text-sm font-medium mb-2">
+                  Business Phone
+                </label>
                 <input
                   type="tel"
                   value={settings.businessPhone}
-                  onChange={(e) => handleInputChange("businessPhone", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("businessPhone", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">Admin Email</label>
+                <label className="block text-sm font-medium mb-2">
+                  Admin Email
+                </label>
                 <input
                   type="email"
                   value={settings.adminEmail}
-                  onChange={(e) => handleInputChange("adminEmail", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("adminEmail", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Support Email</label>
+                <label className="block text-sm font-medium mb-2">
+                  Support Email
+                </label>
                 <input
                   type="email"
                   value={settings.supportEmail}
-                  onChange={(e) => handleInputChange("supportEmail", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("supportEmail", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -137,7 +165,9 @@ export default function AdminSettings() {
                 <input
                   type="checkbox"
                   checked={settings.maintenanceMode}
-                  onChange={(e) => handleInputChange("maintenanceMode", e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("maintenanceMode", e.target.checked)
+                  }
                   className="w-5 h-5 rounded"
                 />
               </div>
@@ -151,7 +181,9 @@ export default function AdminSettings() {
                 <input
                   type="checkbox"
                   checked={settings.autoApproveEnabled}
-                  onChange={(e) => handleInputChange("autoApproveEnabled", e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("autoApproveEnabled", e.target.checked)
+                  }
                   className="w-5 h-5 rounded"
                 />
               </div>
@@ -166,18 +198,24 @@ export default function AdminSettings() {
               <Bell className="w-5 h-5 text-green-600" />
               Notification Settings
             </CardTitle>
-            <CardDescription>Configure how notifications are sent to users and admins</CardDescription>
+            <CardDescription>
+              Configure how notifications are sent to users and admins
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Email Notifications</p>
-                <p className="text-xs text-muted-foreground">Receive updates via email</p>
+                <p className="text-xs text-muted-foreground">
+                  Receive updates via email
+                </p>
               </div>
               <input
                 type="checkbox"
                 checked={settings.emailNotifications}
-                onChange={(e) => handleInputChange("emailNotifications", e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange("emailNotifications", e.target.checked)
+                }
                 className="w-5 h-5 rounded"
               />
             </div>
@@ -185,12 +223,16 @@ export default function AdminSettings() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">SMS Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive updates via SMS</p>
+                  <p className="text-xs text-muted-foreground">
+                    Receive updates via SMS
+                  </p>
                 </div>
                 <input
                   type="checkbox"
                   checked={settings.smsNotifications}
-                  onChange={(e) => handleInputChange("smsNotifications", e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("smsNotifications", e.target.checked)
+                  }
                   className="w-5 h-5 rounded"
                 />
               </div>
@@ -199,12 +241,16 @@ export default function AdminSettings() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">WhatsApp Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive updates via WhatsApp</p>
+                  <p className="text-xs text-muted-foreground">
+                    Receive updates via WhatsApp
+                  </p>
                 </div>
                 <input
                   type="checkbox"
                   checked={settings.whatsappNotifications}
-                  onChange={(e) => handleInputChange("whatsappNotifications", e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("whatsappNotifications", e.target.checked)
+                  }
                   className="w-5 h-5 rounded"
                 />
               </div>
@@ -219,7 +265,9 @@ export default function AdminSettings() {
               <Lock className="w-5 h-5 text-red-600" />
               Security Settings
             </CardTitle>
-            <CardDescription>Configure security policies and access controls</CardDescription>
+            <CardDescription>
+              Configure security policies and access controls
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
@@ -232,7 +280,9 @@ export default function AdminSettings() {
               <input
                 type="checkbox"
                 checked={settings.twoFactorEnabled}
-                onChange={(e) => handleInputChange("twoFactorEnabled", e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange("twoFactorEnabled", e.target.checked)
+                }
                 className="w-5 h-5 rounded"
               />
             </div>
@@ -240,29 +290,41 @@ export default function AdminSettings() {
             <div className="border-t border-border pt-6">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Session Timeout (minutes)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Session Timeout (minutes)
+                  </label>
                   <input
                     type="number"
                     value={settings.sessionTimeout}
-                    onChange={(e) => handleInputChange("sessionTimeout", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("sessionTimeout", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Max Login Attempts</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Max Login Attempts
+                  </label>
                   <input
                     type="number"
                     value={settings.maxLoginAttempts}
-                    onChange={(e) => handleInputChange("maxLoginAttempts", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("maxLoginAttempts", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Password Expiry (days)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Password Expiry (days)
+                  </label>
                   <input
                     type="number"
                     value={settings.passwordExpiryDays}
-                    onChange={(e) => handleInputChange("passwordExpiryDays", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("passwordExpiryDays", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
@@ -274,8 +336,8 @@ export default function AdminSettings() {
         {/* Action Buttons */}
         <div className="flex gap-3 justify-end">
           <Button variant="outline">Reset to Defaults</Button>
-          <Button 
-            className="bg-primary hover:bg-primary/90" 
+          <Button
+            className="bg-primary hover:bg-primary/90"
             onClick={handleSave}
             disabled={isSaving}
           >

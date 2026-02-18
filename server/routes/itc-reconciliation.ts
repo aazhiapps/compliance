@@ -40,7 +40,7 @@ router.post(
       logger.error("Failed to calculate claimed ITC", { error });
       res.status(500).json({ error: "Failed to calculate claimed ITC" });
     }
-  }
+  },
 );
 
 /**
@@ -64,7 +64,11 @@ router.post(
         });
       }
 
-      const { availableITCFromGST, pendingITC = 0, rejectedITC = 0 } = portalData;
+      const {
+        availableITCFromGST,
+        pendingITC = 0,
+        rejectedITC = 0,
+      } = portalData;
 
       if (availableITCFromGST === undefined) {
         return res.status(400).json({
@@ -80,7 +84,7 @@ router.post(
           pendingITC,
           rejectedITC,
         },
-        new ObjectId(userId)
+        new ObjectId(userId),
       );
 
       res.json(result);
@@ -88,7 +92,7 @@ router.post(
       logger.error("Failed to sync with GST portal", { error });
       res.status(500).json({ error: "Failed to sync with GST portal" });
     }
-  }
+  },
 );
 
 /**
@@ -105,11 +109,13 @@ router.get(
 
       const record = await ITCReconciliationRepository.getReconciliationByMonth(
         new ObjectId(clientId),
-        month
+        month,
       );
 
       if (!record) {
-        return res.status(404).json({ error: "Reconciliation record not found" });
+        return res
+          .status(404)
+          .json({ error: "Reconciliation record not found" });
       }
 
       res.json(record);
@@ -117,7 +123,7 @@ router.get(
       logger.error("Failed to fetch reconciliation", { error });
       res.status(500).json({ error: "Failed to fetch reconciliation" });
     }
-  }
+  },
 );
 
 /**
@@ -132,16 +138,17 @@ router.get(
     try {
       const { clientId } = req.params;
 
-      const records = await ITCReconciliationRepository.getClientReconciliations(
-        new ObjectId(clientId)
-      );
+      const records =
+        await ITCReconciliationRepository.getClientReconciliations(
+          new ObjectId(clientId),
+        );
 
       res.json(records);
     } catch (error) {
       logger.error("Failed to fetch client reconciliations", { error });
       res.status(500).json({ error: "Failed to fetch reconciliations" });
     }
-  }
+  },
 );
 
 /**
@@ -159,7 +166,7 @@ router.get(
       const records =
         await ITCReconciliationRepository.getFinancialYearReconciliations(
           new ObjectId(clientId),
-          financialYear
+          financialYear,
         );
 
       res.json(records);
@@ -167,7 +174,7 @@ router.get(
       logger.error("Failed to fetch financial year reconciliations", { error });
       res.status(500).json({ error: "Failed to fetch reconciliations" });
     }
-  }
+  },
 );
 
 /**
@@ -182,17 +189,18 @@ router.get(
     try {
       const { clientId, month } = req.params;
 
-      const analysis = await ITCReconciliationService.getMonthDiscrepancyAnalysis(
-        new ObjectId(clientId),
-        month
-      );
+      const analysis =
+        await ITCReconciliationService.getMonthDiscrepancyAnalysis(
+          new ObjectId(clientId),
+          month,
+        );
 
       res.json(analysis);
     } catch (error) {
       logger.error("Failed to get discrepancy analysis", { error });
       res.status(500).json({ error: "Failed to get analysis" });
     }
-  }
+  },
 );
 
 /**
@@ -220,7 +228,7 @@ router.post(
         {
           resolution,
           resolvedBy: new ObjectId(userId),
-        }
+        },
       );
 
       res.json(record);
@@ -228,7 +236,7 @@ router.post(
       logger.error("Failed to resolve discrepancy", { error });
       res.status(500).json({ error: "Failed to resolve discrepancy" });
     }
-  }
+  },
 );
 
 /**
@@ -246,7 +254,7 @@ router.post(
 
       const record = await ITCReconciliationRepository.markForReview(
         new ObjectId(clientId),
-        month
+        month,
       );
 
       res.json(record);
@@ -254,7 +262,7 @@ router.post(
       logger.error("Failed to mark for review", { error });
       res.status(500).json({ error: "Failed to mark for review" });
     }
-  }
+  },
 );
 
 /**
@@ -272,7 +280,7 @@ router.get(
 
       const report = await ITCReconciliationService.generateClientReport(
         new ObjectId(clientId),
-        financialYear as string | undefined
+        financialYear as string | undefined,
       );
 
       res.json(report);
@@ -280,7 +288,7 @@ router.get(
       logger.error("Failed to generate report", { error });
       res.status(500).json({ error: "Failed to generate report" });
     }
-  }
+  },
 );
 
 /**
@@ -301,7 +309,8 @@ router.get(
       if (financialYear) filter.financialYear = financialYear;
       if (reason) filter.discrepancyReason = reason;
 
-      const discrepancies = await ITCReconciliationRepository.getDiscrepancies(filter);
+      const discrepancies =
+        await ITCReconciliationRepository.getDiscrepancies(filter);
 
       res.json({
         total: discrepancies.length,
@@ -311,7 +320,7 @@ router.get(
       logger.error("Failed to fetch discrepancies", { error });
       res.status(500).json({ error: "Failed to fetch discrepancies" });
     }
-  }
+  },
 );
 
 /**
@@ -329,7 +338,7 @@ router.get(
 
       const stats = await ITCReconciliationRepository.getClientStats(
         new ObjectId(clientId),
-        financialYear as string | undefined
+        financialYear as string | undefined,
       );
 
       res.json(stats);
@@ -337,7 +346,7 @@ router.get(
       logger.error("Failed to get statistics", { error });
       res.status(500).json({ error: "Failed to get statistics" });
     }
-  }
+  },
 );
 
 /**
@@ -353,7 +362,7 @@ router.get(
       const { clientId } = req.params;
 
       const pending = await ITCReconciliationRepository.getPendingReview(
-        new ObjectId(clientId)
+        new ObjectId(clientId),
       );
 
       res.json({
@@ -364,7 +373,7 @@ router.get(
       logger.error("Failed to fetch pending review", { error });
       res.status(500).json({ error: "Failed to fetch pending items" });
     }
-  }
+  },
 );
 
 /**
@@ -388,7 +397,7 @@ router.post(
 
       const processed = await ITCReconciliationService.bulkCalculateClaimedITC(
         month,
-        financialYear
+        financialYear,
       );
 
       res.json({
@@ -401,7 +410,7 @@ router.post(
       logger.error("Failed to bulk calculate ITC", { error });
       res.status(500).json({ error: "Failed to bulk calculate ITC" });
     }
-  }
+  },
 );
 
 export default router;

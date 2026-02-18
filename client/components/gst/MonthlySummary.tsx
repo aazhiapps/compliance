@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonthlyGSTSummary } from "@shared/gst";
-import { TrendingUp, TrendingDown, DollarSign, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface MonthlySummaryProps {
@@ -9,7 +16,10 @@ interface MonthlySummaryProps {
   month: string;
 }
 
-export default function MonthlySummary({ clientId, month }: MonthlySummaryProps) {
+export default function MonthlySummary({
+  clientId,
+  month,
+}: MonthlySummaryProps) {
   const [summary, setSummary] = useState<MonthlyGSTSummary | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +53,9 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">Loading summary...</div>
+          <div className="text-center text-muted-foreground">
+            Loading summary...
+          </div>
         </CardContent>
       </Card>
     );
@@ -104,7 +116,9 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
                 <TrendingDown className="w-4 h-4" />
                 <span className="text-sm">Total Purchases</span>
               </div>
-              <div className="text-2xl font-bold">{formatCurrency(summary.totalPurchases)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(summary.totalPurchases)}
+              </div>
             </div>
 
             {/* Total Sales */}
@@ -113,7 +127,9 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-sm">Total Sales</span>
               </div>
-              <div className="text-2xl font-bold">{formatCurrency(summary.totalSales)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(summary.totalSales)}
+              </div>
             </div>
 
             {/* ITC Available */}
@@ -144,7 +160,9 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
                 <DollarSign className="w-4 h-4" />
                 <span className="text-sm font-medium">Net Tax Payable</span>
               </div>
-              <div className={`text-2xl font-bold ${summary.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}>
+              <div
+                className={`text-2xl font-bold ${summary.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}
+              >
                 {formatCurrency(summary.netTaxPayable)}
               </div>
             </div>
@@ -155,11 +173,17 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">GSTR-1:</span>
               {summary.gstr1Filed ? (
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
                   Filed
                 </Badge>
               ) : (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                <Badge
+                  variant="outline"
+                  className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                >
                   Pending
                 </Badge>
               )}
@@ -167,11 +191,17 @@ export default function MonthlySummary({ clientId, month }: MonthlySummaryProps)
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">GSTR-3B:</span>
               {summary.gstr3bFiled ? (
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
                   Filed
                 </Badge>
               ) : (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                <Badge
+                  variant="outline"
+                  className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                >
                   Pending
                 </Badge>
               )}

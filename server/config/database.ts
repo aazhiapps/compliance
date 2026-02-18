@@ -31,7 +31,8 @@ export class DatabaseConnection {
       return;
     }
 
-    const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/compliance";
+    const mongoUri =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/compliance";
 
     try {
       console.log("Connecting to MongoDB...");

@@ -1,9 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowLeft, CheckCircle2, Clock, AlertCircle, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import {
+  Calendar,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+} from "lucide-react";
 import { MonthlyGSTSummary } from "@shared/gst";
 import {
   Table,
@@ -29,7 +44,7 @@ export default function GSTSummary() {
 
   const loadSummaries = useCallback(async () => {
     if (!selectedMonth) return;
-    
+
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
@@ -91,13 +106,19 @@ export default function GSTSummary() {
   const getGSTRBadge = (filed: boolean) => {
     if (filed) {
       return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+        <Badge
+          variant="outline"
+          className="bg-green-50 text-green-700 border-green-200"
+        >
           Filed
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+      <Badge
+        variant="outline"
+        className="bg-yellow-50 text-yellow-700 border-yellow-200"
+      >
         Pending
       </Badge>
     );
@@ -118,7 +139,7 @@ export default function GSTSummary() {
       itcAvailable: 0,
       outputTax: 0,
       netTaxPayable: 0,
-    }
+    },
   );
 
   return (
@@ -127,9 +148,12 @@ export default function GSTSummary() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">GST Filing Summary - All Clients</h1>
+            <h1 className="text-3xl font-bold">
+              GST Filing Summary - All Clients
+            </h1>
             <p className="text-muted-foreground mt-1">
-              Overview of all clients' filing status and GST data for the selected month
+              Overview of all clients' filing status and GST data for the
+              selected month
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate(-1)}>
@@ -156,131 +180,146 @@ export default function GSTSummary() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <TrendingDown className="w-4 h-4" />
-                  <span className="text-sm">Total Purchases</span>
-                </div>
-                <div className="text-2xl font-bold">{formatCurrency(totals.totalPurchases)}</div>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <TrendingDown className="w-4 h-4" />
+                <span className="text-sm">Total Purchases</span>
+              </div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(totals.totalPurchases)}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm">Total Sales</span>
-                </div>
-                <div className="text-2xl font-bold">{formatCurrency(totals.totalSales)}</div>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm">Total Sales</span>
+              </div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(totals.totalSales)}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-sm">ITC Available</span>
-                </div>
-                <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(totals.itcAvailable)}
-                </div>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm">ITC Available</span>
+              </div>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(totals.itcAvailable)}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-sm">Output Tax</span>
-                </div>
-                <div className="text-2xl font-bold text-orange-600">
-                  {formatCurrency(totals.outputTax)}
-                </div>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm">Output Tax</span>
+              </div>
+              <div className="text-2xl font-bold text-orange-600">
+                {formatCurrency(totals.outputTax)}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-primary/5">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-sm font-medium">Net Tax Payable</span>
-                </div>
-                <div className={`text-2xl font-bold ${totals.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}>
-                  {formatCurrency(totals.netTaxPayable)}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-        {/* Clients Table */}
-        <Card>
-            <CardHeader>
-              <CardTitle>Client Filing Status</CardTitle>
-              <CardDescription>
-                {summaries.length} client{summaries.length !== 1 ? "s" : ""} found for {selectedMonth}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading summaries...</div>
-              ) : summaries.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No client data found for the selected month
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Client Name</TableHead>
-                        <TableHead className="text-right">Purchases</TableHead>
-                        <TableHead className="text-right">Sales</TableHead>
-                        <TableHead className="text-right">ITC Available</TableHead>
-                        <TableHead className="text-right">Output Tax</TableHead>
-                        <TableHead className="text-right">Net Tax</TableHead>
-                        <TableHead className="text-center">GSTR-1</TableHead>
-                        <TableHead className="text-center">GSTR-3B</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {summaries.map((summary) => (
-                        <TableRow key={summary.clientId}>
-                          <TableCell className="font-medium">{summary.clientName}</TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(summary.totalPurchases)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(summary.totalSales)}
-                          </TableCell>
-                          <TableCell className="text-right text-green-600">
-                            {formatCurrency(summary.itcAvailable)}
-                          </TableCell>
-                          <TableCell className="text-right text-orange-600">
-                            {formatCurrency(summary.outputTax)}
-                          </TableCell>
-                          <TableCell className={`text-right font-medium ${summary.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}>
-                            {formatCurrency(summary.netTaxPayable)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {getGSTRBadge(summary.gstr1Filed)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {getGSTRBadge(summary.gstr3bFiled)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {getFilingStatusBadge(summary.filingStatus)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+          <Card className="bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm font-medium">Net Tax Payable</span>
+              </div>
+              <div
+                className={`text-2xl font-bold ${totals.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}
+              >
+                {formatCurrency(totals.netTaxPayable)}
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Clients Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Client Filing Status</CardTitle>
+            <CardDescription>
+              {summaries.length} client{summaries.length !== 1 ? "s" : ""} found
+              for {selectedMonth}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading summaries...
+              </div>
+            ) : summaries.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No client data found for the selected month
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead className="text-right">Purchases</TableHead>
+                      <TableHead className="text-right">Sales</TableHead>
+                      <TableHead className="text-right">
+                        ITC Available
+                      </TableHead>
+                      <TableHead className="text-right">Output Tax</TableHead>
+                      <TableHead className="text-right">Net Tax</TableHead>
+                      <TableHead className="text-center">GSTR-1</TableHead>
+                      <TableHead className="text-center">GSTR-3B</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {summaries.map((summary) => (
+                      <TableRow key={summary.clientId}>
+                        <TableCell className="font-medium">
+                          {summary.clientName}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(summary.totalPurchases)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(summary.totalSales)}
+                        </TableCell>
+                        <TableCell className="text-right text-green-600">
+                          {formatCurrency(summary.itcAvailable)}
+                        </TableCell>
+                        <TableCell className="text-right text-orange-600">
+                          {formatCurrency(summary.outputTax)}
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${summary.netTaxPayable > 0 ? "text-red-600" : "text-green-600"}`}
+                        >
+                          {formatCurrency(summary.netTaxPayable)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {getGSTRBadge(summary.gstr1Filed)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {getGSTRBadge(summary.gstr3bFiled)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {getFilingStatusBadge(summary.filingStatus)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+    </div>
   );
 }

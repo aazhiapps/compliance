@@ -8,7 +8,10 @@ interface ProtectedRouteProps {
   requiredRole?: "user" | "admin" | "staff";
 }
 
-export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({
+  children,
+  requiredRole,
+}: ProtectedRouteProps) => {
   const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
@@ -27,7 +30,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
         />
       );
     }
-    
+
     // Other role checks
     if (user?.role !== requiredRole) {
       return (

@@ -8,7 +8,11 @@ import { gstRepository } from "../repositories/gstRepository";
 import { gstNotificationService } from "../services/gstNotificationService";
 import { AuthRequest } from "../middleware/auth";
 import { userRepository } from "../repositories/userRepository";
-import { validateGSTIN, validatePAN, validateARN } from "../utils/gstValidation";
+import {
+  validateGSTIN,
+  validatePAN,
+  validateARN,
+} from "../utils/gstValidation";
 
 // ============ CLIENT STATUS MANAGEMENT ============
 
@@ -23,17 +27,23 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { id } = req.params;
     if (!id || Array.isArray(id)) {
-      return res.status(400).json({ success: false, message: "Invalid client ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid client ID" });
     }
 
     const client = await gstRepository.findClientById(id);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // Check permissions
@@ -43,7 +53,9 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
 
     const updated = await gstRepository.deactivateClient(id, userId);
     if (!updated) {
-      return res.status(500).json({ success: false, message: "Failed to deactivate client" });
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to deactivate client" });
     }
 
     // Add audit log
@@ -64,7 +76,9 @@ export const handleDeactivateClient: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deactivating client:", error);
-    res.status(500).json({ success: false, message: "Failed to deactivate client" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to deactivate client" });
   }
 };
 
@@ -79,17 +93,23 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { id } = req.params;
     if (!id || Array.isArray(id)) {
-      return res.status(400).json({ success: false, message: "Invalid client ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid client ID" });
     }
 
     const client = await gstRepository.findClientById(id);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // Check permissions
@@ -99,7 +119,9 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
 
     const updated = await gstRepository.reactivateClient(id);
     if (!updated) {
-      return res.status(500).json({ success: false, message: "Failed to reactivate client" });
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to reactivate client" });
     }
 
     // Add audit log
@@ -120,7 +142,9 @@ export const handleReactivateClient: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error reactivating client:", error);
-    res.status(500).json({ success: false, message: "Failed to reactivate client" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to reactivate client" });
   }
 };
 
@@ -135,7 +159,9 @@ export const handleGetActiveClients: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     let clients;
@@ -152,7 +178,9 @@ export const handleGetActiveClients: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching active clients:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch active clients" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch active clients" });
   }
 };
 
@@ -169,17 +197,28 @@ export const handleLockMonth: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { clientId, month } = req.params;
-    if (!clientId || Array.isArray(clientId) || !month || Array.isArray(month)) {
-      return res.status(400).json({ success: false, message: "Invalid parameters" });
+    if (
+      !clientId ||
+      Array.isArray(clientId) ||
+      !month ||
+      Array.isArray(month)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid parameters" });
     }
 
     const client = await gstRepository.findClientById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // Check permissions
@@ -189,7 +228,9 @@ export const handleLockMonth: RequestHandler = async (req, res) => {
 
     const filing = await gstRepository.lockMonth(clientId, month, userId);
     if (!filing) {
-      return res.status(404).json({ success: false, message: "Filing record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Filing record not found" });
     }
 
     // Add audit log
@@ -225,7 +266,9 @@ export const handleUnlockMonth: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     // Only admins can unlock
@@ -237,13 +280,22 @@ export const handleUnlockMonth: RequestHandler = async (req, res) => {
     }
 
     const { clientId, month } = req.params;
-    if (!clientId || Array.isArray(clientId) || !month || Array.isArray(month)) {
-      return res.status(400).json({ success: false, message: "Invalid parameters" });
+    if (
+      !clientId ||
+      Array.isArray(clientId) ||
+      !month ||
+      Array.isArray(month)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid parameters" });
     }
 
     const filing = await gstRepository.unlockMonth(clientId, month);
     if (!filing) {
-      return res.status(404).json({ success: false, message: "Filing record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Filing record not found" });
     }
 
     // Add audit log
@@ -279,8 +331,15 @@ export const handleCheckMonthLock: RequestHandler = async (req, res) => {
     }
 
     const { clientId, month } = req.params;
-    if (!clientId || Array.isArray(clientId) || !month || Array.isArray(month)) {
-      return res.status(400).json({ success: false, message: "Invalid parameters" });
+    if (
+      !clientId ||
+      Array.isArray(clientId) ||
+      !month ||
+      Array.isArray(month)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid parameters" });
     }
 
     const isLocked = await gstRepository.isMonthLocked(clientId, month);
@@ -292,7 +351,9 @@ export const handleCheckMonthLock: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error checking month lock:", error);
-    res.status(500).json({ success: false, message: "Failed to check month lock status" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to check month lock status" });
   }
 };
 
@@ -308,8 +369,13 @@ export const handleGetNotifications: RequestHandler = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    const notifications = gstNotificationService.getUserNotifications(userId, limit);
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string)
+      : undefined;
+    const notifications = gstNotificationService.getUserNotifications(
+      userId,
+      limit,
+    );
 
     res.json({
       success: true,
@@ -318,14 +384,19 @@ export const handleGetNotifications: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching notifications:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch notifications" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch notifications" });
   }
 };
 
 /**
  * Get unread notifications
  */
-export const handleGetUnreadNotifications: RequestHandler = async (req, res) => {
+export const handleGetUnreadNotifications: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const userId = (req as AuthRequest).userId;
     if (!userId) {
@@ -341,7 +412,10 @@ export const handleGetUnreadNotifications: RequestHandler = async (req, res) => 
     });
   } catch (error) {
     console.error("Error fetching unread notifications:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch unread notifications" });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch unread notifications",
+    });
   }
 };
 
@@ -363,7 +437,9 @@ export const handleGetNotificationStats: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching notification stats:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch notification stats" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch notification stats" });
   }
 };
 
@@ -379,12 +455,16 @@ export const handleMarkNotificationRead: RequestHandler = async (req, res) => {
 
     const { id } = req.params;
     if (!id || Array.isArray(id)) {
-      return res.status(400).json({ success: false, message: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid notification ID" });
     }
 
     const success = gstNotificationService.markNotificationRead(id);
     if (!success) {
-      return res.status(404).json({ success: false, message: "Notification not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Notification not found" });
     }
 
     res.json({
@@ -393,14 +473,19 @@ export const handleMarkNotificationRead: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    res.status(500).json({ success: false, message: "Failed to mark notification as read" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to mark notification as read" });
   }
 };
 
 /**
  * Mark all notifications as read
  */
-export const handleMarkAllNotificationsRead: RequestHandler = async (req, res) => {
+export const handleMarkAllNotificationsRead: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const userId = (req as AuthRequest).userId;
     if (!userId) {
@@ -416,7 +501,10 @@ export const handleMarkAllNotificationsRead: RequestHandler = async (req, res) =
     });
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
-    res.status(500).json({ success: false, message: "Failed to mark all notifications as read" });
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark all notifications as read",
+    });
   }
 };
 
@@ -433,17 +521,23 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { clientId } = req.params;
     if (!clientId || Array.isArray(clientId)) {
-      return res.status(400).json({ success: false, message: "Invalid client ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid client ID" });
     }
 
     const client = await gstRepository.findClientById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // Check permissions
@@ -453,7 +547,9 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
 
     const report = await gstRepository.getClientFilingStatusReport(clientId);
     if (!report) {
-      return res.status(404).json({ success: false, message: "Report not available" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Report not available" });
     }
 
     res.json({
@@ -462,7 +558,9 @@ export const handleGetClientFilingStatus: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating client filing status report:", error);
-    res.status(500).json({ success: false, message: "Failed to generate report" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to generate report" });
   }
 };
 
@@ -477,17 +575,23 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { clientId, fy } = req.params;
     if (!clientId || Array.isArray(clientId) || !fy || Array.isArray(fy)) {
-      return res.status(400).json({ success: false, message: "Invalid parameters" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid parameters" });
     }
 
     const client = await gstRepository.findClientById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // Check permissions
@@ -495,9 +599,14 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    const summary = await gstRepository.getAnnualComplianceSummary(clientId, fy);
+    const summary = await gstRepository.getAnnualComplianceSummary(
+      clientId,
+      fy,
+    );
     if (!summary) {
-      return res.status(404).json({ success: false, message: "Summary not available" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Summary not available" });
     }
 
     res.json({
@@ -506,7 +615,9 @@ export const handleGetAnnualSummary: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating annual summary:", error);
-    res.status(500).json({ success: false, message: "Failed to generate summary" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to generate summary" });
   }
 };
 
@@ -519,7 +630,9 @@ export const handleValidateGSTIN: RequestHandler = async (req, res) => {
   try {
     const { gstin } = req.body;
     if (!gstin) {
-      return res.status(400).json({ success: false, message: "GSTIN is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "GSTIN is required" });
     }
 
     const validation = validateGSTIN(gstin);
@@ -532,7 +645,9 @@ export const handleValidateGSTIN: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error validating GSTIN:", error);
-    res.status(500).json({ success: false, message: "Failed to validate GSTIN" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to validate GSTIN" });
   }
 };
 
@@ -543,7 +658,9 @@ export const handleValidatePAN: RequestHandler = async (req, res) => {
   try {
     const { pan } = req.body;
     if (!pan) {
-      return res.status(400).json({ success: false, message: "PAN is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "PAN is required" });
     }
 
     const validation = validatePAN(pan);
@@ -567,7 +684,9 @@ export const handleValidateARN: RequestHandler = async (req, res) => {
   try {
     const { arn } = req.body;
     if (!arn) {
-      return res.status(400).json({ success: false, message: "ARN is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "ARN is required" });
     }
 
     const validation = validateARN(arn);
@@ -597,23 +716,35 @@ export const handleAssignStaffToClient: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user || user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin access required" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Admin access required" });
     }
 
     const { clientId, staffUserId } = req.body;
     if (!clientId || !staffUserId) {
-      return res.status(400).json({ success: false, message: "clientId and staffUserId are required" });
+      return res.status(400).json({
+        success: false,
+        message: "clientId and staffUserId are required",
+      });
     }
 
     // Verify staff user exists
     const staffUser = await userRepository.findById(staffUserId);
     if (!staffUser) {
-      return res.status(404).json({ success: false, message: "Staff user not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff user not found" });
     }
 
-    const success = await gstRepository.assignStaffToClient(clientId, staffUserId);
+    const success = await gstRepository.assignStaffToClient(
+      clientId,
+      staffUserId,
+    );
     if (!success) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     res.json({
@@ -637,17 +768,28 @@ export const handleRemoveStaffFromClient: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user || user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin access required" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Admin access required" });
     }
 
     const { clientId, staffUserId } = req.body;
     if (!clientId || !staffUserId) {
-      return res.status(400).json({ success: false, message: "clientId and staffUserId are required" });
+      return res.status(400).json({
+        success: false,
+        message: "clientId and staffUserId are required",
+      });
     }
 
-    const success = await gstRepository.removeStaffFromClient(clientId, staffUserId);
+    const success = await gstRepository.removeStaffFromClient(
+      clientId,
+      staffUserId,
+    );
     if (!success) {
-      return res.status(404).json({ success: false, message: "Client not found or staff not assigned" });
+      return res.status(404).json({
+        success: false,
+        message: "Client not found or staff not assigned",
+      });
     }
 
     res.json({
@@ -671,12 +813,16 @@ export const handleGetStaffClients: RequestHandler = async (req, res) => {
     }
     const user = await userRepository.findById(userId);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     const { staffId } = req.params;
     if (!staffId || Array.isArray(staffId)) {
-      return res.status(400).json({ success: false, message: "Invalid staff ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid staff ID" });
     }
 
     // Admins can view any staff's clients, staff can only view their own
@@ -693,6 +839,8 @@ export const handleGetStaffClients: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching staff clients:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch staff clients" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch staff clients" });
   }
 };

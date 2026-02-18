@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { User, AuthResponse } from "@shared/auth";
 
 interface AuthContextType {
@@ -6,7 +12,15 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  signup: (email: string, password: string, firstName: string, lastName: string, phone: string, businessType: string, language: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    phone: string,
+    businessType: string,
+    language: string,
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -44,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     lastName: string,
     phone: string,
     businessType: string,
-    language: string
+    language: string,
   ) => {
     setIsLoading(true);
     setError(null);

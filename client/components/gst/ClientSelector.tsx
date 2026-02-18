@@ -1,5 +1,11 @@
 import { GSTClient } from "@shared/gst";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 
@@ -38,7 +44,9 @@ export default function ClientSelector({
       <CardContent className="p-6">
         <div className="flex items-center gap-4">
           <Building2 className="w-5 h-5 text-muted-foreground" />
-          <label className="font-medium whitespace-nowrap">Select Client:</label>
+          <label className="font-medium whitespace-nowrap">
+            Select Client:
+          </label>
           <Select
             value={selectedClient?.id}
             onValueChange={(value) => {

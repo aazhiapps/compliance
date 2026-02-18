@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * ITCReconciliation tracks claimed vs available ITC and detects mismatches
@@ -8,7 +7,7 @@ import { ObjectId } from "mongodb";
 
 export interface ITCReconciliationRecord extends MongooseDocument {
   id: string;
-  clientId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
   month: string; // "2024-02"
   financialYear: string; // "2023-24"
   // Claimed ITC (from your purchase invoices)
@@ -26,7 +25,7 @@ export interface ITCReconciliationRecord extends MongooseDocument {
   // Discrepancy analysis
   discrepancy: number; // Claimed - Available
   discrepancyPercentage: number; // (Discrepancy / Available) * 100
-  discrepancyReason?: 
+  discrepancyReason?:
     | "excess_claimed"
     | "unclaimed"
     | "gst_rejected"
@@ -37,7 +36,7 @@ export interface ITCReconciliationRecord extends MongooseDocument {
   // Resolution
   resolution?: string; // Notes on how discrepancy was resolved
   resolvedAt?: Date;
-  resolvedBy?: ObjectId;
+  resolvedBy?: mongoose.Types.ObjectId;
   // Automatic flags
   hasDiscrepancy: boolean;
   needsReview: boolean;
@@ -45,7 +44,7 @@ export interface ITCReconciliationRecord extends MongooseDocument {
   lastSyncedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-  syncedBy?: ObjectId;
+  syncedBy?: mongoose.Types.ObjectId;
 }
 
 const ITCReconciliationSchema = new Schema<ITCReconciliationRecord>(
@@ -134,7 +133,7 @@ const ITCReconciliationSchema = new Schema<ITCReconciliationRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Unique constraint on clientId + month to ensure one record per client-month
@@ -148,7 +147,7 @@ ITCReconciliationSchema.index({ clientId: 1, financialYear: 1 });
 // Convert to plain object with id field
 ITCReconciliationSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
@@ -158,6 +157,9 @@ ITCReconciliationSchema.set("toJSON", {
 
 export const ITCReconciliationModel =
   mongoose.models.ITCReconciliation ||
-  mongoose.model<ITCReconciliationRecord>("ITCReconciliation", ITCReconciliationSchema);
+  mongoose.model<ITCReconciliationRecord>(
+    "ITCReconciliation",
+    ITCReconciliationSchema,
+  );
 
 export default ITCReconciliationModel;

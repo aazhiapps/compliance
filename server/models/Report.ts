@@ -14,7 +14,7 @@ const ExportLogSchema = new Schema<ExportLog>(
     },
     exportedAt: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ReportSchema = new Schema<IReportDocument>(
@@ -78,14 +78,14 @@ const ReportSchema = new Schema<IReportDocument>(
   {
     timestamps: false,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
         delete ret._id;
         delete ret.__v;
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -96,5 +96,5 @@ ReportSchema.index({ generatedOn: -1 });
 
 export const ReportModel = mongoose.model<IReportDocument>(
   "Report",
-  ReportSchema
+  ReportSchema,
 );

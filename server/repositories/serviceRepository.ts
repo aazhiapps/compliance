@@ -31,7 +31,12 @@ class ServiceRepository {
   /**
    * Create a new service
    */
-  async create(serviceData: Omit<Service, "id" | "createdAt" | "updatedAt" | "applicationsCount" | "revenue">): Promise<Service> {
+  async create(
+    serviceData: Omit<
+      Service,
+      "id" | "createdAt" | "updatedAt" | "applicationsCount" | "revenue"
+    >,
+  ): Promise<Service> {
     const newService = await ServiceModel.create({
       ...serviceData,
       applicationsCount: 0,
@@ -43,14 +48,17 @@ class ServiceRepository {
   /**
    * Update a service
    */
-  async update(id: string, updates: Partial<Service>): Promise<Service | undefined> {
+  async update(
+    id: string,
+    updates: Partial<Service>,
+  ): Promise<Service | undefined> {
     const service = await ServiceModel.findByIdAndUpdate(
       id,
       {
         ...updates,
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return service ? this.toService(service) : undefined;
   }

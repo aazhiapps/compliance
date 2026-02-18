@@ -16,9 +16,8 @@ import {
   Trash2,
   Tag,
   Calendar,
-  User,
-  Version2,
   Loader2,
+  History,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,7 +57,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null,
+  );
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showVersionDialog, setShowVersionDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -146,11 +147,14 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const handleDownload = async (document: Document) => {
     try {
-      const url = await fetch(`/api/documents/${document.documentId}/download-url`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      const url = await fetch(
+        `/api/documents/${document.documentId}/download-url`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         },
-      }).then((r) => r.json());
+      ).then((r) => r.json());
 
       window.open(url.url, "_blank");
     } catch (error) {
@@ -163,7 +167,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   };
 
   const handleDelete = async (document: Document) => {
-    if (!window.confirm("Are you sure you want to delete this document?")) return;
+    if (!window.confirm("Are you sure you want to delete this document?"))
+      return;
 
     try {
       const response = await fetch(`/api/documents/${document.documentId}`, {
@@ -194,14 +199,17 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     if (!newTag.trim()) return;
 
     try {
-      const response = await fetch(`/api/documents/${document.documentId}/tags`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      const response = await fetch(
+        `/api/documents/${document.documentId}/tags`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: JSON.stringify({ tags: [newTag] }),
         },
-        body: JSON.stringify({ tags: [newTag] }),
-      });
+      );
 
       if (!response.ok) throw new Error("Failed to add tag");
 
@@ -223,11 +231,14 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const handleViewVersions = async (document: Document) => {
     try {
-      const response = await fetch(`/api/documents/${document.documentId}/versions`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      const response = await fetch(
+        `/api/documents/${document.documentId}/versions`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) throw new Error("Failed to fetch versions");
       const data = await response.json();
@@ -338,7 +349,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                       }}
                       title="View version history"
                     >
-                      <Version2 className="w-4 h-4" />
+                      <History className="w-4 h-4" />
                     </Button>
                   )}
 
@@ -386,7 +397,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Select File</label>
+              <label className="block text-sm font-medium mb-2">
+                Select File
+              </label>
               <input
                 type="file"
                 className="w-full border rounded-lg p-2"
@@ -421,17 +434,23 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">File Name</label>
-                <p className="text-sm text-gray-600">{selectedDocument.fileName}</p>
+                <p className="text-sm text-gray-600">
+                  {selectedDocument.fileName}
+                </p>
               </div>
 
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <p className="text-sm text-gray-600">{selectedDocument.documentType}</p>
+                <p className="text-sm text-gray-600">
+                  {selectedDocument.documentType}
+                </p>
               </div>
 
               <div>
                 <label className="text-sm font-medium">Version</label>
-                <p className="text-sm text-gray-600">v{selectedDocument.version}</p>
+                <p className="text-sm text-gray-600">
+                  v{selectedDocument.version}
+                </p>
               </div>
 
               <div>
@@ -460,19 +479,24 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                 )}
               </div>
 
-              {selectedDocument.metadata && Object.keys(selectedDocument.metadata).length > 0 && (
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Metadata</label>
-                  <div className="text-sm space-y-1">
-                    {Object.entries(selectedDocument.metadata).map(([key, value]) => (
-                      <div key={key} className="flex justify-between">
-                        <span className="text-gray-600">{key}:</span>
-                        <span>{String(value)}</span>
-                      </div>
-                    ))}
+              {selectedDocument.metadata &&
+                Object.keys(selectedDocument.metadata).length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Metadata
+                    </label>
+                    <div className="text-sm space-y-1">
+                      {Object.entries(selectedDocument.metadata).map(
+                        ([key, value]) => (
+                          <div key={key} className="flex justify-between">
+                            <span className="text-gray-600">{key}:</span>
+                            <span>{String(value)}</span>
+                          </div>
+                        ),
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
         </DialogContent>
@@ -483,15 +507,15 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Version History</DialogTitle>
-            <DialogDescription>
-              Document versions and changes
-            </DialogDescription>
+            <DialogDescription>Document versions and changes</DialogDescription>
           </DialogHeader>
 
           {versionHistory && (
             <div className="space-y-3">
               <div className="text-sm mb-4">
-                <p className="font-medium">Current Version: {versionHistory.currentVersion}</p>
+                <p className="font-medium">
+                  Current Version: {versionHistory.currentVersion}
+                </p>
               </div>
 
               {versionHistory.history && versionHistory.history.length > 0 ? (
@@ -509,7 +533,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                         </div>
                         <div className="text-right text-sm text-gray-500">
                           <p>{formatFileSize(version.fileSize)}</p>
-                          <p>{new Date(version.uploadedAt).toLocaleDateString()}</p>
+                          <p>
+                            {new Date(version.uploadedAt).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                     </Card>

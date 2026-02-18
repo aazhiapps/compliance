@@ -1,5 +1,5 @@
 import { Job } from "bull";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import { logger } from "../utils/logger";
 import JobLogModel from "../models/JobLog";
 import { NotificationModel } from "../models/Notification";
@@ -51,9 +51,10 @@ export async function handleITCSync(job: Job): Promise<void> {
         const client = clients[i];
         const currentDate = new Date();
         const month = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-        const financialYear = currentDate.getMonth() < 3 
-          ? `${currentDate.getFullYear() - 1}-${currentDate.getFullYear().toString().slice(-2)}`
-          : `${currentDate.getFullYear()}-${(currentDate.getFullYear() + 1).toString().slice(-2)}`;
+        const financialYear =
+          currentDate.getMonth() < 3
+            ? `${currentDate.getFullYear() - 1}-${currentDate.getFullYear().toString().slice(-2)}`
+            : `${currentDate.getFullYear()}-${(currentDate.getFullYear() + 1).toString().slice(-2)}`;
 
         // Calculate claimed ITC
         await ITCReconciliationService.calculateClaimedITC({
@@ -78,7 +79,7 @@ export async function handleITCSync(job: Job): Promise<void> {
 
           const claimedITC = invoices.reduce(
             (sum, inv) => sum + inv.cgst + inv.sgst + inv.igst,
-            0
+            0,
           );
 
           const portalITC = Math.floor(claimedITC * 0.95); // 5% variance
@@ -91,17 +92,17 @@ export async function handleITCSync(job: Job): Promise<void> {
               pendingITC: Math.floor(claimedITC * 0.02),
               rejectedITC: 0,
             },
-            new ObjectId() // System user ID
+            new mongoose.Types.ObjectId(), // System user ID
           );
         }
 
         successful++;
-        job.progress((i + 1) / clients.length * 100);
+        job.progress(((i + 1) / clients.length) * 100);
       } catch (error) {
         failed++;
         logger.error("Failed to process ITC sync for client:", {
           clientId: clients[i]._id,
-          error,
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -130,7 +131,9 @@ export async function handleITCSync(job: Job): Promise<void> {
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("ITC sync job failed:", { error });
+    logger.error("ITC sync job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -156,20 +159,22 @@ export async function handleFilingReminder(job: Job): Promise<void> {
     dueDate.setDate(dueDate.getDate() + 5);
 
     const upcomingFilings = await GSTReturnFilingModel.find({
-      gstr1DueDate: { $lte: dueDate, $gte: new Date() },
+      gstr1DueDate: { $lte: dueDate, $gte: new Date() } as any,
       gstr1Status: { $ne: "filed" },
     }).populate("clientId");
 
     let processed = 0;
 
-    for (const filing of upcomingFilings) {
+    for (const _filing of upcomingFilings) {
       try {
         // Here we would create notifications
         // The NotificationService will be called
         processed++;
         job.progress((processed / upcomingFilings.length) * 100);
       } catch (error) {
-        logger.error("Failed to create filing reminder:", { error });
+        logger.error("Failed to create filing reminder:", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -186,7 +191,9 @@ export async function handleFilingReminder(job: Job): Promise<void> {
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("Filing reminder job failed:", { error });
+    logger.error("Filing reminder job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -196,7 +203,7 @@ export async function handleFilingReminder(job: Job): Promise<void> {
  * Sends pending notifications via configured channels
  */
 export async function handleNotificationSend(
-  job: Job<{ notificationId: string }>
+  job: Job<{ notificationId: string }>,
 ): Promise<void> {
   const { notificationId } = job.data;
 
@@ -235,7 +242,9 @@ export async function handleNotificationSend(
           sent = true;
         }
       } catch (error) {
-        logger.error(`Failed to send ${channel} notification:`, { error });
+        logger.error(`Failed to send ${channel} notification:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -257,7 +266,9 @@ export async function handleNotificationSend(
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("Notification send job failed:", { error });
+    logger.error("Notification send job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -286,9 +297,9 @@ export async function handleComplianceCheck(job: Job): Promise<void> {
       try {
         // Check for overdue filings
         const overdueFilings = await GSTReturnFilingModel.find({
-          clientId: client._id,
+          clientId: client._id as any,
           gstr1Status: { $ne: "filed" },
-          gstr1DueDate: { $lt: new Date() },
+          gstr1DueDate: { $lt: new Date() } as any,
         });
 
         if (overdueFilings.length > 0) {
@@ -296,9 +307,10 @@ export async function handleComplianceCheck(job: Job): Promise<void> {
         }
 
         // Check for unresolved ITC discrepancies
-        const unresolvedDiscrepancies = await ITCReconciliationRepository.getDiscrepancies({
-          clientId: client._id,
-        });
+        const unresolvedDiscrepancies =
+          await ITCReconciliationRepository.getDiscrepancies({
+            clientId: client._id,
+          });
 
         if (unresolvedDiscrepancies.length > 0) {
           issues += unresolvedDiscrepancies.length;
@@ -307,7 +319,9 @@ export async function handleComplianceCheck(job: Job): Promise<void> {
         processed++;
         job.progress((processed / clients.length) * 100);
       } catch (error) {
-        logger.error("Failed compliance check for client:", { error });
+        logger.error("Failed compliance check for client:", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -328,7 +342,9 @@ export async function handleComplianceCheck(job: Job): Promise<void> {
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("Compliance check job failed:", { error });
+    logger.error("Compliance check job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -337,7 +353,7 @@ export async function handleComplianceCheck(job: Job): Promise<void> {
  * Data Cleanup Job Handler
  * Cleans up old logs and completed jobs
  */
-export async function handleDataCleanup(job: Job): Promise<void> {
+export async function handleDataCleanup(_job: Job): Promise<void> {
   const jobLog = await JobLogModel.create({
     jobName: "Data Cleanup",
     jobType: "cleanup",
@@ -372,7 +388,9 @@ export async function handleDataCleanup(job: Job): Promise<void> {
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("Data cleanup job failed:", { error });
+    logger.error("Data cleanup job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -382,7 +400,7 @@ export async function handleDataCleanup(job: Job): Promise<void> {
  * Generates periodic reports for clients
  */
 export async function handleReportGeneration(
-  job: Job<{ clientId: string; reportType: string }>
+  job: Job<{ clientId: string; reportType: string }>,
 ): Promise<void> {
   const { clientId, reportType } = job.data;
 
@@ -390,7 +408,7 @@ export async function handleReportGeneration(
     jobName: "Report Generation",
     jobType: "report_generation",
     status: "running",
-    clientId: new ObjectId(clientId),
+    clientId: new mongoose.Types.ObjectId(clientId),
     triggeredBy: "api",
     progress: 0,
   });
@@ -405,7 +423,7 @@ export async function handleReportGeneration(
       case "itc_reconciliation":
         // Generate ITC reconciliation report
         const report = await ITCReconciliationService.generateClientReport(
-          new ObjectId(clientId)
+          new mongoose.Types.ObjectId(clientId),
         );
         logger.info("ITC reconciliation report generated:", report);
         break;
@@ -435,7 +453,9 @@ export async function handleReportGeneration(
     jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
     await jobLog.save();
 
-    logger.error("Report generation job failed:", { error });
+    logger.error("Report generation job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -460,7 +480,9 @@ export async function handleWebhookDelivery(job: Job): Promise<void> {
     const startTime = Date.now();
     const { webhookService } = await import("../services/WebhookService");
 
-    await webhookService.processWebhookEventDelivery(new ObjectId(eventId));
+    await webhookService.processWebhookEventDelivery(
+      new mongoose.Types.ObjectId(eventId),
+    );
 
     jobLog.status = "completed";
     jobLog.successful = 1;
@@ -469,10 +491,13 @@ export async function handleWebhookDelivery(job: Job): Promise<void> {
     jobLog.progress = 100;
     await jobLog.save();
 
-    logger.info("Webhook delivery completed", { eventId, duration: jobLog.duration });
+    logger.info("Webhook delivery completed", {
+      eventId,
+      duration: jobLog.duration,
+    });
   } catch (error) {
     logger.error("Webhook delivery failed", {
-      eventId,
+      eventId: eventId.toString(),
       error: (error as Error).message,
     });
 
@@ -505,7 +530,9 @@ export async function handleWebhookRetry(job: Job): Promise<void> {
     const startTime = Date.now();
     const { webhookService } = await import("../services/WebhookService");
 
-    await webhookService.retryWebhookDelivery(new ObjectId(deliveryId));
+    await webhookService.retryWebhookDelivery(
+      new mongoose.Types.ObjectId(deliveryId),
+    );
 
     jobLog.status = "completed";
     jobLog.successful = 1;
@@ -514,10 +541,13 @@ export async function handleWebhookRetry(job: Job): Promise<void> {
     jobLog.progress = 100;
     await jobLog.save();
 
-    logger.info("Webhook retry completed", { deliveryId, duration: jobLog.duration });
+    logger.info("Webhook retry completed", {
+      deliveryId,
+      duration: jobLog.duration,
+    });
   } catch (error) {
     logger.error("Webhook retry failed", {
-      deliveryId,
+      deliveryId: deliveryId.toString(),
       error: (error as Error).message,
     });
 

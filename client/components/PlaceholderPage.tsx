@@ -31,7 +31,8 @@ export default function PlaceholderPage({
         {/* Prompt */}
         <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
-            This page is coming soon. Feel free to ask me to build this page - just provide details about what should be displayed here.
+            This page is coming soon. Feel free to ask me to build this page -
+            just provide details about what should be displayed here.
           </p>
         </div>
       </div>

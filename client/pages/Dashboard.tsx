@@ -49,10 +49,11 @@ export default function Dashboard() {
         const data = await response.json();
         const apps = data.applications || [];
         setApplications(apps);
-        
+
         // Check if user has approved GST Registration application
         const gstApproved = apps.some(
-          (app: Application) => app.serviceId === 1 && app.status === "approved"
+          (app: Application) =>
+            app.serviceId === 1 && app.status === "approved",
         );
         setHasGSTAccess(gstApproved);
       } else {
@@ -137,7 +138,10 @@ export default function Dashboard() {
             </p>
           </div>
           <Link to="/">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 flex items-center gap-2">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 flex items-center gap-2"
+            >
               <Plus className="w-5 h-5" />
               New Application
             </Button>
@@ -151,8 +155,12 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {stat.value}
+                    </p>
                   </div>
                   {stat.icon}
                 </div>
@@ -165,9 +173,12 @@ export default function Dashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">My Applications</h2>
+              <h2 className="text-2xl font-bold text-foreground">
+                My Applications
+              </h2>
               <p className="text-muted-foreground mt-1">
-                {applications.length} application{applications.length !== 1 ? "s" : ""}
+                {applications.length} application
+                {applications.length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -183,7 +194,9 @@ export default function Dashboard() {
             <Card>
               <CardContent className="p-12 text-center">
                 <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No applications yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No applications yet
+                </h3>
                 <p className="text-muted-foreground mb-6">
                   Start your first application for any of our services
                 </p>
@@ -197,7 +210,10 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-4">
               {applications.map((app) => (
-                <Card key={app.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={app.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -207,7 +223,7 @@ export default function Dashboard() {
                           </h3>
                           <span
                             className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                              app.status
+                              app.status,
                             )}`}
                           >
                             {getStatusIcon(app.status)}
@@ -215,35 +231,48 @@ export default function Dashboard() {
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Application ID: <span className="font-mono">{app.id}</span>
+                          Application ID:{" "}
+                          <span className="font-mono">{app.id}</span>
                         </p>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Created</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Created
+                            </p>
                             <p className="text-sm font-medium">
                               {new Date(app.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Expected Date</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Expected Date
+                            </p>
                             <p className="text-sm font-medium flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               {new Date(app.eta).toLocaleDateString()}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Payment</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Payment
+                            </p>
                             <p
                               className={`text-sm font-medium ${
-                                app.paymentStatus === "paid" ? "text-success" : "text-yellow-600"
+                                app.paymentStatus === "paid"
+                                  ? "text-success"
+                                  : "text-yellow-600"
                               }`}
                             >
-                              {app.paymentStatus === "paid" ? "✓ Paid" : "⏱ Pending"}
+                              {app.paymentStatus === "paid"
+                                ? "✓ Paid"
+                                : "⏱ Pending"}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Action</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Action
+                            </p>
                             <Link to={`/application/${app.id}`}>
                               <Button
                                 size="sm"
@@ -266,7 +295,13 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className={hasGSTAccess ? 'grid grid-cols-1 md:grid-cols-4 gap-6' : 'grid grid-cols-1 md:grid-cols-3 gap-6'}>
+        <div
+          className={
+            hasGSTAccess
+              ? "grid grid-cols-1 md:grid-cols-4 gap-6"
+              : "grid grid-cols-1 md:grid-cols-3 gap-6"
+          }
+        >
           {hasGSTAccess && (
             <Card>
               <CardHeader>

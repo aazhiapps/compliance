@@ -17,8 +17,14 @@ export default function Header() {
 
   const navItems = [
     { label: language === "en" ? "Services" : "सेवाएं", href: "/#services" },
-    { label: language === "en" ? "How it Works" : "यह कैसे काम करता है", href: "/#how-it-works" },
-    { label: language === "en" ? "Pricing" : "मूल्य निर्धारण", href: "/#pricing" },
+    {
+      label: language === "en" ? "How it Works" : "यह कैसे काम करता है",
+      href: "/#how-it-works",
+    },
+    {
+      label: language === "en" ? "Pricing" : "मूल्य निर्धारण",
+      href: "/#pricing",
+    },
     { label: language === "en" ? "Blog" : "ब्लॉग", href: "/blog" },
   ];
 
@@ -31,7 +37,10 @@ export default function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-primary">
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-bold text-xl md:text-2xl text-primary"
+          >
             <div className="w-8 h-8 md:w-10 md:h-10 bg-primary text-white rounded-lg flex items-center justify-center">
               ⚙️
             </div>
@@ -57,10 +66,14 @@ export default function Header() {
             <button
               onClick={toggleLanguage}
               className="p-2 hover:bg-muted rounded-lg transition-colors flex items-center gap-2 text-sm"
-              title={language === "en" ? "Switch to Hindi" : "Switch to English"}
+              title={
+                language === "en" ? "Switch to Hindi" : "Switch to English"
+              }
             >
               <Globe className="w-4 h-4" />
-              <span className="hidden md:inline">{language === "en" ? "EN" : "HI"}</span>
+              <span className="hidden md:inline">
+                {language === "en" ? "EN" : "HI"}
+              </span>
             </button>
 
             {/* Auth Buttons - Desktop */}
@@ -69,21 +82,33 @@ export default function Header() {
                 <>
                   {user.role === "admin" ? (
                     <Link to="/admin">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
                         <LayoutDashboard className="w-4 h-4" />
                         {language === "en" ? "Admin" : "एडमिन"}
                       </Button>
                     </Link>
                   ) : user.role === "staff" ? (
                     <Link to="/staff">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
                         <LayoutDashboard className="w-4 h-4" />
                         {language === "en" ? "Staff" : "स्टाफ"}
                       </Button>
                     </Link>
                   ) : (
                     <Link to="/dashboard">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
                         <LayoutDashboard className="w-4 h-4" />
                         {language === "en" ? "Dashboard" : "डैशबोर्ड"}
                       </Button>
@@ -108,7 +133,10 @@ export default function Header() {
                     </Button>
                   </Link>
                   <Link to="/signup">
-                    <Button size="sm" className="bg-primary hover:bg-primary/90">
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90"
+                    >
                       {language === "en" ? "Get Started" : "शुरुआत करें"}
                     </Button>
                   </Link>
@@ -148,15 +176,29 @@ export default function Header() {
                 {isAuthenticated && user ? (
                   <>
                     {user.role === "admin" ? (
-                      <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full flex items-center justify-center gap-2"
+                        >
                           <LayoutDashboard className="w-4 h-4" />
                           {language === "en" ? "Admin" : "एडमिन"}
                         </Button>
                       </Link>
                     ) : (
-                      <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full flex items-center justify-center gap-2"
+                        >
                           <LayoutDashboard className="w-4 h-4" />
                           {language === "en" ? "Dashboard" : "डैशबोर्ड"}
                         </Button>
@@ -183,7 +225,10 @@ export default function Header() {
                       </Button>
                     </Link>
                     <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                      <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
+                      <Button
+                        size="sm"
+                        className="w-full bg-primary hover:bg-primary/90"
+                      >
                         {language === "en" ? "Get Started" : "शुरुआत करें"}
                       </Button>
                     </Link>

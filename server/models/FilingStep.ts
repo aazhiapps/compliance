@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * FilingStep represents each step in the GST filing workflow
@@ -8,15 +7,24 @@ import { ObjectId } from "mongodb";
 
 export interface FilingStepDocument extends MongooseDocument {
   id: string;
-  filingId: ObjectId;
-  stepType: "gstr1_prepare" | "gstr1_validate" | "gstr1_file" | "gstr3b_prepare" | "gstr3b_validate" | "gstr3b_file" | "amendment" | "lock_month" | "unlock_month";
+  filingId: mongoose.Types.ObjectId;
+  stepType:
+    | "gstr1_prepare"
+    | "gstr1_validate"
+    | "gstr1_file"
+    | "gstr3b_prepare"
+    | "gstr3b_validate"
+    | "gstr3b_file"
+    | "amendment"
+    | "lock_month"
+    | "unlock_month";
   status: "pending" | "in_progress" | "completed" | "failed" | "skipped";
   title: string; // Human-readable step name
   description?: string;
   startedAt?: Date;
   completedAt?: Date;
-  completedBy?: ObjectId;
-  performedBy: ObjectId; // User who performed the action
+  completedBy?: mongoose.Types.ObjectId;
+  performedBy: mongoose.Types.ObjectId; // User who performed the action
   comments?: string;
   changes?: {
     [key: string]: {
@@ -103,7 +111,7 @@ const FilingStepSchema = new Schema<FilingStepDocument>(
     ipAddress: String,
     userAgent: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for efficient querying
@@ -114,7 +122,7 @@ FilingStepSchema.index({ stepType: 1, status: 1 });
 // Convert to plain object with id field
 FilingStepSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
@@ -123,6 +131,7 @@ FilingStepSchema.set("toJSON", {
 });
 
 export const FilingStepModel =
-  mongoose.models.FilingStep || mongoose.model<FilingStepDocument>("FilingStep", FilingStepSchema);
+  mongoose.models.FilingStep ||
+  mongoose.model<FilingStepDocument>("FilingStep", FilingStepSchema);
 
 export default FilingStepModel;

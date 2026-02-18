@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * Notification tracks all system notifications to users
@@ -8,8 +7,8 @@ import { ObjectId } from "mongodb";
 
 export interface NotificationRecord extends MongooseDocument {
   id: string;
-  userId: ObjectId;
-  clientId?: ObjectId;
+  userId: mongoose.Types.ObjectId;
+  clientId?: mongoose.Types.ObjectId;
   type:
     | "itc_discrepancy_detected"
     | "itc_sync_completed"
@@ -27,8 +26,14 @@ export interface NotificationRecord extends MongooseDocument {
   // Notification routing
   channels: Array<"in_app" | "email" | "sms">;
   // Related entity
-  entityType?: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
-  entityId?: ObjectId;
+  entityType?:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
+  entityId?: mongoose.Types.ObjectId;
   // Status
   status: "pending" | "sent" | "failed" | "read";
   readAt?: Date;
@@ -99,7 +104,14 @@ const NotificationSchema = new Schema<NotificationRecord>(
     ],
     entityType: {
       type: String,
-      enum: ["filing", "document", "invoice", "itc_reconciliation", "payment", "client"],
+      enum: [
+        "filing",
+        "document",
+        "invoice",
+        "itc_reconciliation",
+        "payment",
+        "client",
+      ],
       sparse: true,
     },
     entityId: {
@@ -136,7 +148,7 @@ const NotificationSchema = new Schema<NotificationRecord>(
     actionUrl: String,
     actionText: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -149,7 +161,7 @@ NotificationSchema.index({ type: 1, userId: 1 });
 // Convert to plain object with id field
 NotificationSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

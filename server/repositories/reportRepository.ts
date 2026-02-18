@@ -11,7 +11,7 @@ class ReportRepository {
   async findAll(filters?: ReportFilters): Promise<Report[]> {
     // Build query
     const query: any = {};
-    
+
     if (filters?.clientId) {
       query.clientId = filters.clientId;
     }
@@ -45,7 +45,7 @@ class ReportRepository {
   async count(filters?: ReportFilters): Promise<number> {
     // Build query
     const query: any = {};
-    
+
     if (filters?.clientId) {
       query.clientId = filters.clientId;
     }
@@ -84,23 +84,27 @@ class ReportRepository {
   /**
    * Update a report
    */
-  async update(id: string, updates: Partial<Report>): Promise<Report | undefined> {
-    const report = await ReportModel.findByIdAndUpdate(
-      id,
-      updates,
-      { new: true }
-    );
+  async update(
+    id: string,
+    updates: Partial<Report>,
+  ): Promise<Report | undefined> {
+    const report = await ReportModel.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
     return report ? (report.toJSON() as Report) : undefined;
   }
 
   /**
    * Log an export action
    */
-  async logExport(reportId: string, log: ExportLog): Promise<Report | undefined> {
+  async logExport(
+    reportId: string,
+    log: ExportLog,
+  ): Promise<Report | undefined> {
     const report = await ReportModel.findByIdAndUpdate(
       reportId,
       { $push: { exportLogs: log } },
-      { new: true }
+      { new: true },
     );
     return report ? (report.toJSON() as Report) : undefined;
   }
@@ -121,19 +125,19 @@ class ReportRepository {
       {
         $group: {
           _id: "$clientId",
-          name: { $first: "$clientName" }
-        }
+          name: { $first: "$clientName" },
+        },
       },
       {
         $project: {
           _id: 0,
           id: "$_id",
-          name: 1
-        }
+          name: 1,
+        },
       },
       {
-        $sort: { name: 1 }
-      }
+        $sort: { name: 1 },
+      },
     ]);
 
     return clients;

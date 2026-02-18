@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Mail, Lock, Github, Chrome, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -28,7 +34,9 @@ export default function Login() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your ComplianCe account</CardDescription>
+            <CardDescription>
+              Sign in to your ComplianCe account
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Error Display */}
@@ -42,7 +50,9 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Email Address</label>
+                <label className="text-sm font-medium text-foreground">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                   <input
@@ -58,7 +68,9 @@ export default function Login() {
 
               {/* Password */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Password</label>
+                <label className="text-sm font-medium text-foreground">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                   <input
@@ -74,13 +86,20 @@ export default function Login() {
 
               {/* Forgot Password */}
               <div className="text-right">
-                <Link to="/contact" className="text-sm text-primary hover:text-primary/80 font-medium">
+                <Link
+                  to="/contact"
+                  className="text-sm text-primary hover:text-primary/80 font-medium"
+                >
                   Forgot password?
                 </Link>
               </div>
 
               {/* Sign In Button */}
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -98,7 +117,9 @@ export default function Login() {
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-2 bg-white text-muted-foreground">Or continue with</span>
+                <span className="px-2 bg-white text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -117,7 +138,10 @@ export default function Login() {
             {/* Sign Up Link */}
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:text-primary/80 font-medium">
+              <Link
+                to="/signup"
+                className="text-primary hover:text-primary/80 font-medium"
+              >
                 Sign up
               </Link>
             </p>

@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { GSTClient } from "@shared/gst";
 
-export interface IGSTClientDocument extends Omit<GSTClient, "id">, MongooseDocument {}
+export interface IGSTClientDocument
+  extends Omit<GSTClient, "id">, MongooseDocument {}
 
 const GSTClientSchema = new Schema<IGSTClientDocument>(
   {
@@ -86,16 +87,20 @@ const GSTClientSchema = new Schema<IGSTClientDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
-        ret.createdAt = ret.createdAt.toISOString();
-        ret.updatedAt = ret.updatedAt.toISOString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
+        if (ret.createdAt && typeof ret.createdAt !== "string") {
+          ret.createdAt = ret.createdAt.toISOString();
+        }
+        if (ret.updatedAt && typeof ret.updatedAt !== "string") {
+          ret.updatedAt = ret.updatedAt.toISOString();
+        }
         delete ret._id;
         delete ret.__v;
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -106,5 +111,5 @@ GSTClientSchema.index({ assignedStaff: 1 });
 
 export const GSTClientModel = mongoose.model<IGSTClientDocument>(
   "GSTClient",
-  GSTClientSchema
+  GSTClientSchema,
 );

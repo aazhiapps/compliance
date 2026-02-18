@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import NotificationModel, { NotificationRecord } from "../models/Notification";
 import QueueService from "./QueueService";
 import { logger } from "../utils/logger";
@@ -32,16 +32,22 @@ export interface NotificationTemplate {
 }
 
 export interface CreateNotificationInput {
-  userId: ObjectId;
-  clientId?: ObjectId;
+  userId: mongoose.Types.ObjectId;
+  clientId?: mongoose.Types.ObjectId;
   type: NotificationType;
   title: string;
   message: string;
   description?: string;
   channels: Array<"in_app" | "email" | "sms">;
   priority?: "low" | "normal" | "high" | "critical";
-  entityType?: "filing" | "document" | "invoice" | "itc_reconciliation" | "payment" | "client";
-  entityId?: ObjectId;
+  entityType?:
+    | "filing"
+    | "document"
+    | "invoice"
+    | "itc_reconciliation"
+    | "payment"
+    | "client";
+  entityId?: mongoose.Types.ObjectId;
   actionUrl?: string;
   actionText?: string;
   metadata?: Record<string, any>;
@@ -52,7 +58,8 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplate> = {
   itc_discrepancy_detected: {
     type: "itc_discrepancy_detected",
     title: "ITC Discrepancy Detected",
-    message: "A discrepancy has been detected in your ITC reconciliation. Review and resolve to maintain compliance.",
+    message:
+      "A discrepancy has been detected in your ITC reconciliation. Review and resolve to maintain compliance.",
     description:
       "Your claimed ITC differs from the portal data. This requires your attention to ensure accurate GST filing.",
     actionUrl: "/gst/itc-reconciliation",
@@ -65,7 +72,8 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplate> = {
     type: "itc_sync_completed",
     title: "ITC Sync Completed",
     message: "Your ITC data has been successfully synced with the GST portal.",
-    description: "The latest ITC information is now available in your dashboard.",
+    description:
+      "The latest ITC information is now available in your dashboard.",
     actionUrl: "/gst/itc-reconciliation",
     actionText: "View Results",
     priority: "normal",
@@ -75,7 +83,8 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplate> = {
   filing_due: {
     type: "filing_due",
     title: "GST Filing Due",
-    message: "Your GST filing deadline is approaching. Please complete and file your return.",
+    message:
+      "Your GST filing deadline is approaching. Please complete and file your return.",
     description: "File your GST return before the deadline to avoid penalties.",
     actionUrl: "/gst/filings",
     actionText: "File Now",
@@ -109,7 +118,8 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplate> = {
     type: "document_rejected",
     title: "Document Rejected",
     message: "Your document has been rejected. Please review and resubmit.",
-    description: "A document was rejected for compliance review. Please check the details and resubmit.",
+    description:
+      "A document was rejected for compliance review. Please check the details and resubmit.",
     actionUrl: "/documents",
     actionText: "Resubmit Document",
     priority: "high",
@@ -131,7 +141,8 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplate> = {
     type: "payment_failed",
     title: "Payment Failed",
     message: "Your payment could not be processed. Please try again.",
-    description: "The payment transaction failed. Please verify your details and retry.",
+    description:
+      "The payment transaction failed. Please verify your details and retry.",
     actionUrl: "/payments",
     actionText: "Retry Payment",
     priority: "high",
@@ -167,7 +178,9 @@ class NotificationService {
   /**
    * Create a notification
    */
-  async createNotification(input: CreateNotificationInput): Promise<NotificationRecord> {
+  async createNotification(
+    input: CreateNotificationInput,
+  ): Promise<NotificationRecord> {
     try {
       const template = this.getTemplate(input.type);
 
@@ -190,8 +203,8 @@ class NotificationService {
       });
 
       logger.info("Notification created:", {
-        notificationId: notification._id,
-        userId: input.userId,
+        notificationId: notification._id.toString(),
+        userId: input.userId.toString(),
         type: input.type,
       });
 
@@ -202,7 +215,9 @@ class NotificationService {
 
       return notification;
     } catch (error) {
-      logger.error("Failed to create notification:", { error });
+      logger.error("Failed to create notification:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -211,14 +226,12 @@ class NotificationService {
    * Create batch notifications for multiple users
    */
   async createBatchNotifications(
-    userIds: ObjectId[],
-    input: Omit<CreateNotificationInput, "userId">
+    userIds: mongoose.Types.ObjectId[],
+    input: Omit<CreateNotificationInput, "userId">,
   ): Promise<NotificationRecord[]> {
     try {
       const notifications = await Promise.all(
-        userIds.map((userId) =>
-          this.createNotification({ ...input, userId })
-        )
+        userIds.map((userId) => this.createNotification({ ...input, userId })),
       );
 
       logger.info("Batch notifications created:", {
@@ -228,7 +241,9 @@ class NotificationService {
 
       return notifications;
     } catch (error) {
-      logger.error("Failed to create batch notifications:", { error });
+      logger.error("Failed to create batch notifications:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -237,13 +252,13 @@ class NotificationService {
    * Get user notifications
    */
   async getUserNotifications(
-    userId: ObjectId,
+    userId: mongoose.Types.ObjectId,
     options?: {
       limit?: number;
       skip?: number;
       unreadOnly?: boolean;
       type?: NotificationType;
-    }
+    },
   ): Promise<NotificationRecord[]> {
     try {
       const query: any = { userId };
@@ -264,7 +279,9 @@ class NotificationService {
 
       return notifications;
     } catch (error) {
-      logger.error("Failed to fetch notifications:", { error });
+      logger.error("Failed to fetch notifications:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -272,7 +289,9 @@ class NotificationService {
   /**
    * Mark notification as read
    */
-  async markAsRead(notificationId: ObjectId | string): Promise<NotificationRecord> {
+  async markAsRead(
+    notificationId: mongoose.Types.ObjectId | string,
+  ): Promise<NotificationRecord> {
     try {
       const notification = await NotificationModel.findByIdAndUpdate(
         notificationId,
@@ -280,7 +299,7 @@ class NotificationService {
           status: "read",
           readAt: new Date(),
         },
-        { new: true }
+        { new: true },
       );
 
       if (!notification) {
@@ -289,7 +308,9 @@ class NotificationService {
 
       return notification;
     } catch (error) {
-      logger.error("Failed to mark notification as read:", { error });
+      logger.error("Failed to mark notification as read:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -297,16 +318,18 @@ class NotificationService {
   /**
    * Mark all notifications as read for a user
    */
-  async markAllAsRead(userId: ObjectId): Promise<number> {
+  async markAllAsRead(userId: mongoose.Types.ObjectId): Promise<number> {
     try {
       const result = await NotificationModel.updateMany(
         { userId, status: { $ne: "read" } },
-        { status: "read", readAt: new Date() }
+        { status: "read", readAt: new Date() },
       );
 
       return result.modifiedCount;
     } catch (error) {
-      logger.error("Failed to mark all notifications as read:", { error });
+      logger.error("Failed to mark all notifications as read:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -314,13 +337,17 @@ class NotificationService {
   /**
    * Delete a notification
    */
-  async deleteNotification(notificationId: ObjectId | string): Promise<void> {
+  async deleteNotification(
+    notificationId: mongoose.Types.ObjectId | string,
+  ): Promise<void> {
     try {
       await NotificationModel.findByIdAndDelete(notificationId);
 
       logger.info("Notification deleted:", { notificationId });
     } catch (error) {
-      logger.error("Failed to delete notification:", { error });
+      logger.error("Failed to delete notification:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -328,7 +355,7 @@ class NotificationService {
   /**
    * Get unread notification count
    */
-  async getUnreadCount(userId: ObjectId): Promise<number> {
+  async getUnreadCount(userId: mongoose.Types.ObjectId): Promise<number> {
     try {
       return await NotificationModel.countDocuments({
         userId,
@@ -343,7 +370,7 @@ class NotificationService {
   /**
    * Get notification statistics
    */
-  async getNotificationStats(userId: ObjectId): Promise<{
+  async getNotificationStats(userId: mongoose.Types.ObjectId): Promise<{
     total: number;
     unread: number;
     read: number;
@@ -376,7 +403,9 @@ class NotificationService {
 
       return { total, unread, read, failed, byType };
     } catch (error) {
-      logger.error("Failed to get notification stats:", { error });
+      logger.error("Failed to get notification stats:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -385,11 +414,11 @@ class NotificationService {
    * Create notification for ITC discrepancy
    */
   async notifyITCDiscrepancy(
-    userId: ObjectId,
-    clientId: ObjectId,
+    userId: mongoose.Types.ObjectId,
+    clientId: mongoose.Types.ObjectId,
     month: string,
     discrepancy: number,
-    discrepancyPercentage: number
+    discrepancyPercentage: number,
   ): Promise<NotificationRecord> {
     const description = `A discrepancy of ₹${Math.abs(discrepancy / 100000).toFixed(2)}L (${discrepancyPercentage.toFixed(1)}%) has been detected for ${month}.`;
 
@@ -411,10 +440,10 @@ class NotificationService {
    * Create notification for filing due
    */
   async notifyFilingDue(
-    userId: ObjectId,
-    clientId: ObjectId,
+    userId: mongoose.Types.ObjectId,
+    clientId: mongoose.Types.ObjectId,
     filingType: string,
-    dueDate: Date
+    dueDate: Date,
   ): Promise<NotificationRecord> {
     const description = `Your ${filingType} filing is due on ${dueDate.toLocaleDateString()}. Please complete and file your return to avoid penalties.`;
 
@@ -437,10 +466,10 @@ class NotificationService {
    * Create notification for filing status change
    */
   async notifyFilingStatusChange(
-    userId: ObjectId,
-    clientId: ObjectId,
+    userId: mongoose.Types.ObjectId,
+    clientId: mongoose.Types.ObjectId,
     filingType: string,
-    status: string
+    status: string,
   ): Promise<NotificationRecord> {
     const description = `Your ${filingType} filing status has been updated to ${status}.`;
 
@@ -462,10 +491,10 @@ class NotificationService {
    * Create alert for compliance issues
    */
   async notifyComplianceAlert(
-    userId: ObjectId,
-    clientId: ObjectId,
+    userId: mongoose.Types.ObjectId,
+    clientId: mongoose.Types.ObjectId,
     issueType: string,
-    details: string
+    details: string,
   ): Promise<NotificationRecord> {
     return this.createNotification({
       userId,

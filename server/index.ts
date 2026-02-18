@@ -84,20 +84,18 @@ import { requireStaff } from "./middleware/staff";
 import { validateRequest, schemas } from "./middleware/validation";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
-import {
-  apiLimiter,
-  authLimiter,
-  fileLimiter,
-} from "./middleware/rateLimiter";
+import { apiLimiter, authLimiter, fileLimiter } from "./middleware/rateLimiter";
 
 export function createServer() {
   const app = express();
 
   // Global middleware
-  app.use(cors({
-    origin: process.env.CORS_ORIGIN || "*",
-    credentials: true,
-  }));
+  app.use(
+    cors({
+      origin: process.env.CORS_ORIGIN || "*",
+      credentials: true,
+    }),
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
@@ -151,26 +149,101 @@ export function createServer() {
   app.get("/api/documents", authenticateToken, handleGetUserDocuments);
 
   // Admin routes (protected by admin role)
-  app.get("/api/admin/stats", authenticateToken, requireAdmin, handleGetAdminStats);
-  app.get("/api/admin/users", authenticateToken, requireAdmin, handleGetAllUsers);
-  app.get("/api/admin/users/:id", authenticateToken, requireAdmin, handleGetUserById);
-  app.get("/api/admin/applications", authenticateToken, requireAdmin, handleGetAllApplications);
-  app.get("/api/admin/applications/:id", authenticateToken, requireAdmin, handleGetApplicationById);
-  app.patch("/api/admin/applications/:id", authenticateToken, requireAdmin, handleUpdateApplicationStatus);
-  app.get("/api/admin/documents", authenticateToken, requireAdmin, handleGetAllDocuments);
+  app.get(
+    "/api/admin/stats",
+    authenticateToken,
+    requireAdmin,
+    handleGetAdminStats,
+  );
+  app.get(
+    "/api/admin/users",
+    authenticateToken,
+    requireAdmin,
+    handleGetAllUsers,
+  );
+  app.get(
+    "/api/admin/users/:id",
+    authenticateToken,
+    requireAdmin,
+    handleGetUserById,
+  );
+  app.get(
+    "/api/admin/applications",
+    authenticateToken,
+    requireAdmin,
+    handleGetAllApplications,
+  );
+  app.get(
+    "/api/admin/applications/:id",
+    authenticateToken,
+    requireAdmin,
+    handleGetApplicationById,
+  );
+  app.patch(
+    "/api/admin/applications/:id",
+    authenticateToken,
+    requireAdmin,
+    handleUpdateApplicationStatus,
+  );
+  app.get(
+    "/api/admin/documents",
+    authenticateToken,
+    requireAdmin,
+    handleGetAllDocuments,
+  );
 
   // Service Management Routes (admin only)
-  app.get("/api/admin/services", authenticateToken, requireAdmin, handleGetAllServices);
-  app.get("/api/admin/services/:id", authenticateToken, requireAdmin, handleGetServiceById);
-  app.post("/api/admin/services", authenticateToken, requireAdmin, handleCreateService);
-  app.patch("/api/admin/services/:id", authenticateToken, requireAdmin, handleUpdateService);
-  app.delete("/api/admin/services/:id", authenticateToken, requireAdmin, handleDeleteService);
+  app.get(
+    "/api/admin/services",
+    authenticateToken,
+    requireAdmin,
+    handleGetAllServices,
+  );
+  app.get(
+    "/api/admin/services/:id",
+    authenticateToken,
+    requireAdmin,
+    handleGetServiceById,
+  );
+  app.post(
+    "/api/admin/services",
+    authenticateToken,
+    requireAdmin,
+    handleCreateService,
+  );
+  app.patch(
+    "/api/admin/services/:id",
+    authenticateToken,
+    requireAdmin,
+    handleUpdateService,
+  );
+  app.delete(
+    "/api/admin/services/:id",
+    authenticateToken,
+    requireAdmin,
+    handleDeleteService,
+  );
   // Staff routes (protected by staff role - includes both staff and admin)
-  app.get("/api/staff/applications", authenticateToken, requireStaff, getStaffApplications);
-  app.patch("/api/staff/applications/:applicationId", authenticateToken, requireStaff, updateApplicationStatus);
+  app.get(
+    "/api/staff/applications",
+    authenticateToken,
+    requireStaff,
+    getStaffApplications,
+  );
+  app.patch(
+    "/api/staff/applications/:applicationId",
+    authenticateToken,
+    requireStaff,
+    updateApplicationStatus,
+  );
   app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
   app.get("/api/staff/members", authenticateToken, requireAdmin, getAllStaff);
-  app.post("/api/staff/assign/:applicationId", authenticateToken, requireAdmin, assignApplicationToStaff);
+  app.post(
+    "/api/staff/assign/:applicationId",
+    authenticateToken,
+    requireAdmin,
+    assignApplicationToStaff,
+  );
 
   // Filing Workflow Routes (Phase 1)
   app.use("/api/filings", filingRoutes);
@@ -198,45 +271,133 @@ export function createServer() {
   app.patch("/api/gst/clients/:id", authenticateToken, handleUpdateGSTClient);
 
   // Purchase invoices
-  app.post("/api/gst/purchases", authenticateToken, handleCreatePurchaseInvoice);
-  app.get("/api/gst/purchases/:clientId", authenticateToken, handleGetPurchaseInvoices);
-  app.patch("/api/gst/purchases/:id", authenticateToken, handleUpdatePurchaseInvoice);
-  app.delete("/api/gst/purchases/:id", authenticateToken, requireAdmin, handleDeletePurchaseInvoice);
+  app.post(
+    "/api/gst/purchases",
+    authenticateToken,
+    handleCreatePurchaseInvoice,
+  );
+  app.get(
+    "/api/gst/purchases/:clientId",
+    authenticateToken,
+    handleGetPurchaseInvoices,
+  );
+  app.patch(
+    "/api/gst/purchases/:id",
+    authenticateToken,
+    handleUpdatePurchaseInvoice,
+  );
+  app.delete(
+    "/api/gst/purchases/:id",
+    authenticateToken,
+    requireAdmin,
+    handleDeletePurchaseInvoice,
+  );
 
   // Sales invoices
   app.post("/api/gst/sales", authenticateToken, handleCreateSalesInvoice);
-  app.get("/api/gst/sales/:clientId", authenticateToken, handleGetSalesInvoices);
+  app.get(
+    "/api/gst/sales/:clientId",
+    authenticateToken,
+    handleGetSalesInvoices,
+  );
   app.patch("/api/gst/sales/:id", authenticateToken, handleUpdateSalesInvoice);
-  app.delete("/api/gst/sales/:id", authenticateToken, requireAdmin, handleDeleteSalesInvoice);
+  app.delete(
+    "/api/gst/sales/:id",
+    authenticateToken,
+    requireAdmin,
+    handleDeleteSalesInvoice,
+  );
 
   // GST filing status
   app.post("/api/gst/filings", authenticateToken, handleUpdateGSTFiling);
   app.get("/api/gst/filings/:clientId", authenticateToken, handleGetGSTFilings);
 
   // Monthly summary
-  app.get("/api/gst/summary/:clientId/:month", authenticateToken, handleGetMonthlySummary);
-  app.get("/api/gst/summary/all/:month", authenticateToken, handleGetAllClientsSummary);
+  app.get(
+    "/api/gst/summary/:clientId/:month",
+    authenticateToken,
+    handleGetMonthlySummary,
+  );
+  app.get(
+    "/api/gst/summary/all/:month",
+    authenticateToken,
+    handleGetAllClientsSummary,
+  );
 
   // Document management
-  app.post("/api/gst/documents", authenticateToken, fileLimiter, handleUploadGSTDocument);
-  app.get("/api/gst/documents/download", authenticateToken, handleDownloadGSTDocument);
+  app.post(
+    "/api/gst/documents",
+    authenticateToken,
+    fileLimiter,
+    handleUploadGSTDocument,
+  );
+  app.get(
+    "/api/gst/documents/download",
+    authenticateToken,
+    handleDownloadGSTDocument,
+  );
   app.delete("/api/gst/documents", authenticateToken, handleDeleteGSTDocument);
 
   // Payment Management Routes (admin/staff only)
-  app.post("/api/payments/record", authenticateToken, requireAdmin, handleRecordPayment);
+  app.post(
+    "/api/payments/record",
+    authenticateToken,
+    requireAdmin,
+    handleRecordPayment,
+  );
   app.get("/api/payments", authenticateToken, requireStaff, handleGetPayments);
-  app.get("/api/payments/:id", authenticateToken, requireStaff, handleGetPaymentById);
-  app.get("/api/payments/application/:applicationId", authenticateToken, requireStaff, handleGetPaymentByApplicationId);
-  app.patch("/api/payments/:id/status", authenticateToken, requireAdmin, handleUpdatePaymentStatus);
+  app.get(
+    "/api/payments/:id",
+    authenticateToken,
+    requireStaff,
+    handleGetPaymentById,
+  );
+  app.get(
+    "/api/payments/application/:applicationId",
+    authenticateToken,
+    requireStaff,
+    handleGetPaymentByApplicationId,
+  );
+  app.patch(
+    "/api/payments/:id/status",
+    authenticateToken,
+    requireAdmin,
+    handleUpdatePaymentStatus,
+  );
 
   // Reports Management Routes (admin only)
   app.get("/api/reports", authenticateToken, requireAdmin, handleGetReports);
-  app.get("/api/reports/meta/clients", authenticateToken, requireAdmin, handleGetClients);
-  app.get("/api/reports/meta/financial-years", authenticateToken, requireAdmin, handleGetFinancialYears);
+  app.get(
+    "/api/reports/meta/clients",
+    authenticateToken,
+    requireAdmin,
+    handleGetClients,
+  );
+  app.get(
+    "/api/reports/meta/financial-years",
+    authenticateToken,
+    requireAdmin,
+    handleGetFinancialYears,
+  );
   app.get("/api/reports/:id", authenticateToken, requireAdmin, handleGetReport);
-  app.get("/api/reports/:id/export/csv", authenticateToken, requireAdmin, handleExportCSV);
-  app.get("/api/reports/:id/export/pdf", authenticateToken, requireAdmin, handleExportPDF);
-  app.get("/api/reports/:id/export-logs", authenticateToken, requireAdmin, handleGetExportLogs);
+  app.get(
+    "/api/reports/:id/export/csv",
+    authenticateToken,
+    requireAdmin,
+    handleExportCSV,
+  );
+  app.get(
+    "/api/reports/:id/export/pdf",
+    authenticateToken,
+    requireAdmin,
+    handleExportPDF,
+  );
+  app.get(
+    "/api/reports/:id/export-logs",
+    authenticateToken,
+    requireAdmin,
+    handleGetExportLogs,
+  );
 
   // Global error handler (must be last)
   app.use(errorHandler);

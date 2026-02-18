@@ -10,7 +10,7 @@ export const requestLogger: RequestHandler = (req, res, next) => {
   const { method, path } = req;
 
   // Add correlation ID if not present
-  const correlationId = req.headers["x-correlation-id"] as string || uuidv4();
+  const correlationId = (req.headers["x-correlation-id"] as string) || uuidv4();
   (req as any).correlationId = correlationId;
 
   // Set correlation ID in response header
@@ -31,7 +31,7 @@ export const requestLogger: RequestHandler = (req, res, next) => {
         statusCode,
         duration: `${duration}ms`,
         correlationId,
-      })
+      }),
     );
   });
 

@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Users,
   FileText,
@@ -14,9 +20,9 @@ import {
 } from "lucide-react";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "customers" | "applications" | "payments">(
-    "overview"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "customers" | "applications" | "payments"
+  >("overview");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Mock data
@@ -106,8 +112,12 @@ export default function AdminDashboard() {
       <div className="container mx-auto max-w-7xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage customers, applications, and monitor platform performance</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Manage customers, applications, and monitor platform performance
+          </p>
         </div>
 
         {/* Stats Grid */}
@@ -117,8 +127,12 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {stat.value}
+                    </p>
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                       <TrendingUp className="w-3 h-3" /> {stat.change}
                     </p>
@@ -132,19 +146,21 @@ export default function AdminDashboard() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 border-b border-border">
-          {(["overview", "customers", "applications", "payments"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          {(["overview", "customers", "applications", "payments"] as const).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ),
+          )}
         </div>
 
         {/* Overview Tab */}
@@ -160,19 +176,36 @@ export default function AdminDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left py-3 px-4 font-medium text-sm">Name</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Email</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Type</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Joined</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Name
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Email
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Type
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Joined
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {recentUsers.map((user) => (
-                        <tr key={user.id} className="border-b border-border hover:bg-gray-50">
+                        <tr
+                          key={user.id}
+                          className="border-b border-border hover:bg-gray-50"
+                        >
                           <td className="py-3 px-4 text-sm">{user.name}</td>
-                          <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
-                          <td className="py-3 px-4 text-sm capitalize">{user.businessType}</td>
+                          <td className="py-3 px-4 text-sm text-muted-foreground">
+                            {user.email}
+                          </td>
+                          <td className="py-3 px-4 text-sm capitalize">
+                            {user.businessType}
+                          </td>
                           <td className="py-3 px-4 text-sm">
                             {new Date(user.joinedDate).toLocaleDateString()}
                           </td>
@@ -205,16 +238,29 @@ export default function AdminDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left py-3 px-4 font-medium text-sm">User</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Service</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Amount</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm">Date</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          User
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Service
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Status
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Amount
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          Date
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {recentApplications.map((app) => (
-                        <tr key={app.id} className="border-b border-border hover:bg-gray-50">
+                        <tr
+                          key={app.id}
+                          className="border-b border-border hover:bg-gray-50"
+                        >
                           <td className="py-3 px-4 text-sm">{app.userName}</td>
                           <td className="py-3 px-4 text-sm">{app.service}</td>
                           <td className="py-3 px-4 text-sm">
@@ -235,7 +281,9 @@ export default function AdminDashboard() {
                               {app.status.replace(/_/g, " ")}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-sm font-medium">{app.amount}</td>
+                          <td className="py-3 px-4 text-sm font-medium">
+                            {app.amount}
+                          </td>
                           <td className="py-3 px-4 text-sm">
                             {new Date(app.submittedDate).toLocaleDateString()}
                           </td>
@@ -256,9 +304,13 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>All Customers</CardTitle>
-                  <CardDescription>Manage customer accounts and permissions</CardDescription>
+                  <CardDescription>
+                    Manage customer accounts and permissions
+                  </CardDescription>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">Add Customer</Button>
+                <Button className="bg-primary hover:bg-primary/90">
+                  Add Customer
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -283,20 +335,39 @@ export default function AdminDashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-medium text-sm">Name</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Email</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Type</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Joined</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Actions</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Name
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Email
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Type
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Joined
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-border hover:bg-gray-50">
+                      <tr
+                        key={user.id}
+                        className="border-b border-border hover:bg-gray-50"
+                      >
                         <td className="py-3 px-4 text-sm">{user.name}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
-                        <td className="py-3 px-4 text-sm capitalize">{user.businessType}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          {user.email}
+                        </td>
+                        <td className="py-3 px-4 text-sm capitalize">
+                          {user.businessType}
+                        </td>
                         <td className="py-3 px-4 text-sm">
                           {new Date(user.joinedDate).toLocaleDateString()}
                         </td>
@@ -330,25 +401,44 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>All Applications</CardTitle>
-              <CardDescription>Review and manage service applications</CardDescription>
+              <CardDescription>
+                Review and manage service applications
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-medium text-sm">ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">User</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Service</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Amount</th>
-                      <th className="text-left py-3 px-4 font-medium text-sm">Actions</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        ID
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        User
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Service
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Amount
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-sm">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentApplications.map((app) => (
-                      <tr key={app.id} className="border-b border-border hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm font-mono text-muted-foreground">{app.id}</td>
+                      <tr
+                        key={app.id}
+                        className="border-b border-border hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4 text-sm font-mono text-muted-foreground">
+                          {app.id}
+                        </td>
                         <td className="py-3 px-4 text-sm">{app.userName}</td>
                         <td className="py-3 px-4 text-sm">{app.service}</td>
                         <td className="py-3 px-4 text-sm">
@@ -364,7 +454,9 @@ export default function AdminDashboard() {
                             {app.status.replace(/_/g, " ")}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm font-medium">{app.amount}</td>
+                        <td className="py-3 px-4 text-sm font-medium">
+                          {app.amount}
+                        </td>
                         <td className="py-3 px-4 text-sm">
                           <Button size="sm" variant="outline">
                             Review
@@ -389,7 +481,9 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="text-center py-12">
                 <DollarSign className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Payment details coming soon</p>
+                <p className="text-muted-foreground">
+                  Payment details coming soon
+                </p>
               </div>
             </CardContent>
           </Card>

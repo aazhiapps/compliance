@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   CheckCircle,
   Zap,
@@ -12,7 +18,11 @@ import {
   ArrowRight,
   Clock,
 } from "lucide-react";
-import { services, features as featuresData, howItWorks } from "@shared/staticData";
+import {
+  services,
+  features as featuresData,
+  howItWorks,
+} from "@shared/staticData";
 
 const features = [
   {
@@ -55,22 +65,26 @@ export default function Index() {
                 Business Compliance Made Simple
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Register your company, file GST, and handle all compliance requirements with ease. 
-                Get expert support from registration to approval.
+                Register your company, file GST, and handle all compliance
+                requirements with ease. Get expert support from registration to
+                approval.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/signup">
-                  <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-base">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-base"
+                  >
                     Get Started Free <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
+                <Button
+                  size="lg"
+                  variant="outline"
                   className="w-full sm:w-auto text-base"
                   onClick={() => {
-                    document.getElementById('services')?.scrollIntoView({ 
-                      behavior: 'smooth' 
+                    document.getElementById("services")?.scrollIntoView({
+                      behavior: "smooth",
                     });
                   }}
                 >
@@ -80,7 +94,9 @@ export default function Index() {
 
               {/* Trust Badges */}
               <div className="mt-12 space-y-3">
-                <p className="text-sm text-muted-foreground font-medium">Trusted by 50,000+ businesses</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Trusted by 50,000+ businesses
+                </p>
                 <div className="flex flex-wrap gap-6">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-success" />
@@ -103,8 +119,12 @@ export default function Index() {
               <div className="bg-gradient-to-br from-primary to-secondary rounded-3xl p-12 text-white flex flex-col justify-center items-center h-96">
                 <div className="text-center">
                   <div className="text-6xl mb-4">📊</div>
-                  <p className="text-xl font-semibold">Your Compliance Dashboard</p>
-                  <p className="text-blue-100 mt-2">Track all applications in one place</p>
+                  <p className="text-xl font-semibold">
+                    Your Compliance Dashboard
+                  </p>
+                  <p className="text-blue-100 mt-2">
+                    Track all applications in one place
+                  </p>
                 </div>
               </div>
             </div>
@@ -116,9 +136,12 @@ export default function Index() {
       <section id="services" className="py-16 md:py-24 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Services</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Our Services
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive compliance and business registration services tailored for your needs
+              Comprehensive compliance and business registration services
+              tailored for your needs
             </p>
           </div>
 
@@ -127,9 +150,15 @@ export default function Index() {
               <Card
                 key={service.id}
                 className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary ${
-                  selectedService === service.id ? "border-primary ring-2 ring-primary/20" : ""
+                  selectedService === service.id
+                    ? "border-primary ring-2 ring-primary/20"
+                    : ""
                 }`}
-                onClick={() => setSelectedService(selectedService === service.id ? null : service.id)}
+                onClick={() =>
+                  setSelectedService(
+                    selectedService === service.id ? null : service.id,
+                  )
+                }
               >
                 <CardHeader>
                   <div className="text-5xl mb-4">{service.icon}</div>
@@ -139,7 +168,9 @@ export default function Index() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-primary">{service.price}</span>
+                      <span className="text-2xl font-bold text-primary">
+                        {service.price}
+                      </span>
                       <span className="text-sm text-muted-foreground flex items-center gap-1">
                         <Clock className="w-4 h-4" /> {service.turnaround}
                       </span>
@@ -148,9 +179,14 @@ export default function Index() {
 
                   {selectedService === service.id && (
                     <div className="space-y-2 pt-4 border-t">
-                      <p className="text-sm font-medium text-foreground">What's Included:</p>
+                      <p className="text-sm font-medium text-foreground">
+                        What's Included:
+                      </p>
                       {service.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm">
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 text-sm"
+                        >
                           <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
                           <span>{feature}</span>
                         </div>
@@ -174,7 +210,9 @@ export default function Index() {
       <section id="how-it-works" className="py-16 md:py-24 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How It Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              How It Works
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Simple 4-step process to get your documents ready
             </p>
@@ -194,8 +232,12 @@ export default function Index() {
                     <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                       {item.step}
                     </div>
-                    <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                    <h3 className="text-lg font-bold text-foreground mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -208,9 +250,12 @@ export default function Index() {
       <section className="py-16 md:py-24 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Choose ComplianCe</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Why Choose ComplianCe
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We provide the best compliance services with expert support and transparent pricing
+              We provide the best compliance services with expert support and
+              transparent pricing
             </p>
           </div>
 
@@ -219,8 +264,12 @@ export default function Index() {
               <Card key={idx} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="mb-4">{feature.icon}</div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    {feature.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -232,7 +281,9 @@ export default function Index() {
       <section id="pricing" className="py-16 md:py-24 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Flexible Plans</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Flexible Plans
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Choose a plan that fits your business needs
             </p>
@@ -282,12 +333,16 @@ export default function Index() {
                     <CardTitle>Professional</CardTitle>
                     <CardDescription>Most popular</CardDescription>
                   </div>
-                  <span className="text-xs bg-primary text-white px-3 py-1 rounded-full">POPULAR</span>
+                  <span className="text-xs bg-primary text-white px-3 py-1 rounded-full">
+                    POPULAR
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <span className="text-4xl font-bold text-primary">₹1,999</span>
+                  <span className="text-4xl font-bold text-primary">
+                    ₹1,999
+                  </span>
                   <span className="text-muted-foreground ml-2">/month</span>
                 </div>
                 <ul className="space-y-3">
@@ -322,7 +377,9 @@ export default function Index() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <span className="text-4xl font-bold text-primary">Custom</span>
+                  <span className="text-4xl font-bold text-primary">
+                    Custom
+                  </span>
                   <span className="text-muted-foreground ml-2">/year</span>
                 </div>
                 <ul className="space-y-3">
@@ -355,9 +412,12 @@ export default function Index() {
       {/* CTA Section */}
       <section className="py-16 md:py-24 px-4 bg-gradient-to-r from-primary to-secondary">
         <div className="container mx-auto max-w-4xl text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Get Started?
+          </h2>
           <p className="text-lg mb-8 opacity-90">
-            Join thousands of businesses that trust ComplianCe for their compliance needs
+            Join thousands of businesses that trust ComplianCe for their
+            compliance needs
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
@@ -365,7 +425,11 @@ export default function Index() {
                 Create Free Account <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 text-base">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white/10 text-base"
+            >
               Schedule Demo
             </Button>
           </div>

@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, User, Mail, Phone, Shield, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  X,
+  User as UserIcon,
+  Mail,
+  Phone,
+  Shield,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
-interface User {
+export interface UserForEdit {
   id: string;
   name: string;
   email: string;
@@ -17,8 +25,8 @@ interface User {
 interface UserEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
-  onSave: (updatedUser: User) => void;
+  user: UserForEdit;
+  onSave: (updatedUser: UserForEdit) => void;
   onSuspend: (userId: string) => void;
   onApprove: (userId: string) => void;
 }
@@ -42,7 +50,7 @@ export default function UserEditModal({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    const updatedUser: User = {
+    const updatedUser: UserForEdit = {
       ...user,
       name: formData.name,
       email: formData.email,
@@ -95,7 +103,9 @@ export default function UserEditModal({
               }`}
             >
               {user.status === "active" && <CheckCircle className="w-5 h-5" />}
-              {user.status === "suspended" && <AlertCircle className="w-5 h-5" />}
+              {user.status === "suspended" && (
+                <AlertCircle className="w-5 h-5" />
+              )}
               {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
             </span>
           </div>
@@ -104,17 +114,21 @@ export default function UserEditModal({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
+                <UserIcon className="w-5 h-5 text-primary" />
                 Personal Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Full Name</label>
+                <label className="block text-sm font-medium mb-2">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -125,7 +139,9 @@ export default function UserEditModal({
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -136,7 +152,9 @@ export default function UserEditModal({
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -167,10 +185,14 @@ export default function UserEditModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Admin Notes</label>
+                <label className="block text-sm font-medium mb-2">
+                  Admin Notes
+                </label>
                 <textarea
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                   placeholder="Add any notes about this user..."
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   rows={4}
@@ -181,7 +203,10 @@ export default function UserEditModal({
 
           {/* Actions */}
           <div className="flex gap-3 flex-wrap">
-            <Button onClick={handleSave} className="flex-1 bg-primary hover:bg-primary/90">
+            <Button
+              onClick={handleSave}
+              className="flex-1 bg-primary hover:bg-primary/90"
+            >
               Save Changes
             </Button>
             {user.status !== "active" && (

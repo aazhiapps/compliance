@@ -43,15 +43,18 @@ export default function DocumentUpload({
     };
   }, []);
 
-  const uploadFileToServer = async (uploadedFile: UploadedFile, appId: string) => {
+  const uploadFileToServer = async (
+    uploadedFile: UploadedFile,
+    appId: string,
+  ) => {
     try {
       const token = localStorage.getItem("authToken");
       const reader = new FileReader();
       fileReadersRef.current.push(reader);
-      
+
       reader.onloadend = async () => {
         const fileUrl = reader.result as string;
-        
+
         const response = await fetch(`/api/applications/${appId}/documents`, {
           method: "POST",
           headers: {
@@ -69,24 +72,24 @@ export default function DocumentUpload({
         if (response.ok) {
           setUploadedFiles((prev) =>
             prev.map((f) =>
-              f.id === uploadedFile.id ? { ...f, status: "success" } : f
-            )
+              f.id === uploadedFile.id ? { ...f, status: "success" } : f,
+            ),
           );
         } else {
           throw new Error("Upload failed");
         }
       };
-      
+
       reader.onerror = () => {
         setUploadedFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
               ? { ...f, status: "error", error: "Failed to read file" }
-              : f
-          )
+              : f,
+          ),
         );
       };
-      
+
       reader.readAsDataURL(uploadedFile.file);
     } catch (error) {
       console.error("Upload error:", error);
@@ -94,8 +97,8 @@ export default function DocumentUpload({
         prev.map((f) =>
           f.id === uploadedFile.id
             ? { ...f, status: "error", error: "Upload failed" }
-            : f
-        )
+            : f,
+        ),
       );
     }
   };
@@ -165,8 +168,8 @@ export default function DocumentUpload({
           setTimeout(() => {
             setUploadedFiles((prev) =>
               prev.map((f) =>
-                f.id === uploadedFile.id ? { ...f, status: "success" } : f
-              )
+                f.id === uploadedFile.id ? { ...f, status: "success" } : f,
+              ),
             );
           }, 1500);
         }
@@ -215,7 +218,9 @@ export default function DocumentUpload({
       >
         <div className="text-center">
           <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-foreground mb-1">Drop your documents here</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-1">
+            Drop your documents here
+          </h3>
           <p className="text-muted-foreground text-sm mb-4">
             or{" "}
             <button
@@ -226,7 +231,8 @@ export default function DocumentUpload({
             </button>
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported formats: {acceptedFormats.join(", ").toUpperCase()} • Max size: {maxFileSize}MB
+            Supported formats: {acceptedFormats.join(", ").toUpperCase()} • Max
+            size: {maxFileSize}MB
           </p>
         </div>
 
@@ -278,13 +284,17 @@ export default function DocumentUpload({
                         {uploadedFile.status === "uploading" && (
                           <>
                             <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-xs text-primary">Uploading...</span>
+                            <span className="text-xs text-primary">
+                              Uploading...
+                            </span>
                           </>
                         )}
                         {uploadedFile.status === "success" && (
                           <>
                             <CheckCircle className="w-4 h-4 text-success" />
-                            <span className="text-xs text-success">Uploaded</span>
+                            <span className="text-xs text-success">
+                              Uploaded
+                            </span>
                           </>
                         )}
                         {uploadedFile.status === "error" && (
@@ -319,7 +329,10 @@ export default function DocumentUpload({
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
             ✓ {uploadedFiles.filter((f) => f.status === "success").length} file
-            {uploadedFiles.filter((f) => f.status === "success").length !== 1 ? "s" : ""} uploaded successfully
+            {uploadedFiles.filter((f) => f.status === "success").length !== 1
+              ? "s"
+              : ""}{" "}
+            uploaded successfully
           </p>
         </div>
       )}

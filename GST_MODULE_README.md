@@ -7,12 +7,14 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 ## Features
 
 ### 1. Client Management
+
 - Create and manage GST clients with complete business details
 - Track GSTIN, PAN, filing frequency, and financial year
 - Support for monthly, quarterly, and annual filing frequencies
 - Client-wise data segregation
 
 ### 2. Purchase Invoice Tracking
+
 - Add, edit, and delete purchase invoices
 - Capture vendor details including GSTIN
 - Auto-calculate:
@@ -23,6 +25,7 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 - Document upload support (planned)
 
 ### 3. Sales Invoice Tracking
+
 - Add, edit, and delete sales invoices
 - Capture customer details including GSTIN
 - Auto-calculate:
@@ -33,6 +36,7 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 - Document upload support (planned)
 
 ### 4. GST Return Filing Status
+
 - Track GSTR-1 (Outward Supplies) filing status
 - Track GSTR-3B (Summary Return) filing status
 - Capture:
@@ -45,6 +49,7 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 - Status indicators (Pending/Filed/Late)
 
 ### 5. Monthly Dashboard
+
 - Comprehensive monthly summary showing:
   - Total purchases
   - Total sales
@@ -56,6 +61,7 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 - Real-time calculations
 
 ### 6. File Storage System
+
 - Organized folder structure:
   ```
   /GST_DATA/{ClientName}/{FinancialYear}/{Month}/
@@ -70,6 +76,7 @@ A comprehensive GST (Goods and Services Tax) Filing Tracking Module for managing
 - File metadata tracking
 
 ### 7. Security & Permissions
+
 - **Admin**: Full access (Add/Edit/Delete/Update status)
 - **Accountant**: Add/Edit + Upload files (No deletion of filed records)
 - **Client (View Only)**: View dashboard + Download returns
@@ -116,31 +123,37 @@ shared/
 ## API Endpoints
 
 ### Client Management
+
 - `POST /api/gst/clients` - Create GST client
 - `GET /api/gst/clients` - List all clients (filtered by role)
 - `GET /api/gst/clients/:id` - Get single client
 - `PATCH /api/gst/clients/:id` - Update client
 
 ### Purchase Invoices
+
 - `POST /api/gst/purchases` - Create purchase invoice
 - `GET /api/gst/purchases/:clientId?month=YYYY-MM` - Get purchase invoices
 - `PATCH /api/gst/purchases/:id` - Update purchase invoice
 - `DELETE /api/gst/purchases/:id` - Delete purchase invoice (admin only)
 
 ### Sales Invoices
+
 - `POST /api/gst/sales` - Create sales invoice
 - `GET /api/gst/sales/:clientId?month=YYYY-MM` - Get sales invoices
 - `PATCH /api/gst/sales/:id` - Update sales invoice
 - `DELETE /api/gst/sales/:id` - Delete sales invoice (admin only)
 
 ### GST Filing
+
 - `POST /api/gst/filings` - Update filing status
 - `GET /api/gst/filings/:clientId?financialYear=YYYY-YY` - Get filing records
 
 ### Reports
+
 - `GET /api/gst/summary/:clientId/:month` - Get monthly summary
 
 ### Documents (Planned)
+
 - `POST /api/gst/documents` - Upload document
 - `GET /api/gst/documents/:path` - Download document
 
@@ -151,6 +164,7 @@ shared/
 Navigate to Admin > GST Filing and click "Add GST Client"
 
 Required information:
+
 - Client Name
 - GSTIN (15 characters)
 - PAN Number (10 characters)
@@ -207,6 +221,7 @@ Total amount is auto-calculated.
 ### 5. View Monthly Summary
 
 The monthly summary is automatically displayed when you select a client and month. It shows:
+
 - Total purchases and sales
 - ITC available and output tax
 - Net tax payable
@@ -215,27 +230,29 @@ The monthly summary is automatically displayed when you select a client and mont
 ## Data Models
 
 ### GSTClient
+
 ```typescript
 {
-  id: string
-  userId: string
-  clientName: string
-  gstin: string  // 15 characters
-  businessName: string
-  filingFrequency: "monthly" | "quarterly" | "annual"
-  financialYearStart: string  // YYYY-MM-DD
-  panNumber: string  // 10 characters
-  address: string
-  state: string
-  contactPerson: string
-  contactEmail: string
-  contactPhone: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  userId: string;
+  clientName: string;
+  gstin: string; // 15 characters
+  businessName: string;
+  filingFrequency: "monthly" | "quarterly" | "annual";
+  financialYearStart: string; // YYYY-MM-DD
+  panNumber: string; // 10 characters
+  address: string;
+  state: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
 ### PurchaseInvoice / SalesInvoice
+
 ```typescript
 {
   id: string
@@ -259,6 +276,7 @@ The monthly summary is automatically displayed when you select a client and mont
 ```
 
 ### GSTReturnFiling
+
 ```typescript
 {
   id: string
@@ -287,12 +305,14 @@ The monthly summary is automatically displayed when you select a client and mont
 ## Future Enhancements
 
 ### Short Term
+
 1. ✅ Implement actual file upload with multipart/form-data
 2. ✅ Add file download functionality
 3. ✅ Add year-wise dashboard view
 4. ✅ Export reports to PDF/Excel
 
 ### Medium Term
+
 1. ⏳ ITC ledger with month-on-month carry forward
 2. ⏳ Automated late fee calculation
 3. ⏳ Email/SMS reminders for filing due dates
@@ -300,6 +320,7 @@ The monthly summary is automatically displayed when you select a client and mont
 5. ⏳ Bulk invoice upload via Excel
 
 ### Long Term
+
 1. 🔜 Integration with GST portal
 2. 🔜 Automated return filing
 3. 🔜 E-way bill management
@@ -372,6 +393,7 @@ When contributing to the GST module:
 ## Support
 
 For issues or questions about the GST Filing Tracking Module:
+
 - Check the main README.md
 - Review API endpoint documentation
 - Check browser console for errors

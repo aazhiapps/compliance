@@ -1,12 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, Plus, MoreVertical, Shield, UserCheck, Edit, Users, TrendingUp, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Search,
+  Filter,
+  Plus,
+  MoreVertical,
+  Shield,
+  UserCheck,
+  Edit,
+  Users,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { User as ApiUser } from "@shared/auth";
+import type { UserForEdit } from "@/components/UserEditModal";
 
 // Extended User interface for display purposes
 interface User extends ApiUser {
@@ -17,16 +34,37 @@ interface User extends ApiUser {
   verified: boolean; // isEmailVerified
 }
 
+// Helper to convert User to UserForEdit
+const toUserForEdit = (user: User): UserForEdit => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  businessType: user.businessType,
+  joinedDate: user.joinedDate,
+  status: user.status,
+  applications: user.applications,
+  verified: user.verified,
+});
+
 export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [users, setUsers] = useState<User[]>([
     {
       id: "user_1",
       name: "Demo User",
+      firstName: "Demo",
+      lastName: "User",
       email: "demo@example.com",
-      businessType: "Individual",
+      phone: "+91-9876543210",
+      role: "user",
+      businessType: "individual",
+      language: "en",
+      createdAt: "2024-02-01T00:00:00Z",
+      isEmailVerified: true,
       joinedDate: "2024-02-01",
       status: "active",
       applications: 2,
@@ -35,8 +73,15 @@ export default function AdminUsers() {
     {
       id: "user_2",
       name: "Rajesh Kumar",
+      firstName: "Rajesh",
+      lastName: "Kumar",
       email: "rajesh@example.com",
-      businessType: "Startup",
+      phone: "+91-9876543211",
+      role: "user",
+      businessType: "startup",
+      language: "en",
+      createdAt: "2024-02-02T00:00:00Z",
+      isEmailVerified: true,
       joinedDate: "2024-02-02",
       status: "active",
       applications: 1,
@@ -45,8 +90,15 @@ export default function AdminUsers() {
     {
       id: "user_3",
       name: "Priya Singh",
+      firstName: "Priya",
+      lastName: "Singh",
       email: "priya@example.com",
-      businessType: "Company",
+      phone: "+91-9876543212",
+      role: "user",
+      businessType: "company",
+      language: "en",
+      createdAt: "2024-02-03T00:00:00Z",
+      isEmailVerified: true,
       joinedDate: "2024-02-03",
       status: "active",
       applications: 0,
@@ -55,8 +107,15 @@ export default function AdminUsers() {
     {
       id: "user_4",
       name: "Amit Patel",
+      firstName: "Amit",
+      lastName: "Patel",
       email: "amit@example.com",
-      businessType: "Individual",
+      phone: "+91-9876543213",
+      role: "user",
+      businessType: "individual",
+      language: "en",
+      createdAt: "2024-02-04T00:00:00Z",
+      isEmailVerified: false,
       joinedDate: "2024-02-04",
       status: "inactive",
       applications: 0,
@@ -65,8 +124,15 @@ export default function AdminUsers() {
     {
       id: "user_5",
       name: "Neha Sharma",
+      firstName: "Neha",
+      lastName: "Sharma",
       email: "neha@example.com",
-      businessType: "Company",
+      phone: "+91-9876543214",
+      role: "user",
+      businessType: "company",
+      language: "en",
+      createdAt: "2024-02-05T00:00:00Z",
+      isEmailVerified: true,
       joinedDate: "2024-02-05",
       status: "active",
       applications: 3,
@@ -80,13 +146,14 @@ export default function AdminUsers() {
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || user.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || user.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
   const handleSaveUser = (updatedUser: User) => {
     setUsers((prev) =>
-      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
     );
     setModalOpen(false);
     setSelectedUserId(null);
@@ -97,16 +164,16 @@ export default function AdminUsers() {
       prev.map((user) =>
         user.id === userId
           ? { ...user, verified: true, status: "active" as const }
-          : user
-      )
+          : user,
+      ),
     );
   };
 
   const handleSuspendUser = (userId: string) => {
     setUsers((prev) =>
       prev.map((user) =>
-        user.id === userId ? { ...user, status: "suspended" as const } : user
-      )
+        user.id === userId ? { ...user, status: "suspended" as const } : user,
+      ),
     );
   };
 
@@ -115,18 +182,24 @@ export default function AdminUsers() {
       prev.map((user) =>
         selectedUsers.has(user.id)
           ? { ...user, verified: true, status: "active" as const }
-          : user
-      )
+          : user,
+      ),
     );
     setSelectedUsers(new Set());
   };
 
   const handleBulkSuspend = () => {
-    if (window.confirm(`Are you sure you want to suspend ${selectedUsers.size} user(s)?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to suspend ${selectedUsers.size} user(s)?`,
+      )
+    ) {
       setUsers((prev) =>
         prev.map((user) =>
-          selectedUsers.has(user.id) ? { ...user, status: "suspended" as const } : user
-        )
+          selectedUsers.has(user.id)
+            ? { ...user, status: "suspended" as const }
+            : user,
+        ),
       );
       setSelectedUsers(new Set());
     }
@@ -155,10 +228,17 @@ export default function AdminUsers() {
     }
   };
 
-  const recentUsers = users.sort((a, b) => new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime()).slice(0, 3);
-  const inactiveUsers = users.filter(u => u.status === "inactive" || !u.verified);
-  const verifiedUsers = users.filter(u => u.verified).length;
-  const activeUsers = users.filter(u => u.status === "active").length;
+  const recentUsers = users
+    .sort(
+      (a, b) =>
+        new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime(),
+    )
+    .slice(0, 3);
+  const inactiveUsers = users.filter(
+    (u) => u.status === "inactive" || !u.verified,
+  );
+  const verifiedUsers = users.filter((u) => u.verified).length;
+  const activeUsers = users.filter((u) => u.status === "active").length;
 
   return (
     <AdminLayout>
@@ -166,8 +246,12 @@ export default function AdminUsers() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Customer Management</h1>
-            <p className="text-muted-foreground mt-1">Manage and approve customer accounts</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Customer Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and approve customer accounts
+            </p>
           </div>
           <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
             <Plus className="w-4 h-4" />
@@ -181,8 +265,12 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Total Customers</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-1">{users.length}</p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    Total Customers
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">
+                    {users.length}
+                  </p>
                 </div>
                 <Users className="w-10 h-10 text-blue-400 opacity-50" />
               </div>
@@ -192,8 +280,12 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-medium">Active Customers</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{activeUsers}</p>
+                  <p className="text-sm text-green-600 font-medium">
+                    Active Customers
+                  </p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">
+                    {activeUsers}
+                  </p>
                 </div>
                 <CheckCircle2 className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -203,8 +295,12 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium">Verified</p>
-                  <p className="text-3xl font-bold text-purple-900 mt-1">{verifiedUsers}</p>
+                  <p className="text-sm text-purple-600 font-medium">
+                    Verified
+                  </p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">
+                    {verifiedUsers}
+                  </p>
                 </div>
                 <Shield className="w-10 h-10 text-purple-400 opacity-50" />
               </div>
@@ -214,8 +310,12 @@ export default function AdminUsers() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 font-medium">Pending Action</p>
-                  <p className="text-3xl font-bold text-orange-900 mt-1">{inactiveUsers.length}</p>
+                  <p className="text-sm text-orange-600 font-medium">
+                    Pending Action
+                  </p>
+                  <p className="text-3xl font-bold text-orange-900 mt-1">
+                    {inactiveUsers.length}
+                  </p>
                 </div>
                 <AlertCircle className="w-10 h-10 text-orange-400 opacity-50" />
               </div>
@@ -235,15 +335,26 @@ export default function AdminUsers() {
             </CardHeader>
             <CardContent className="space-y-3">
               {recentUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(user.joinedDate).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(user.joinedDate).toLocaleDateString()}
+                    </p>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    setSelectedUserId(user.id);
-                    setModalOpen(true);
-                  }}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedUserId(user.id);
+                      setModalOpen(true);
+                    }}
+                  >
                     Review
                   </Button>
                 </div>
@@ -258,25 +369,41 @@ export default function AdminUsers() {
                 <AlertCircle className="w-5 h-5 text-orange-500" />
                 Pending Approvals
               </CardTitle>
-              <CardDescription>{inactiveUsers.length} customers need verification</CardDescription>
+              <CardDescription>
+                {inactiveUsers.length} customers need verification
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {inactiveUsers.slice(0, 3).map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+                >
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{user.name}</p>
-                    <p className="text-xs text-orange-600 capitalize">{user.status} • {!user.verified ? 'Unverified' : 'Verified'}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-orange-600 capitalize">
+                      {user.status} •{" "}
+                      {!user.verified ? "Unverified" : "Verified"}
+                    </p>
                   </div>
-                  <Button size="sm" className="bg-orange-500 hover:bg-orange-600" onClick={() => {
-                    setSelectedUserId(user.id);
-                    setModalOpen(true);
-                  }}>
+                  <Button
+                    size="sm"
+                    className="bg-orange-500 hover:bg-orange-600"
+                    onClick={() => {
+                      setSelectedUserId(user.id);
+                      setModalOpen(true);
+                    }}
+                  >
                     Approve
                   </Button>
                 </div>
               ))}
               {inactiveUsers.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">All users verified!</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  All users verified!
+                </p>
               )}
             </CardContent>
           </Card>
@@ -293,28 +420,47 @@ export default function AdminUsers() {
               <div>
                 <div className="flex justify-between mb-2">
                   <p className="text-sm font-medium">Active</p>
-                  <span className="text-sm font-semibold text-green-600">{activeUsers}</span>
+                  <span className="text-sm font-semibold text-green-600">
+                    {activeUsers}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{width: `${(activeUsers/users.length)*100}%`}}></div>
+                  <div
+                    className="bg-green-500 h-2 rounded-full"
+                    style={{ width: `${(activeUsers / users.length) * 100}%` }}
+                  ></div>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
                   <p className="text-sm font-medium">Verified</p>
-                  <span className="text-sm font-semibold text-purple-600">{verifiedUsers}</span>
+                  <span className="text-sm font-semibold text-purple-600">
+                    {verifiedUsers}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full" style={{width: `${(verifiedUsers/users.length)*100}%`}}></div>
+                  <div
+                    className="bg-purple-500 h-2 rounded-full"
+                    style={{
+                      width: `${(verifiedUsers / users.length) * 100}%`,
+                    }}
+                  ></div>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
                   <p className="text-sm font-medium">Pending</p>
-                  <span className="text-sm font-semibold text-orange-600">{inactiveUsers.length}</span>
+                  <span className="text-sm font-semibold text-orange-600">
+                    {inactiveUsers.length}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-orange-500 h-2 rounded-full" style={{width: `${(inactiveUsers.length/users.length)*100}%`}}></div>
+                  <div
+                    className="bg-orange-500 h-2 rounded-full"
+                    style={{
+                      width: `${(inactiveUsers.length / users.length) * 100}%`,
+                    }}
+                  ></div>
                 </div>
               </div>
             </CardContent>
@@ -361,7 +507,9 @@ export default function AdminUsers() {
               <div>
                 <CardTitle className="text-lg">All Customers</CardTitle>
                 <CardDescription>
-                  {selectedUsers.size > 0 ? `${selectedUsers.size} selected` : `${filteredUsers.length} total customers`}
+                  {selectedUsers.size > 0
+                    ? `${selectedUsers.size} selected`
+                    : `${filteredUsers.length} total customers`}
                 </CardDescription>
               </div>
               {selectedUsers.size > 0 && (
@@ -395,7 +543,9 @@ export default function AdminUsers() {
                         type="checkbox"
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedUsers(new Set(filteredUsers.map((u) => u.id)));
+                            setSelectedUsers(
+                              new Set(filteredUsers.map((u) => u.id)),
+                            );
                           } else {
                             setSelectedUsers(new Set());
                           }
@@ -403,18 +553,35 @@ export default function AdminUsers() {
                         className="rounded"
                       />
                     </th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Name</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Email</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Business</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Joined</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Apps</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Status</th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">Actions</th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Name
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Email
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Business
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Joined
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Apps
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Status
+                    </th>
+                    <th className="text-left py-4 px-4 font-semibold text-sm text-foreground">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-gray-200 hover:bg-blue-50 transition-colors">
+                    <tr
+                      key={user.id}
+                      className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         <input
                           type="checkbox"
@@ -425,7 +592,9 @@ export default function AdminUsers() {
                       </td>
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium text-foreground">{user.name}</p>
+                          <p className="font-medium text-foreground">
+                            {user.name}
+                          </p>
                           {user.verified && (
                             <p className="text-xs text-success flex items-center gap-1 mt-1">
                               <UserCheck className="w-3 h-3" /> Verified
@@ -433,16 +602,22 @@ export default function AdminUsers() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
-                      <td className="py-3 px-4 text-sm capitalize">{user.businessType}</td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground">
+                        {user.email}
+                      </td>
+                      <td className="py-3 px-4 text-sm capitalize">
+                        {user.businessType}
+                      </td>
                       <td className="py-3 px-4 text-sm">
                         {new Date(user.joinedDate).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium">{user.applications}</td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        {user.applications}
+                      </td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(
-                            user.status
+                            user.status,
                           )}`}
                         >
                           {user.status}
@@ -485,15 +660,23 @@ export default function AdminUsers() {
       </div>
 
       {/* User Edit Modal */}
-      {selectedUserId && (
+      {selectedUserId && users.find((u) => u.id === selectedUserId) && (
         <UserEditModal
           isOpen={modalOpen}
           onClose={() => {
             setModalOpen(false);
             setSelectedUserId(null);
           }}
-          user={users.find((u) => u.id === selectedUserId)!}
-          onSave={handleSaveUser}
+          user={toUserForEdit(users.find((u) => u.id === selectedUserId)!)}
+          onSave={(updatedUser) => {
+            // Merge the updated fields back into the full User object
+            handleSaveUser({
+              ...users.find((u) => u.id === selectedUserId)!,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              status: updatedUser.status,
+            });
+          }}
           onApprove={handleApproveUser}
           onSuspend={handleSuspendUser}
         />

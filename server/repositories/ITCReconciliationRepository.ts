@@ -1,4 +1,7 @@
-import { ITCReconciliationModel, ITCReconciliationRecord } from "../models/ITCReconciliation";
+import {
+  ITCReconciliationModel,
+  ITCReconciliationRecord,
+} from "../models/ITCReconciliation";
 import { ObjectId } from "mongodb";
 import { logger } from "../utils/logger";
 
@@ -63,7 +66,7 @@ export class ITCReconciliationRepository {
    * Create a new ITC reconciliation record
    */
   async createReconciliation(
-    data: CreateITCReconciliationInput
+    data: CreateITCReconciliationInput,
   ): Promise<ITCReconciliationRecord> {
     try {
       const record = await ITCReconciliationModel.create({
@@ -88,7 +91,7 @@ export class ITCReconciliationRepository {
    */
   async getReconciliationByMonth(
     clientId: ObjectId,
-    month: string
+    month: string,
   ): Promise<ITCReconciliationRecord | null> {
     try {
       return await ITCReconciliationModel.findOne({
@@ -104,7 +107,9 @@ export class ITCReconciliationRepository {
   /**
    * Get all reconciliation records for a client
    */
-  async getClientReconciliations(clientId: ObjectId): Promise<ITCReconciliationRecord[]> {
+  async getClientReconciliations(
+    clientId: ObjectId,
+  ): Promise<ITCReconciliationRecord[]> {
     try {
       return await ITCReconciliationModel.find({ clientId })
         .sort({ month: -1 })
@@ -120,7 +125,7 @@ export class ITCReconciliationRepository {
    */
   async getFinancialYearReconciliations(
     clientId: ObjectId,
-    financialYear: string
+    financialYear: string,
   ): Promise<ITCReconciliationRecord[]> {
     try {
       return await ITCReconciliationModel.find({
@@ -141,7 +146,7 @@ export class ITCReconciliationRepository {
   async updateWithGSTData(
     clientId: ObjectId,
     month: string,
-    data: UpdateITCReconciliationInput & { syncedBy: ObjectId }
+    data: UpdateITCReconciliationInput & { syncedBy: ObjectId },
   ): Promise<ITCReconciliationRecord> {
     try {
       // Calculate discrepancy if we have both values
@@ -161,7 +166,8 @@ export class ITCReconciliationRepository {
       if (data.availableITCFromGST !== undefined) {
         discrepancy = record.claimedITC - data.availableITCFromGST;
         if (data.availableITCFromGST > 0) {
-          discrepancyPercentage = (discrepancy / data.availableITCFromGST) * 100;
+          discrepancyPercentage =
+            (discrepancy / data.availableITCFromGST) * 100;
         }
 
         // Auto-detect discrepancy reason
@@ -194,7 +200,7 @@ export class ITCReconciliationRepository {
               : discrepancy !== undefined && Math.abs(discrepancy) > 0.01,
           lastSyncedAt: data.lastSyncedAt || new Date(),
         },
-        { new: true }
+        { new: true },
       ).lean();
 
       logger.info("Updated reconciliation with GST data", {
@@ -216,7 +222,7 @@ export class ITCReconciliationRepository {
   async resolveDiscrepancy(
     clientId: ObjectId,
     month: string,
-    data: ResolveDiscrepancyInput
+    data: ResolveDiscrepancyInput,
   ): Promise<ITCReconciliationRecord> {
     try {
       const updated = await ITCReconciliationModel.findOneAndUpdate(
@@ -229,7 +235,7 @@ export class ITCReconciliationRepository {
           needsReview: false,
           discrepancyReason: "reconciled",
         },
-        { new: true }
+        { new: true },
       ).lean();
 
       if (!updated) {
@@ -252,7 +258,10 @@ export class ITCReconciliationRepository {
   /**
    * Mark reconciliation for review
    */
-  async markForReview(clientId: ObjectId, month: string): Promise<ITCReconciliationRecord> {
+  async markForReview(
+    clientId: ObjectId,
+    month: string,
+  ): Promise<ITCReconciliationRecord> {
     try {
       const updated = await ITCReconciliationModel.findOneAndUpdate(
         { clientId, month },
@@ -260,7 +269,7 @@ export class ITCReconciliationRepository {
           needsReview: true,
           updatedAt: new Date(),
         },
-        { new: true }
+        { new: true },
       ).lean();
 
       if (!updated) {
@@ -278,7 +287,7 @@ export class ITCReconciliationRepository {
    * Get all reconciliation records with discrepancies
    */
   async getDiscrepancies(
-    filter?: ITCReconciliationFilter
+    filter?: ITCReconciliationFilter,
   ): Promise<ITCReconciliationRecord[]> {
     try {
       const query: Record<string, any> = { hasDiscrepancy: true };
@@ -301,7 +310,7 @@ export class ITCReconciliationRepository {
    * Get reconciliation records pending review
    */
   async getPendingReview(
-    clientId?: ObjectId
+    clientId?: ObjectId,
   ): Promise<ITCReconciliationRecord[]> {
     try {
       const query: Record<string, any> = { needsReview: true };
@@ -321,7 +330,7 @@ export class ITCReconciliationRepository {
    */
   async getClientStats(
     clientId: ObjectId,
-    financialYear?: string
+    financialYear?: string,
   ): Promise<ITCStats> {
     try {
       const query: Record<string, any> = { clientId };
@@ -385,7 +394,7 @@ export class ITCReconciliationRepository {
    */
   async getDiscrepancyBreakdown(
     clientId: ObjectId,
-    financialYear?: string
+    financialYear?: string,
   ): Promise<Record<string, number>> {
     try {
       const query: Record<string, any> = {

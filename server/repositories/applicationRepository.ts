@@ -24,7 +24,9 @@ class ApplicationRepository {
    * Find all applications for a user
    */
   async findByUserId(userId: string): Promise<Application[]> {
-    const apps = await ApplicationModel.find({ userId }).sort({ createdAt: -1 });
+    const apps = await ApplicationModel.find({ userId }).sort({
+      createdAt: -1,
+    });
     return apps.map((app) => this.toApplication(app));
   }
 
@@ -39,11 +41,14 @@ class ApplicationRepository {
   /**
    * Update an application
    */
-  async update(id: string, updates: Partial<Application>): Promise<Application | undefined> {
+  async update(
+    id: string,
+    updates: Partial<Application>,
+  ): Promise<Application | undefined> {
     const app = await ApplicationModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true }
+      { new: true },
     );
     return app ? this.toApplication(app) : undefined;
   }
@@ -51,14 +56,17 @@ class ApplicationRepository {
   /**
    * Add a document to an application
    */
-  async addDocument(applicationId: string, document: Document): Promise<Application | undefined> {
+  async addDocument(
+    applicationId: string,
+    document: Document,
+  ): Promise<Application | undefined> {
     const app = await ApplicationModel.findByIdAndUpdate(
       applicationId,
       {
         $push: { documents: document },
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return app ? this.toApplication(app) : undefined;
   }

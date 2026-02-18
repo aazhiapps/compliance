@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   X,
   CheckCircle,
@@ -92,7 +98,10 @@ export default function ApplicationDetailModal({
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
-  const application = mockApplicationDetails[applicationId as keyof typeof mockApplicationDetails];
+  const application =
+    mockApplicationDetails[
+      applicationId as keyof typeof mockApplicationDetails
+    ];
 
   if (!isOpen || !application) return null;
 
@@ -123,7 +132,9 @@ export default function ApplicationDetailModal({
   };
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center ${isOpen ? "block" : "hidden"}`}>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center ${isOpen ? "block" : "hidden"}`}
+    >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose}></div>
 
@@ -132,8 +143,12 @@ export default function ApplicationDetailModal({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-border p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">{application.service}</h2>
-            <p className="text-sm text-muted-foreground">ID: {application.id}</p>
+            <h2 className="text-2xl font-bold text-foreground">
+              {application.service}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              ID: {application.id}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -156,9 +171,15 @@ export default function ApplicationDetailModal({
                     : "bg-blue-50 text-blue-700"
               }`}
             >
-              {application.status === "approved" && <CheckCircle className="w-5 h-5" />}
-              {application.status === "under_review" && <Clock className="w-5 h-5" />}
-              {application.status === "submitted" && <FileText className="w-5 h-5" />}
+              {application.status === "approved" && (
+                <CheckCircle className="w-5 h-5" />
+              )}
+              {application.status === "under_review" && (
+                <Clock className="w-5 h-5" />
+              )}
+              {application.status === "submitted" && (
+                <FileText className="w-5 h-5" />
+              )}
               {application.status.replace(/_/g, " ")}
             </span>
             <span
@@ -214,8 +235,12 @@ export default function ApplicationDetailModal({
                 <p className="font-semibold">{application.service}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Submitted Date</p>
-                <p className="font-semibold">{new Date(application.submittedDate).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Submitted Date
+                </p>
+                <p className="font-semibold">
+                  {new Date(application.submittedDate).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
@@ -253,7 +278,7 @@ export default function ApplicationDetailModal({
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getDocStatusColor(
-                        doc.status
+                        doc.status,
                       )}`}
                     >
                       {doc.status}
@@ -276,7 +301,8 @@ export default function ApplicationDetailModal({
               {application.staffAssigned ? (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-900">
-                    <strong>Currently assigned to:</strong> {application.staffAssigned}
+                    <strong>Currently assigned to:</strong>{" "}
+                    {application.staffAssigned}
                   </p>
                 </div>
               ) : (
@@ -309,41 +335,48 @@ export default function ApplicationDetailModal({
           </Card>
 
           {/* Actions */}
-          {application.status !== "approved" && application.status !== "rejected" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Actions</CardTitle>
-                <CardDescription>Approve, reject, or request changes for this application</CardDescription>
-              </CardHeader>
-              <CardContent className="flex gap-3">
-                <Button
-                  onClick={() => onApprove(applicationId)}
-                  className="flex-1 bg-success hover:bg-success/90 flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve Application
-                </Button>
-                <Button
-                  onClick={() => setShowRejectForm(!showRejectForm)}
-                  variant="outline"
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Reject Application
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {application.status !== "approved" &&
+            application.status !== "rejected" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Actions</CardTitle>
+                  <CardDescription>
+                    Approve, reject, or request changes for this application
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-3">
+                  <Button
+                    onClick={() => onApprove(applicationId)}
+                    className="flex-1 bg-success hover:bg-success/90 flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Approve Application
+                  </Button>
+                  <Button
+                    onClick={() => setShowRejectForm(!showRejectForm)}
+                    variant="outline"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Reject Application
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Reject Form */}
           {showRejectForm && (
             <Card className="border-red-200 bg-red-50">
               <CardHeader>
-                <CardTitle className="text-red-700">Reject Application</CardTitle>
+                <CardTitle className="text-red-700">
+                  Reject Application
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Reason for Rejection</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Reason for Rejection
+                  </label>
                   <textarea
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}

@@ -19,7 +19,9 @@ class UserRepository {
   /**
    * Find a user by email
    */
-  async findByEmail(email: string): Promise<(User & { password: string }) | undefined> {
+  async findByEmail(
+    email: string,
+  ): Promise<(User & { password: string }) | undefined> {
     const user = await UserModel.findOne({ email: email.toLowerCase() });
     return user ? this.toUserWithPassword(user) : undefined;
   }
@@ -27,7 +29,9 @@ class UserRepository {
   /**
    * Find a user by ID
    */
-  async findById(id: string): Promise<(User & { password: string }) | undefined> {
+  async findById(
+    id: string,
+  ): Promise<(User & { password: string }) | undefined> {
     const user = await UserModel.findById(id);
     return user ? this.toUserWithPassword(user) : undefined;
   }
@@ -35,7 +39,9 @@ class UserRepository {
   /**
    * Create a new user
    */
-  async create(user: User & { password: string }): Promise<User & { password: string }> {
+  async create(
+    user: User & { password: string },
+  ): Promise<User & { password: string }> {
     const newUser = await UserModel.create({
       email: user.email,
       password: user.password,
@@ -54,7 +60,9 @@ class UserRepository {
    * Check if a user exists by email
    */
   async exists(email: string): Promise<boolean> {
-    const count = await UserModel.countDocuments({ email: email.toLowerCase() });
+    const count = await UserModel.countDocuments({
+      email: email.toLowerCase(),
+    });
     return count > 0;
   }
 

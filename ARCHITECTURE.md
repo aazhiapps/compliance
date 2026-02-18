@@ -65,6 +65,7 @@ app.get("/api/profile", authenticateToken, handleGetProfile);
 ```
 
 Features:
+
 - JWT token verification
 - Automatic token expiration handling
 - User ID injection into request object
@@ -79,6 +80,7 @@ app.post("/api/auth/signup", validateRequest(schemas.signup), handleSignup);
 ```
 
 Features:
+
 - Zod schema validation
 - Detailed error messages
 - Built-in type safety
@@ -93,6 +95,7 @@ app.use(errorHandler);
 ```
 
 Features:
+
 - Standardized error responses
 - Error logging
 - Development vs production error details
@@ -102,6 +105,7 @@ Features:
 Located in `server/middleware/logging.ts`:
 
 Features:
+
 - Logs all requests with timing
 - Color-coded by status
 - Production-ready logging format
@@ -147,10 +151,12 @@ All input is validated using Zod schemas:
 **File:** `server/index.ts`
 
 ```typescript
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true,
+  }),
+);
 ```
 
 ### 5. Rate Limiting
@@ -165,10 +171,20 @@ Three levels of rate limiting:
 
 ```typescript
 // Authentication routes
-app.post("/api/auth/login", authLimiter, validateRequest(schemas.login), handleLogin);
+app.post(
+  "/api/auth/login",
+  authLimiter,
+  validateRequest(schemas.login),
+  handleLogin,
+);
 
 // File upload routes
-app.post("/api/documents", authenticateToken, fileLimiter, handleUploadDocument);
+app.post(
+  "/api/documents",
+  authenticateToken,
+  fileLimiter,
+  handleUploadDocument,
+);
 ```
 
 ### 6. Input Sanitization
@@ -273,11 +289,13 @@ validateEnv(); // Throws error if validation fails
 ### 1. Always Use Middleware
 
 ✅ **Good:**
+
 ```typescript
 app.get("/api/profile", authenticateToken, handleGetProfile);
 ```
 
 ❌ **Bad:**
+
 ```typescript
 // Don't manually verify tokens in every handler
 app.get("/api/profile", (req, res) => {
@@ -290,11 +308,13 @@ app.get("/api/profile", (req, res) => {
 ### 2. Use Validation Schemas
 
 ✅ **Good:**
+
 ```typescript
 app.post("/api/signup", validateRequest(schemas.signup), handleSignup);
 ```
 
 ❌ **Bad:**
+
 ```typescript
 // Don't manually validate in handlers
 app.post("/api/signup", (req, res) => {
@@ -307,11 +327,13 @@ app.post("/api/signup", (req, res) => {
 ### 3. Use Repository Pattern
 
 ✅ **Good:**
+
 ```typescript
 const user = userRepository.findByEmail(email);
 ```
 
 ❌ **Bad:**
+
 ```typescript
 // Don't access data storage directly
 const user = users.get(email);
@@ -320,6 +342,7 @@ const user = users.get(email);
 ### 4. Use Constants
 
 ✅ **Good:**
+
 ```typescript
 import { AUTH, HTTP_STATUS } from "../utils/constants";
 await bcrypt.hash(password, AUTH.SALT_ROUNDS);
@@ -327,6 +350,7 @@ return res.status(HTTP_STATUS.UNAUTHORIZED).json({...});
 ```
 
 ❌ **Bad:**
+
 ```typescript
 // Don't use magic values
 await bcrypt.hash(password, 10);
@@ -336,6 +360,7 @@ return res.status(401).json({...});
 ### 5. Handle Errors Properly
 
 ✅ **Good:**
+
 ```typescript
 try {
   // ... code that might fail
@@ -345,6 +370,7 @@ try {
 ```
 
 ❌ **Bad:**
+
 ```typescript
 // Don't swallow errors
 try {

@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { PurchaseInvoice } from "@shared/gst";
 
-export interface IPurchaseInvoiceDocument extends Omit<PurchaseInvoice, "id">, MongooseDocument {}
+export interface IPurchaseInvoiceDocument
+  extends Omit<PurchaseInvoice, "id">, MongooseDocument {}
 
 const PurchaseInvoiceSchema = new Schema<IPurchaseInvoiceDocument>(
   {
@@ -75,16 +76,20 @@ const PurchaseInvoiceSchema = new Schema<IPurchaseInvoiceDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
-        ret.createdAt = ret.createdAt.toISOString();
-        ret.updatedAt = ret.updatedAt.toISOString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
+        if (ret.createdAt && typeof ret.createdAt !== "string") {
+          ret.createdAt = ret.createdAt.toISOString();
+        }
+        if (ret.updatedAt && typeof ret.updatedAt !== "string") {
+          ret.updatedAt = ret.updatedAt.toISOString();
+        }
         delete ret._id;
         delete ret.__v;
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -95,5 +100,5 @@ PurchaseInvoiceSchema.index({ invoiceDate: -1 });
 
 export const PurchaseInvoiceModel = mongoose.model<IPurchaseInvoiceDocument>(
   "PurchaseInvoice",
-  PurchaseInvoiceSchema
+  PurchaseInvoiceSchema,
 );

@@ -62,7 +62,7 @@ router.post(
           tags: tags ? tags.split(",") : undefined,
           description,
           uploadedBy: new ObjectId(userId),
-        }
+        },
       );
 
       logger.info("Document uploaded via API", {
@@ -78,102 +78,127 @@ router.post(
       });
       res.status(500).json({ error: "Failed to upload document" });
     }
-  }
+  },
 );
 
 /**
  * GET /api/documents/:documentId/download
  * Download a document
  */
-router.get("/:documentId/download", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
-    const userId = (req as any).userId;
+router.get(
+  "/:documentId/download",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      const userId = (req as any).userId;
 
-    const result = await DocumentService.downloadDocument(documentId, new ObjectId(userId));
+      const result = await DocumentService.downloadDocument(
+        documentId,
+        new ObjectId(userId),
+      );
 
-    res.setHeader("Content-Type", result.mimeType);
-    res.setHeader("Content-Disposition", `attachment; filename="${result.fileName}"`);
-    res.send(result.buffer);
+      res.setHeader("Content-Type", result.mimeType);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${result.fileName}"`,
+      );
+      res.send(result.buffer);
 
-    logger.info("Document downloaded via API", {
-      correlationId: (req as any).correlationId,
-      documentId,
-    });
-  } catch (error) {
-    logger.error("Failed to download document", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to download document" });
-  }
-});
+      logger.info("Document downloaded via API", {
+        correlationId: (req as any).correlationId,
+        documentId,
+      });
+    } catch (error) {
+      logger.error("Failed to download document", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  },
+);
 
 /**
  * GET /api/documents/:documentId/download-url
  * Get presigned URL for document download
  */
-router.get("/:documentId/download-url", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
-    const { expiresIn = 3600 } = req.query;
+router.get(
+  "/:documentId/download-url",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      const { expiresIn = 3600 } = req.query;
 
-    const url = await DocumentService.getDownloadUrl(documentId, parseInt(expiresIn as string));
+      const url = await DocumentService.getDownloadUrl(
+        documentId,
+        parseInt(expiresIn as string),
+      );
 
-    res.json({ url, expiresIn: parseInt(expiresIn as string) });
-  } catch (error) {
-    logger.error("Failed to get download URL", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to get download URL" });
-  }
-});
+      res.json({ url, expiresIn: parseInt(expiresIn as string) });
+    } catch (error) {
+      logger.error("Failed to get download URL", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to get download URL" });
+    }
+  },
+);
 
 /**
  * GET /api/documents/:documentId
  * Get document details
  */
-router.get("/:documentId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
+router.get(
+  "/:documentId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
 
-    const document = await DocumentRepository.getDocumentById(documentId);
+      const document = await DocumentRepository.getDocumentById(documentId);
 
-    if (!document) {
-      return res.status(404).json({ error: "Document not found" });
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      res.json(document);
+    } catch (error) {
+      logger.error("Failed to get document", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to get document" });
     }
-
-    res.json(document);
-  } catch (error) {
-    logger.error("Failed to get document", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to get document" });
-  }
-});
+  },
+);
 
 /**
  * GET /api/documents/client/:clientId
  * Get all documents for a client
  */
-router.get("/client/:clientId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { clientId } = req.params;
-    const { documentType, tags } = req.query;
+router.get(
+  "/client/:clientId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const { documentType, tags } = req.query;
 
-    const documents = await DocumentRepository.getClientDocuments(
-      new ObjectId(clientId),
-      documentType as string,
-      tags ? (tags as string).split(",") : undefined
-    );
+      const documents = await DocumentRepository.getClientDocuments(
+        new ObjectId(clientId),
+        documentType as string,
+        tags ? (tags as string).split(",") : undefined,
+      );
 
-    res.json(documents);
-  } catch (error) {
-    logger.error("Failed to get client documents", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to get client documents" });
-  }
-});
+      res.json(documents);
+    } catch (error) {
+      logger.error("Failed to get client documents", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to get client documents" });
+    }
+  },
+);
 
 /**
  * GET /api/documents/entity/:entityType/:entityId
@@ -188,7 +213,7 @@ router.get(
 
       const documents = await DocumentRepository.getLinkedDocuments(
         entityType,
-        new ObjectId(entityId)
+        new ObjectId(entityId),
       );
 
       res.json(documents);
@@ -198,7 +223,7 @@ router.get(
       });
       res.status(500).json({ error: "Failed to get linked documents" });
     }
-  }
+  },
 );
 
 /**
@@ -230,7 +255,7 @@ router.post(
         file.originalname,
         file.mimetype,
         changes,
-        new ObjectId(userId)
+        new ObjectId(userId),
       );
 
       logger.info("Document version uploaded via API", {
@@ -246,149 +271,175 @@ router.post(
       });
       res.status(500).json({ error: "Failed to upload document version" });
     }
-  }
+  },
 );
 
 /**
  * GET /api/documents/:documentId/versions
  * Get version history of a document
  */
-router.get("/:documentId/versions", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
+router.get(
+  "/:documentId/versions",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
 
-    const history = await DocumentService.getVersionHistory(documentId);
+      const history = await DocumentService.getVersionHistory(documentId);
 
-    res.json(history);
-  } catch (error) {
-    logger.error("Failed to get version history", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to get version history" });
-  }
-});
+      res.json(history);
+    } catch (error) {
+      logger.error("Failed to get version history", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to get version history" });
+    }
+  },
+);
 
 /**
  * PATCH /api/documents/:documentId
  * Update document metadata
  */
-router.patch("/:documentId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
-    const { tags, description, fileName } = req.body;
-    const userId = (req as any).userId;
+router.patch(
+  "/:documentId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      const { tags, description, fileName } = req.body;
+      const userId = (req as any).userId;
 
-    const updated = await DocumentRepository.updateDocument(documentId, {
-      fileName,
-      tags,
-      description,
-      updatedBy: new ObjectId(userId),
-    });
+      const updated = await DocumentRepository.updateDocument(documentId, {
+        fileName,
+        tags,
+        description,
+        updatedBy: new ObjectId(userId),
+      });
 
-    logger.info("Document metadata updated via API", {
-      correlationId: (req as any).correlationId,
-      documentId,
-    });
+      logger.info("Document metadata updated via API", {
+        correlationId: (req as any).correlationId,
+        documentId,
+      });
 
-    res.json(updated);
-  } catch (error) {
-    logger.error("Failed to update document", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to update document" });
-  }
-});
+      res.json(updated);
+    } catch (error) {
+      logger.error("Failed to update document", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to update document" });
+    }
+  },
+);
 
 /**
  * POST /api/documents/:documentId/tags
  * Add tags to a document
  */
-router.post("/:documentId/tags", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
-    const { tags } = req.body;
+router.post(
+  "/:documentId/tags",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      const { tags } = req.body;
 
-    if (!tags || !Array.isArray(tags) || tags.length === 0) {
-      return res.status(400).json({ error: "Invalid tags provided" });
+      if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        return res.status(400).json({ error: "Invalid tags provided" });
+      }
+
+      const updated = await DocumentRepository.addTags(documentId, tags);
+
+      res.json(updated);
+    } catch (error) {
+      logger.error("Failed to add tags", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to add tags" });
     }
-
-    const updated = await DocumentRepository.addTags(documentId, tags);
-
-    res.json(updated);
-  } catch (error) {
-    logger.error("Failed to add tags", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to add tags" });
-  }
-});
+  },
+);
 
 /**
  * DELETE /api/documents/:documentId
  * Delete a document (soft delete)
  */
-router.delete("/:documentId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { documentId } = req.params;
-    const userId = (req as any).userId;
+router.delete(
+  "/:documentId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      const userId = (req as any).userId;
 
-    await DocumentService.deleteDocument(documentId, new ObjectId(userId));
+      await DocumentService.deleteDocument(documentId, new ObjectId(userId));
 
-    logger.info("Document deleted via API", {
-      correlationId: (req as any).correlationId,
-      documentId,
-    });
+      logger.info("Document deleted via API", {
+        correlationId: (req as any).correlationId,
+        documentId,
+      });
 
-    res.json({ message: "Document deleted successfully" });
-  } catch (error) {
-    logger.error("Failed to delete document", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to delete document" });
-  }
-});
+      res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+      logger.error("Failed to delete document", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  },
+);
 
 /**
  * GET /api/documents/search
  * Search documents
  */
-router.get("/search", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { clientId, documentType, tags, metadata } = req.query;
+router.get(
+  "/search",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { clientId, documentType, tags, metadata } = req.query;
 
-    const results = await DocumentService.searchDocuments({
-      clientId: clientId ? new ObjectId(clientId as string) : undefined,
-      documentType: documentType as string,
-      tags: tags ? (tags as string).split(",") : undefined,
-      metadata: metadata ? JSON.parse(metadata as string) : undefined,
-    });
+      const results = await DocumentService.searchDocuments({
+        clientId: clientId ? new ObjectId(clientId as string) : undefined,
+        documentType: documentType as string,
+        tags: tags ? (tags as string).split(",") : undefined,
+        metadata: metadata ? JSON.parse(metadata as string) : undefined,
+      });
 
-    res.json(results);
-  } catch (error) {
-    logger.error("Failed to search documents", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to search documents" });
-  }
-});
+      res.json(results);
+    } catch (error) {
+      logger.error("Failed to search documents", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to search documents" });
+    }
+  },
+);
 
 /**
  * GET /api/documents/stats/:clientId
  * Get document statistics for a client
  */
-router.get("/stats/:clientId", authenticateToken, async (req: Request, res: Response) => {
-  try {
-    const { clientId } = req.params;
+router.get(
+  "/stats/:clientId",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
 
-    const stats = await DocumentService.getDocumentStats(new ObjectId(clientId));
+      const stats = await DocumentService.getDocumentStats(
+        new ObjectId(clientId),
+      );
 
-    res.json(stats);
-  } catch (error) {
-    logger.error("Failed to get document stats", error as Error, {
-      correlationId: (req as any).correlationId,
-    });
-    res.status(500).json({ error: "Failed to get document stats" });
-  }
-});
+      res.json(stats);
+    } catch (error) {
+      logger.error("Failed to get document stats", error as Error, {
+        correlationId: (req as any).correlationId,
+      });
+      res.status(500).json({ error: "Failed to get document stats" });
+    }
+  },
+);
 
 export default router;

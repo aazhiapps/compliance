@@ -87,7 +87,11 @@ export const demoReports: Omit<Report, "id">[] = [
       filingType: "Annual Return",
       dueDate: "2024-10-30",
       status: "completed",
-      documents: ["Balance Sheet", "Profit & Loss Statement", "Director Report"],
+      documents: [
+        "Balance Sheet",
+        "Profit & Loss Statement",
+        "Director Report",
+      ],
     },
     exportLogs: [],
   },

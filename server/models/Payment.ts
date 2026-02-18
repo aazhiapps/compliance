@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { PaymentRecord } from "@shared/api";
 
-export interface IPaymentDocument extends Omit<PaymentRecord, "id">, MongooseDocument {}
+export interface IPaymentDocument
+  extends Omit<PaymentRecord, "id">, MongooseDocument {}
 
 const PaymentSchema = new Schema<IPaymentDocument>(
   {
@@ -59,8 +60,8 @@ const PaymentSchema = new Schema<IPaymentDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
         delete ret._id;
         delete ret.__v;
         delete ret.createdAt;
@@ -68,7 +69,7 @@ const PaymentSchema = new Schema<IPaymentDocument>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -80,5 +81,5 @@ PaymentSchema.index({ date: -1 });
 
 export const PaymentModel = mongoose.model<IPaymentDocument>(
   "Payment",
-  PaymentSchema
+  PaymentSchema,
 );

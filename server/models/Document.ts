@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * Document represents files with versioning, metadata extraction, and S3 storage
@@ -9,7 +8,7 @@ import { ObjectId } from "mongodb";
 export interface DocumentVersion {
   versionNum: number;
   uploadedAt: Date;
-  uploadedBy: ObjectId;
+  uploadedBy: mongoose.Types.ObjectId;
   changes: string; // Description of what changed
   fileSize: number;
   s3Path: string;
@@ -34,11 +33,22 @@ export interface DocumentMetadata {
 export interface DocumentRecord extends MongooseDocument {
   id: string;
   documentId: string; // UUID
-  clientId?: ObjectId; // For GST documents
-  userId?: ObjectId; // For application documents
-  linkedEntityType: "invoice_purchase" | "invoice_sales" | "filing" | "application" | "report";
-  linkedEntityId: ObjectId;
-  documentType: "invoice" | "challan" | "certificate" | "gstr" | "report" | "other";
+  clientId?: mongoose.Types.ObjectId; // For GST documents
+  userId?: mongoose.Types.ObjectId; // For application documents
+  linkedEntityType:
+    | "invoice_purchase"
+    | "invoice_sales"
+    | "filing"
+    | "application"
+    | "report";
+  linkedEntityId: mongoose.Types.ObjectId;
+  documentType:
+    | "invoice"
+    | "challan"
+    | "certificate"
+    | "gstr"
+    | "report"
+    | "other";
   fileName: string;
   fileUrl: string; // S3 path
   mimeType: string;
@@ -54,8 +64,8 @@ export interface DocumentRecord extends MongooseDocument {
   // Audit
   createdAt: Date;
   updatedAt: Date;
-  createdBy: ObjectId;
-  updatedBy?: ObjectId;
+  createdBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
 }
 
 const DocumentSchema = new Schema<DocumentRecord>(
@@ -79,7 +89,13 @@ const DocumentSchema = new Schema<DocumentRecord>(
     },
     linkedEntityType: {
       type: String,
-      enum: ["invoice_purchase", "invoice_sales", "filing", "application", "report"],
+      enum: [
+        "invoice_purchase",
+        "invoice_sales",
+        "filing",
+        "application",
+        "report",
+      ],
       required: true,
       index: true,
     },
@@ -143,7 +159,7 @@ const DocumentSchema = new Schema<DocumentRecord>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -156,7 +172,7 @@ DocumentSchema.index({ userId: 1, createdAt: -1 });
 // Convert to plain object with id field
 DocumentSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
@@ -165,6 +181,7 @@ DocumentSchema.set("toJSON", {
 });
 
 export const DocumentModel =
-  mongoose.models.Document || mongoose.model<DocumentRecord>("Document", DocumentSchema);
+  mongoose.models.Document ||
+  mongoose.model<DocumentRecord>("Document", DocumentSchema);
 
 export default DocumentModel;

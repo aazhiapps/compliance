@@ -47,7 +47,6 @@ class QueueService {
       const queue = new Queue(queueName, this.redisUrl, {
         settings: {
           maxStalledCount: 2,
-          maxStalledInterval: 5000,
           stalledInterval: 5000,
           retryProcessDelay: 5000,
           guardInterval: 5000,
@@ -84,7 +83,10 @@ class QueueService {
     queue.on("completed", (job) => {
       logger.info(`Job ${job.name} (${job.id}) completed`, {
         jobId: job.id,
-        processingTime: job.finishedOn ? job.finishedOn - job.processedOn : 0,
+        processingTime:
+          job.finishedOn && job.processedOn
+            ? job.finishedOn - job.processedOn
+            : 0,
       });
     });
   }
@@ -96,7 +98,7 @@ class QueueService {
     queueName: string,
     jobName: string,
     data: T,
-    options?: JobOptions
+    options?: JobOptions,
   ): Promise<Job<T>> {
     try {
       const queue = this.getQueue(queueName);
@@ -122,7 +124,9 @@ class QueueService {
 
       return job;
     } catch (error) {
-      logger.error(`Failed to add job to queue ${queueName}:`, { error });
+      logger.error(`Failed to add job to queue ${queueName}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -134,7 +138,7 @@ class QueueService {
     queueName: string,
     jobName: string,
     data: JobData,
-    cronPattern: string
+    cronPattern: string,
   ): Promise<void> {
     try {
       const queue = this.getQueue(queueName);
@@ -142,7 +146,7 @@ class QueueService {
       // Remove existing recurring job if any
       const existing = await queue.getRepeatableJobs();
       for (const job of existing) {
-        if (job.name === jobName && job.pattern === cronPattern) {
+        if (job.name === jobName && (job as any).pattern === cronPattern) {
           await queue.removeRepeatableByKey(job.key);
         }
       }
@@ -165,7 +169,9 @@ class QueueService {
         cronPattern,
       });
     } catch (error) {
-      logger.error(`Failed to add recurring job:`, { error });
+      logger.error(`Failed to add recurring job:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -176,7 +182,7 @@ class QueueService {
   async processQueue<T extends JobData>(
     queueName: string,
     concurrency: number = 5,
-    processor: (job: Job<T>) => Promise<void>
+    processor: (job: Job<T>) => Promise<void>,
   ): Promise<void> {
     try {
       const queue = this.getQueue(queueName);
@@ -185,7 +191,9 @@ class QueueService {
         const startTime = Date.now();
 
         try {
-          logger.info(`Processing job ${job.name} (${job.id})`, { jobId: job.id });
+          logger.info(`Processing job ${job.name} (${job.id})`, {
+            jobId: job.id,
+          });
 
           // Update progress
           if (job.progress) {
@@ -196,24 +204,31 @@ class QueueService {
           await processor(job);
 
           const duration = Date.now() - startTime;
-          logger.info(`Job ${job.name} (${job.id}) completed in ${duration}ms`, {
-            jobId: job.id,
-            duration,
-          });
+          logger.info(
+            `Job ${job.name} (${job.id}) completed in ${duration}ms`,
+            {
+              jobId: job.id,
+              duration,
+            },
+          );
 
           return { success: true, duration };
         } catch (error) {
           logger.error(`Job ${job.name} (${job.id}) failed:`, {
-            error,
+            error: error instanceof Error ? error.message : String(error),
             jobId: job.id,
           });
           throw error;
         }
       });
 
-      logger.info(`Queue ${queueName} processing started (concurrency: ${concurrency})`);
+      logger.info(
+        `Queue ${queueName} processing started (concurrency: ${concurrency})`,
+      );
     } catch (error) {
-      logger.error(`Failed to setup queue processor:`, { error });
+      logger.error(`Failed to setup queue processor:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -232,18 +247,21 @@ class QueueService {
     try {
       const queue = this.getQueue(queueName);
 
-      const [active, delayed, failed, completed, waiting, paused] = await Promise.all([
-        queue.getActiveCount(),
-        queue.getDelayedCount(),
-        queue.getFailedCount(),
-        queue.getCompletedCount(),
-        queue.getWaitingCount(),
-        queue.getPausedCount(),
-      ]);
+      const [active, delayed, failed, completed, waiting, paused] =
+        await Promise.all([
+          queue.getActiveCount(),
+          queue.getDelayedCount(),
+          queue.getFailedCount(),
+          queue.getCompletedCount(),
+          queue.getWaitingCount(),
+          queue.getPausedCount(),
+        ]);
 
       return { active, delayed, failed, completed, waiting, paused };
     } catch (error) {
-      logger.error(`Failed to get queue stats:`, { error });
+      logger.error(`Failed to get queue stats:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -256,7 +274,9 @@ class QueueService {
       const queue = this.getQueue(queueName);
       return await queue.getJob(jobId);
     } catch (error) {
-      logger.error(`Failed to get job:`, { error });
+      logger.error(`Failed to get job:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -267,13 +287,15 @@ class QueueService {
   async getFailedJobs(
     queueName: string,
     start: number = 0,
-    end: number = 100
+    end: number = 100,
   ): Promise<Job<any>[]> {
     try {
       const queue = this.getQueue(queueName);
       return await queue.getFailed(start, end);
     } catch (error) {
-      logger.error(`Failed to get failed jobs:`, { error });
+      logger.error(`Failed to get failed jobs:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return [];
     }
   }
@@ -294,7 +316,9 @@ class QueueService {
       logger.info(`Job ${jobId} retried`, { jobId });
       return true;
     } catch (error) {
-      logger.error(`Failed to retry job:`, { error });
+      logger.error(`Failed to retry job:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -315,7 +339,9 @@ class QueueService {
       logger.info(`Job ${jobId} cancelled`, { jobId });
       return true;
     } catch (error) {
-      logger.error(`Failed to cancel job:`, { error });
+      logger.error(`Failed to cancel job:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -331,7 +357,9 @@ class QueueService {
       await queue.clean(0, "wait");
       logger.info(`Queue ${queueName} cleared`);
     } catch (error) {
-      logger.error(`Failed to clear queue:`, { error });
+      logger.error(`Failed to clear queue:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -345,7 +373,9 @@ class QueueService {
       await queue.pause();
       logger.info(`Queue ${queueName} paused`);
     } catch (error) {
-      logger.error(`Failed to pause queue:`, { error });
+      logger.error(`Failed to pause queue:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -359,7 +389,9 @@ class QueueService {
       await queue.resume();
       logger.info(`Queue ${queueName} resumed`);
     } catch (error) {
-      logger.error(`Failed to resume queue:`, { error });
+      logger.error(`Failed to resume queue:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -374,7 +406,9 @@ class QueueService {
       this.queues.delete(queueName);
       logger.info(`Queue ${queueName} closed`);
     } catch (error) {
-      logger.error(`Failed to close queue:`, { error });
+      logger.error(`Failed to close queue:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -385,13 +419,15 @@ class QueueService {
   async closeAllQueues(): Promise<void> {
     try {
       const promises = Array.from(this.queues.keys()).map((queueName) =>
-        this.closeQueue(queueName).catch(() => {})
+        this.closeQueue(queueName).catch(() => {}),
       );
       await Promise.all(promises);
       this.queues.clear();
       logger.info("All queues closed");
     } catch (error) {
-      logger.error(`Failed to close all queues:`, { error });
+      logger.error(`Failed to close all queues:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }

@@ -2,7 +2,7 @@
 
 **Status**: ✅ COMPLETE  
 **Date**: February 2024  
-**Duration**: Phase 0-1 Preparation + Phase 2 Implementation  
+**Duration**: Phase 0-1 Preparation + Phase 2 Implementation
 
 ---
 
@@ -15,7 +15,7 @@ Successfully implemented **Phase 2: Document Management** with complete file ver
 ✅ **Document Versioning**: Track all versions with change history  
 ✅ **Metadata Extraction**: OCR-ready infrastructure (stubbed for future OCR integration)  
 ✅ **Search & Tagging**: Tag-based document organization and search  
-✅ **Full-Featured UI**: DocumentManager React component with upload/download  
+✅ **Full-Featured UI**: DocumentManager React component with upload/download
 
 ---
 
@@ -56,6 +56,7 @@ Successfully implemented **Phase 2: Document Management** with complete file ver
 **423 lines of code** - Complete data access layer for documents
 
 **Key Methods**:
+
 ```typescript
 // Create & Retrieve
 createDocument(data: CreateDocumentInput)
@@ -82,6 +83,7 @@ getDocumentStats(clientId)
 ```
 
 **Features**:
+
 - Soft deletes (never physically delete)
 - Version history persistence
 - Tag-based search
@@ -89,6 +91,7 @@ getDocumentStats(clientId)
 - Document statistics aggregation
 
 **Indexes**:
+
 ```javascript
 { clientId: 1, documentType: 1 }       // Client documents by type
 { linkedEntityType: 1, linkedEntityId: 1 } // Entity-linked docs
@@ -103,6 +106,7 @@ getDocumentStats(clientId)
 **356 lines of code** - Business logic and file operations
 
 **Key Methods**:
+
 ```typescript
 // Upload & Download
 uploadDocument(fileBuffer, fileName, mimeType, options)
@@ -123,6 +127,7 @@ extractMetadata(fileBuffer, fileName, mimeType) // Stubbed for OCR
 ```
 
 **Features**:
+
 - S3 integration with fallback to mock service
 - Presigned URLs for secure downloads
 - File size validation (50MB limit)
@@ -130,11 +135,14 @@ extractMetadata(fileBuffer, fileName, mimeType) // Stubbed for OCR
 - Error handling with fallback to basic metadata
 
 **S3 Integration**:
+
 ```typescript
 // Path structure
-gst/{clientId}/fy-{year}/month-{month}/{type}/{documentId}.pdf
-applications/{userId}/{applicationId}/{documentId}.pdf
-reports/{clientId}/{reportId}.pdf
+gst / { clientId } / fy -
+  { year } / month -
+  { month } / { type } / { documentId }.pdf;
+applications / { userId } / { applicationId } / { documentId }.pdf;
+reports / { clientId } / { reportId }.pdf;
 ```
 
 ---
@@ -146,6 +154,7 @@ reports/{clientId}/{reportId}.pdf
 **Endpoints**:
 
 #### Upload
+
 ```
 POST /api/documents/upload
 - Multipart form data
@@ -155,6 +164,7 @@ POST /api/documents/upload
 ```
 
 #### Download
+
 ```
 GET /api/documents/:documentId/download
 - Direct file download with appropriate headers
@@ -162,6 +172,7 @@ GET /api/documents/:documentId/download
 ```
 
 #### Download URL (Presigned)
+
 ```
 GET /api/documents/:documentId/download-url?expiresIn=3600
 - Returns presigned S3 URL valid for specified duration
@@ -169,12 +180,14 @@ GET /api/documents/:documentId/download-url?expiresIn=3600
 ```
 
 #### Document Details
+
 ```
 GET /api/documents/:documentId
 - Get document metadata and details
 ```
 
 #### Client Documents
+
 ```
 GET /api/documents/client/:clientId?documentType=&tags=
 - List all documents for a client
@@ -182,6 +195,7 @@ GET /api/documents/client/:clientId?documentType=&tags=
 ```
 
 #### Linked Documents
+
 ```
 GET /api/documents/entity/:entityType/:entityId
 - Get all documents linked to an invoice, filing, or application
@@ -189,6 +203,7 @@ GET /api/documents/entity/:entityType/:entityId
 ```
 
 #### New Version
+
 ```
 POST /api/documents/:documentId/version
 - Upload new version of document
@@ -197,6 +212,7 @@ POST /api/documents/:documentId/version
 ```
 
 #### Version History
+
 ```
 GET /api/documents/:documentId/versions
 - Get all versions of a document
@@ -204,12 +220,14 @@ GET /api/documents/:documentId/versions
 ```
 
 #### Update Metadata
+
 ```
 PATCH /api/documents/:documentId
 - Update tags, description, fileName
 ```
 
 #### Add Tags
+
 ```
 POST /api/documents/:documentId/tags
 - Add new tags to document
@@ -217,6 +235,7 @@ POST /api/documents/:documentId/tags
 ```
 
 #### Delete
+
 ```
 DELETE /api/documents/:documentId
 - Soft delete (mark as deleted)
@@ -224,6 +243,7 @@ DELETE /api/documents/:documentId
 ```
 
 #### Search
+
 ```
 GET /api/documents/search?clientId=&documentType=&tags=&metadata=
 - Search documents by various criteria
@@ -231,6 +251,7 @@ GET /api/documents/search?clientId=&documentType=&tags=&metadata=
 ```
 
 #### Statistics
+
 ```
 GET /api/documents/stats/:clientId
 - Get document statistics for client
@@ -246,6 +267,7 @@ GET /api/documents/stats/:clientId
 **Features**:
 
 #### Document Display
+
 - File listing with metadata
 - File size formatting (Bytes, KB, MB, GB)
 - Document type badges
@@ -254,18 +276,21 @@ GET /api/documents/stats/:clientId
 - Creation date and user info
 
 #### Upload Dialog
+
 - File input with validation
 - Upload progress indicator
 - Type selection
 - Tag/description input
 
 #### Version Management
+
 - View version history
 - See changes per version
 - Track version dates and sizes
 - Compare versions
 
 #### Document Actions
+
 - **Download**: Direct download or presigned URL
 - **View Details**: Metadata, tags, description
 - **Add Tags**: In-dialog tag management
@@ -273,22 +298,25 @@ GET /api/documents/stats/:clientId
 - **Delete**: With confirmation
 
 #### Search & Filter
+
 - Filter by document type
 - Filter by tags
 - Search by metadata
 - Client-specific views
 
 **Props**:
+
 ```typescript
 interface DocumentManagerProps {
-  clientId?: string;                           // GST client
+  clientId?: string; // GST client
   entityType?: "invoice_purchase" | "invoice_sales" | "filing" | "application";
-  entityId?: string;                           // Linked entity
-  readOnly?: boolean;                          // Hide upload/delete actions
+  entityId?: string; // Linked entity
+  readOnly?: boolean; // Hide upload/delete actions
 }
 ```
 
 **State Management**:
+
 ```typescript
 - documents: Document[]                        // Loaded documents
 - loading: boolean                             // Fetch loading state
@@ -303,6 +331,7 @@ interface DocumentManagerProps {
 ## S3 Integration
 
 ### Configuration
+
 Located in `server/config/s3.ts`:
 
 ```typescript
@@ -317,6 +346,7 @@ const s3Client = new S3Client({
 ```
 
 ### Features
+
 - Presigned URLs (configurable expiry)
 - Server-side encryption (AES-256)
 - File versioning enabled
@@ -324,6 +354,7 @@ const s3Client = new S3Client({
 - **Development mode**: Automatic fallback to mock S3 service if AWS credentials missing
 
 ### Mock Service (Development)
+
 ```typescript
 s3MockService
 - In-memory file storage using JavaScript Map
@@ -333,6 +364,7 @@ s3MockService
 ```
 
 **Automatic Selection**:
+
 ```typescript
 const getS3Service = () => {
   if (
@@ -351,24 +383,25 @@ const getS3Service = () => {
 ## Document Model Enhancements
 
 ### Document Collection Structure
+
 ```typescript
 {
   _id: ObjectId,
   documentId: UUID,                          // Unique doc ID
   clientId?: ObjectId,                       // GST client
   userId?: ObjectId,                         // Application owner
-  
+
   // Entity linking
   linkedEntityType: enum,                    // invoice_purchase|invoice_sales|filing|application
   linkedEntityId: ObjectId,                  // Which invoice/filing/app
-  
+
   // File metadata
   documentType: enum,                        // invoice|challan|certificate|gstr|report|other
   fileName: string,
   fileUrl: string,                           // S3 path
   mimeType: string,
   fileSize: number,
-  
+
   // Versioning
   version: number,                           // Current version
   versionHistory: [{                         // Previous versions
@@ -379,7 +412,7 @@ const getS3Service = () => {
     fileSize: number,
     s3Path: string,
   }],
-  
+
   // Metadata & Search
   metadata: {                                // OCR extracted or manual
     invoiceNumber?: string,
@@ -393,7 +426,7 @@ const getS3Service = () => {
   },
   tags: [string],                            // For search
   description?: string,
-  
+
   // Audit
   createdAt: Date,
   updatedAt: Date,
@@ -408,8 +441,8 @@ const getS3Service = () => {
 
 ```json
 {
-  "multer": "^2.0.2",           // File upload middleware
-  "@types/multer": "^1.4.12"    // TypeScript types
+  "multer": "^2.0.2", // File upload middleware
+  "@types/multer": "^1.4.12" // TypeScript types
 }
 ```
 
@@ -420,6 +453,7 @@ const getS3Service = () => {
 ## API Integration Points
 
 ### Integration with Filing Workflow
+
 ```typescript
 // Upload document for a filing
 POST /api/documents/upload
@@ -438,6 +472,7 @@ GET /api/documents/{documentId}/versions
 ```
 
 ### Integration with GST Invoices
+
 ```typescript
 // Upload invoice document
 POST /api/documents/upload
@@ -453,6 +488,7 @@ GET /api/documents/search?metadata={"amount":5000}
 ```
 
 ### Integration with Applications
+
 ```typescript
 // Upload application document
 POST /api/documents/upload
@@ -471,17 +507,20 @@ GET /api/documents/entity/application/{appId}
 ## Performance Considerations
 
 ### File Upload Optimization
+
 - **In-memory buffering**: Files stored in RAM before S3 upload
 - **Multipart uploads**: Automatic for large files (future enhancement)
 - **Size limits**: 50MB default (configurable)
 - **Mime type validation**: Client and server-side
 
 ### Database Performance
+
 - **Indexed queries**: Document type, entity links, tags, dates
 - **Soft deletes**: No need to physically remove files
 - **Version cleanup**: Keep last N versions, archive older ones
 
 ### S3 Integration
+
 - **Presigned URLs**: Direct browser downloads (no proxy)
 - **Path structure**: Hierarchical for easy navigation
 - **Versioning enabled**: Retrieve any historical version from S3
@@ -497,13 +536,14 @@ GET /api/documents/entity/application/{appId}
 ✅ **Soft Deletes**: No permanent data loss without explicit restore  
 ✅ **Audit Trail**: All operations logged (who, what, when)  
 ✅ **Encryption**: S3 server-side encryption enabled  
-✅ **Ownership Verification**: Check clientId/userId before download (future: stricter)  
+✅ **Ownership Verification**: Check clientId/userId before download (future: stricter)
 
 ---
 
 ## Future Enhancements
 
 ### Phase 3 (Roadmap)
+
 - [ ] OCR implementation (Tesseract.js or AWS Textract)
 - [ ] Advanced search with full-text indexing (Elasticsearch)
 - [ ] Document preview (PDF.js)
@@ -512,6 +552,7 @@ GET /api/documents/entity/application/{appId}
 - [ ] Export document list as CSV/PDF
 
 ### Phase 4+
+
 - [ ] Document signatures (digital signatures)
 - [ ] Access controls per document
 - [ ] Document workflow/approval
@@ -523,6 +564,7 @@ GET /api/documents/entity/application/{appId}
 ## Testing Endpoints
 
 ### Using cURL
+
 ```bash
 # Upload document
 curl -X POST http://localhost:8080/api/documents/upload \
@@ -552,6 +594,7 @@ curl -X GET "http://localhost:8080/api/documents/<documentId>/versions" \
 ## Environment Variables
 
 ### Required for Production S3
+
 ```env
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your_access_key
@@ -560,7 +603,9 @@ S3_BUCKET_NAME=gst-compliance-bucket
 ```
 
 ### Development (Optional)
+
 If AWS credentials not provided, automatically uses mock S3 service:
+
 ```env
 # Leave blank or comment out for mock S3
 # AWS_ACCESS_KEY_ID=
@@ -587,12 +632,14 @@ If AWS credentials not provided, automatically uses mock S3 service:
 ## Migration Path from Embedded Documents
 
 ### Current State (Phase 1)
+
 ```
 Application
 ├── documents: [{ id, name, url, ... }]  // Embedded array
 ```
 
 ### New State (Phase 2)
+
 ```
 Application (no embedded docs)
     ↓
@@ -604,7 +651,9 @@ Document Collection (with linking)
 ```
 
 ### Migration Script
+
 Would be created in next phase using:
+
 ```typescript
 // Pseudo-code
 for each doc in Application.documents:

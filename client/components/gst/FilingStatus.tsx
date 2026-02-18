@@ -53,11 +53,13 @@ export default function FilingStatus({
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       const data = await response.json();
       if (data.success) {
-        const monthFiling = data.filings?.find((f: GSTReturnFiling) => f.month === month);
+        const monthFiling = data.filings?.find(
+          (f: GSTReturnFiling) => f.month === month,
+        );
         if (monthFiling) {
           setFormData({
             clientId,
@@ -118,7 +120,9 @@ export default function FilingStatus({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">Loading filing status...</div>
+          <div className="text-center text-muted-foreground">
+            Loading filing status...
+          </div>
         </CardContent>
       </Card>
     );
@@ -140,12 +144,16 @@ export default function FilingStatus({
           {/* GSTR-1 Section */}
           <div className="space-y-4 p-4 border rounded-lg">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">GSTR-1 (Outward Supplies)</h3>
+              <h3 className="text-lg font-semibold">
+                GSTR-1 (Outward Supplies)
+              </h3>
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="gstr1Filed"
                   checked={formData.gstr1Filed}
-                  onCheckedChange={(checked) => handleChange("gstr1Filed", checked)}
+                  onCheckedChange={(checked) =>
+                    handleChange("gstr1Filed", checked)
+                  }
                 />
                 <Label htmlFor="gstr1Filed">Filed</Label>
               </div>
@@ -159,7 +167,9 @@ export default function FilingStatus({
                     id="gstr1FiledDate"
                     type="date"
                     value={formData.gstr1FiledDate}
-                    onChange={(e) => handleChange("gstr1FiledDate", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("gstr1FiledDate", e.target.value)
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -178,12 +188,16 @@ export default function FilingStatus({
           {/* GSTR-3B Section */}
           <div className="space-y-4 p-4 border rounded-lg">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">GSTR-3B (Summary Return)</h3>
+              <h3 className="text-lg font-semibold">
+                GSTR-3B (Summary Return)
+              </h3>
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="gstr3bFiled"
                   checked={formData.gstr3bFiled}
-                  onCheckedChange={(checked) => handleChange("gstr3bFiled", checked)}
+                  onCheckedChange={(checked) =>
+                    handleChange("gstr3bFiled", checked)
+                  }
                 />
                 <Label htmlFor="gstr3bFiled">Filed</Label>
               </div>
@@ -197,7 +211,9 @@ export default function FilingStatus({
                     id="gstr3bFiledDate"
                     type="date"
                     value={formData.gstr3bFiledDate}
-                    onChange={(e) => handleChange("gstr3bFiledDate", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("gstr3bFiledDate", e.target.value)
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -224,7 +240,9 @@ export default function FilingStatus({
                   type="number"
                   step="0.01"
                   value={formData.taxPaid}
-                  onChange={(e) => handleChange("taxPaid", parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    handleChange("taxPaid", parseFloat(e.target.value) || 0)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -234,7 +252,9 @@ export default function FilingStatus({
                   type="number"
                   step="0.01"
                   value={formData.lateFee}
-                  onChange={(e) => handleChange("lateFee", parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    handleChange("lateFee", parseFloat(e.target.value) || 0)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -244,7 +264,9 @@ export default function FilingStatus({
                   type="number"
                   step="0.01"
                   value={formData.interest}
-                  onChange={(e) => handleChange("interest", parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    handleChange("interest", parseFloat(e.target.value) || 0)
+                  }
                 />
               </div>
             </div>
@@ -258,12 +280,16 @@ export default function FilingStatus({
                 {formData.gstr1Filed && formData.gstr3bFiled ? (
                   <>
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="font-semibold text-green-600">Completed</span>
+                    <span className="font-semibold text-green-600">
+                      Completed
+                    </span>
                   </>
                 ) : (
                   <>
                     <XCircle className="w-5 h-5 text-yellow-600" />
-                    <span className="font-semibold text-yellow-600">Pending</span>
+                    <span className="font-semibold text-yellow-600">
+                      Pending
+                    </span>
                   </>
                 )}
               </div>

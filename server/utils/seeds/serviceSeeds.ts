@@ -3,7 +3,10 @@ import { Service } from "@shared/service";
 /**
  * Initial services for seeding the database
  */
-export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] = [
+export const initialServices: Omit<
+  Service,
+  "id" | "createdAt" | "updatedAt"
+>[] = [
   {
     name: "GST Registration",
     description: "Register for Goods and Services Tax",
@@ -30,11 +33,13 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     faqs: [
       {
         question: "Is GST registration mandatory for me?",
-        answer: "If your annual turnover exceeds ₹20 lakhs (₹10 lakhs for services), GST registration is mandatory.",
+        answer:
+          "If your annual turnover exceeds ₹20 lakhs (₹10 lakhs for services), GST registration is mandatory.",
       },
       {
         question: "How long does GST registration take?",
-        answer: "Usually 2-3 days for approval after submission of all documents.",
+        answer:
+          "Usually 2-3 days for approval after submission of all documents.",
       },
     ],
   },
@@ -44,7 +49,13 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     price: 4999,
     turnaround: "10-15 days",
     category: "Business",
-    documentsRequired: ["Director PAN Card", "Director Aadhar Card", "Address Proof", "Identity Proof", "Residential Proof"],
+    documentsRequired: [
+      "Director PAN Card",
+      "Director Aadhar Card",
+      "Address Proof",
+      "Identity Proof",
+      "Residential Proof",
+    ],
     active: true,
     applicationsCount: 32,
     revenue: 159968,
@@ -65,11 +76,13 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     faqs: [
       {
         question: "What types of companies can I register?",
-        answer: "Private Limited, Public Limited, One Person Company (OPC), and Limited Liability Partnership (LLP).",
+        answer:
+          "Private Limited, Public Limited, One Person Company (OPC), and Limited Liability Partnership (LLP).",
       },
       {
         question: "How many directors do I need?",
-        answer: "Minimum 1 director for private companies, minimum 2 for public companies.",
+        answer:
+          "Minimum 1 director for private companies, minimum 2 for public companies.",
       },
     ],
   },
@@ -97,7 +110,8 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     faqs: [
       {
         question: "Can I apply for PAN online?",
-        answer: "Yes, the entire process is online. We handle the filing for you.",
+        answer:
+          "Yes, the entire process is online. We handle the filing for you.",
       },
     ],
   },
@@ -107,7 +121,12 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     price: 5999,
     turnaround: "8-10 days",
     category: "IP",
-    documentsRequired: ["Logo/Brand Image", "Business Details", "Trademark Description", "Applicant Details"],
+    documentsRequired: [
+      "Logo/Brand Image",
+      "Business Details",
+      "Trademark Description",
+      "Applicant Details",
+    ],
     active: true,
     applicationsCount: 18,
     revenue: 107982,
@@ -126,7 +145,8 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     faqs: [
       {
         question: "How long is trademark valid?",
-        answer: "A trademark is valid for 10 years and can be renewed indefinitely.",
+        answer:
+          "A trademark is valid for 10 years and can be renewed indefinitely.",
       },
     ],
   },
@@ -154,7 +174,8 @@ export const initialServices: Omit<Service, "id" | "createdAt" | "updatedAt">[] 
     faqs: [
       {
         question: "Is IEC required for all imports/exports?",
-        answer: "Yes, IEC is mandatory for most import/export transactions except for specific exemptions.",
+        answer:
+          "Yes, IEC is mandatory for most import/export transactions except for specific exemptions.",
       },
     ],
   },

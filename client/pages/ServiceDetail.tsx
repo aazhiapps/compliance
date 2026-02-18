@@ -135,7 +135,10 @@ export default function ServiceDetail() {
       {/* Breadcrumb */}
       <div className="border-b border-border py-4 px-4">
         <div className="container mx-auto max-w-6xl">
-          <Link to="/" className="flex items-center gap-2 text-primary hover:text-primary/80 text-sm">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-primary hover:text-primary/80 text-sm"
+          >
             <ChevronLeft className="w-4 h-4" />
             Back to Services
           </Link>
@@ -151,15 +154,23 @@ export default function ServiceDetail() {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                 {service.title}
               </h1>
-              <p className="text-xl text-muted-foreground mb-8">{service.description}</p>
+              <p className="text-xl text-muted-foreground mb-8">
+                {service.description}
+              </p>
 
               <div className="grid grid-cols-2 gap-6 mb-8">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Starting Price</p>
-                  <p className="text-3xl font-bold text-primary">{service.price}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Starting Price
+                  </p>
+                  <p className="text-3xl font-bold text-primary">
+                    {service.price}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Turnaround Time</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Turnaround Time
+                  </p>
                   <p className="text-3xl font-bold text-primary flex items-center gap-2">
                     <Clock className="w-8 h-8" /> {service.turnaround}
                   </p>
@@ -167,7 +178,10 @@ export default function ServiceDetail() {
               </div>
 
               <Link to="/signup">
-                <Button size="lg" className="w-full md:w-auto bg-primary hover:bg-primary/90">
+                <Button
+                  size="lg"
+                  className="w-full md:w-auto bg-primary hover:bg-primary/90"
+                >
                   Start Now <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
@@ -213,10 +227,15 @@ export default function ServiceDetail() {
       {/* Features Section */}
       <section className="py-16 md:py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-foreground mb-12">What's Included</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-12">
+            What's Included
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {service.features.map((feature, idx) => (
-              <div key={idx} className="flex gap-4 p-4 border border-border rounded-lg hover:bg-gray-50">
+              <div
+                key={idx}
+                className="flex gap-4 p-4 border border-border rounded-lg hover:bg-gray-50"
+              >
                 <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                 <div>
                   <p className="font-medium text-foreground">{feature}</p>
@@ -269,7 +288,9 @@ export default function ServiceDetail() {
       {/* FAQ Section */}
       <section className="py-16 md:py-20 px-4">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-foreground mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-12">
+            Frequently Asked Questions
+          </h2>
           <div className="space-y-4">
             {service.faqs.map((faq, idx) => (
               <Card key={idx}>
@@ -290,7 +311,8 @@ export default function ServiceDetail() {
         <div className="container mx-auto max-w-4xl text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-lg mb-8 opacity-90">
-            Join thousands of satisfied customers. Start your {service.title.toLowerCase()} today.
+            Join thousands of satisfied customers. Start your{" "}
+            {service.title.toLowerCase()} today.
           </p>
           <Link to={`/checkout/${service.id}`}>
             <Button size="lg" variant="secondary">

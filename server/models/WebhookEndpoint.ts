@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ObjectId } from "mongodb";
 
 /**
  * WebhookEndpoint stores webhook endpoint URLs and configuration
@@ -23,8 +22,8 @@ export type WebhookEventType =
 
 export interface WebhookEndpointRecord extends MongooseDocument {
   id: string;
-  clientId: ObjectId;
-  userId: ObjectId;
+  clientId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   url: string;
   description?: string;
   // Event subscriptions
@@ -142,7 +141,7 @@ const WebhookEndpointSchema = new Schema<WebhookEndpointRecord>(
     headers: Schema.Types.Mixed,
     metadata: Schema.Types.Mixed,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common queries
@@ -154,7 +153,7 @@ WebhookEndpointSchema.index({ isActive: 1, failureCount: 1 });
 // Convert to plain object with id field
 WebhookEndpointSchema.set("toJSON", {
   virtuals: true,
-  transform: (doc: any, ret: any) => {
+  transform: (_doc: any, ret: any) => {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
@@ -164,6 +163,9 @@ WebhookEndpointSchema.set("toJSON", {
 
 export const WebhookEndpointModel =
   mongoose.models.WebhookEndpoint ||
-  mongoose.model<WebhookEndpointRecord>("WebhookEndpoint", WebhookEndpointSchema);
+  mongoose.model<WebhookEndpointRecord>(
+    "WebhookEndpoint",
+    WebhookEndpointSchema,
+  );
 
 export default WebhookEndpointModel;

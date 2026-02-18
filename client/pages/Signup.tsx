@@ -1,8 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, User, Phone, Globe, CheckCircle, ArrowRight, AlertCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Globe,
+  CheckCircle,
+  ArrowRight,
+  AlertCircle,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isValidEmail, validatePasswordStrength } from "@/lib/utils";
 
@@ -22,7 +37,9 @@ export default function Signup() {
   });
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setLocalError(null);
@@ -74,7 +91,7 @@ export default function Signup() {
         formData.lastName,
         formData.phone,
         formData.businessType,
-        formData.language
+        formData.language,
       );
       navigate("/dashboard");
     } catch (err) {
@@ -123,7 +140,9 @@ export default function Signup() {
             {step === 1 && (
               <>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">First Name</label>
+                  <label className="text-sm font-medium text-foreground">
+                    First Name
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -139,7 +158,9 @@ export default function Signup() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Last Name</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Last Name
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -155,7 +176,9 @@ export default function Signup() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Email Address</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Email Address
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -176,7 +199,9 @@ export default function Signup() {
             {step === 2 && (
               <>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Phone Number</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Phone Number
+                  </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -191,7 +216,9 @@ export default function Signup() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Password</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Password
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -206,7 +233,9 @@ export default function Signup() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Confirm Password</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Confirm Password
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <input
@@ -226,7 +255,9 @@ export default function Signup() {
             {step === 3 && (
               <>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Language</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Language
+                  </label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <select
@@ -242,7 +273,9 @@ export default function Signup() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Business Type</label>
+                  <label className="text-sm font-medium text-foreground">
+                    Business Type
+                  </label>
                   <select
                     name="businessType"
                     value={formData.businessType}
@@ -258,7 +291,8 @@ export default function Signup() {
 
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-900">
-                    ✓ By signing up, you agree to our Terms of Service and Privacy Policy
+                    ✓ By signing up, you agree to our Terms of Service and
+                    Privacy Policy
                   </p>
                 </div>
               </>
@@ -307,7 +341,10 @@ export default function Signup() {
             {/* Sign In Link */}
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:text-primary/80 font-medium">
+              <Link
+                to="/login"
+                className="text-primary hover:text-primary/80 font-medium"
+              >
                 Sign in
               </Link>
             </p>
@@ -317,7 +354,8 @@ export default function Signup() {
         {/* Info Box */}
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
-            <strong>Demo:</strong> This is a multi-step signup form. The actual backend integration will be added with your authentication system.
+            <strong>Demo:</strong> This is a multi-step signup form. The actual
+            backend integration will be added with your authentication system.
           </p>
         </div>
       </div>

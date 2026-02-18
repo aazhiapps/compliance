@@ -16,6 +16,7 @@ A production-ready full-stack compliance management application built with React
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18** - UI library
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
@@ -26,6 +27,7 @@ A production-ready full-stack compliance management application built with React
 - **Lucide React** - Icons
 
 ### Backend
+
 - **Node.js** - Runtime
 - **Express** - Web framework
 - **TypeScript** - Type safety
@@ -34,6 +36,7 @@ A production-ready full-stack compliance management application built with React
 - **Bcrypt** - Password hashing
 
 ### Development Tools
+
 - **Vitest** - Testing framework
 - **PNPM** - Package manager
 - **Prettier** - Code formatting
@@ -41,6 +44,7 @@ A production-ready full-stack compliance management application built with React
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - **Node.js** (v18 or higher)
 - **PNPM** (v10 or higher) - `npm install -g pnpm`
 
@@ -104,6 +108,7 @@ The application will be available at `http://localhost:8080`
 The application comes with pre-seeded demo accounts. See [DEMO_CREDENTIALS.md](./DEMO_CREDENTIALS.md) for complete login credentials and testing guide.
 
 **Quick Demo Access:**
+
 - **User Account:** `demo@example.com` / `Demo@1234`
 - **Admin Account:** `admin@example.com` / `Admin@1234`
 
@@ -210,11 +215,13 @@ For test card numbers and payment testing guide, see [DEMO_CREDENTIALS.md](./DEM
 ### Standard Deployment
 
 Build the application:
+
 ```bash
 pnpm build
 ```
 
 Start the production server:
+
 ```bash
 pnpm start
 ```
@@ -222,6 +229,7 @@ pnpm start
 ### Cloud Deployment
 
 The application can be deployed to various platforms:
+
 - **Netlify** - See `netlify.toml` for configuration
 - **Vercel** - Supports both frontend and serverless functions
 - **Docker** - See `.dockerignore` for Docker configuration
@@ -229,6 +237,7 @@ The application can be deployed to various platforms:
 ### Environment Variables for Production
 
 Ensure these are set in your production environment:
+
 - `JWT_SECRET` - Must be at least 32 characters (generate with `openssl rand -base64 32`)
 - `NODE_ENV=production`
 - `CORS_ORIGIN` - Set to your frontend domain
@@ -246,6 +255,7 @@ Ensure these are set in your production environment:
 ## 🎨 Key Features in Detail
 
 ### User Features
+
 - ✅ Secure signup and login
 - ✅ Service catalog with detailed information
 - ✅ Multi-step application wizard
@@ -256,6 +266,7 @@ Ensure these are set in your production environment:
 - ✅ Multi-language support
 
 ### Admin Features
+
 - ✅ User management panel
 - ✅ Application review interface
 - ✅ Payment tracking and reconciliation
@@ -269,12 +280,14 @@ Ensure these are set in your production environment:
 ### Common Issues
 
 **Port already in use:**
+
 ```bash
 # Change PORT in .env file
 PORT=3000
 ```
 
 **JWT Secret Error:**
+
 ```bash
 # Generate a secure secret
 openssl rand -base64 32
@@ -282,6 +295,7 @@ openssl rand -base64 32
 ```
 
 **Build Errors:**
+
 ```bash
 # Clear node_modules and reinstall
 rm -rf node_modules pnpm-lock.yaml
@@ -289,6 +303,7 @@ pnpm install
 ```
 
 **Type Errors:**
+
 ```bash
 # Run type checking to see all errors
 pnpm typecheck
@@ -309,6 +324,7 @@ This project is private and proprietary.
 ## 📞 Support
 
 For issues, questions, or support:
+
 1. Check the documentation files
 2. Review the [DEMO_CREDENTIALS.md](./DEMO_CREDENTIALS.md) for testing guides
 3. Check browser console and server logs for errors
@@ -317,6 +333,7 @@ For issues, questions, or support:
 ## 🎯 Roadmap
 
 Future enhancements planned:
+
 - [ ] Database integration (MongoDB/PostgreSQL)
 - [ ] Email notifications
 - [ ] SMS notifications

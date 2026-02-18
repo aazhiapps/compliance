@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
 import { Application, Document } from "@shared/auth";
 
-export interface IApplicationDocument extends Omit<Application, "id">, MongooseDocument {}
+export interface IApplicationDocument
+  extends Omit<Application, "id">, MongooseDocument {}
 
 const DocumentSchema = new Schema<Document>(
   {
@@ -20,7 +21,7 @@ const DocumentSchema = new Schema<Document>(
     uploadedAt: { type: String, required: true },
     remarks: { type: String },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ApplicationSchema = new Schema<IApplicationDocument>(
@@ -80,16 +81,20 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id.toString();
-        ret.createdAt = ret.createdAt.toISOString();
-        ret.updatedAt = ret.updatedAt.toISOString();
+      transform: function (_doc, ret: any) {
+        ret.id = ret._id?.toString();
+        if (ret.createdAt && typeof ret.createdAt !== "string") {
+          ret.createdAt = ret.createdAt.toISOString();
+        }
+        if (ret.updatedAt && typeof ret.updatedAt !== "string") {
+          ret.updatedAt = ret.updatedAt.toISOString();
+        }
         delete ret._id;
         delete ret.__v;
         return ret;
       },
     },
-  }
+  },
 );
 
 // Create indexes for better query performance
@@ -100,5 +105,5 @@ ApplicationSchema.index({ paymentStatus: 1 });
 
 export const ApplicationModel = mongoose.model<IApplicationDocument>(
   "Application",
-  ApplicationSchema
+  ApplicationSchema,
 );

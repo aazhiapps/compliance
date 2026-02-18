@@ -1,14 +1,20 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Search, 
-  Download, 
-  Eye, 
-  FileText, 
-  Check, 
-  X, 
-  Clock, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Search,
+  Download,
+  Eye,
+  FileText,
+  Check,
+  X,
+  Clock,
   MoreVertical,
   ChevronDown,
   ChevronUp,
@@ -19,8 +25,8 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  AdminDocumentsResponse, 
+import {
+  AdminDocumentsResponse,
   UserDocumentsHierarchical,
   Document,
 } from "@shared/api";
@@ -32,7 +38,9 @@ export default function AdminDocuments() {
   const [usersData, setUsersData] = useState<UserDocumentsHierarchical[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
-  const [expandedServices, setExpandedServices] = useState<Set<string>>(new Set());
+  const [expandedServices, setExpandedServices] = useState<Set<string>>(
+    new Set(),
+  );
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
@@ -46,7 +54,7 @@ export default function AdminDocuments() {
       const response = await fetch("/api/admin/documents", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.ok) {
         const data: AdminDocumentsResponse = await response.json();
         setUsersData(data.users || []);
@@ -151,11 +159,11 @@ export default function AdminDocuments() {
     let uploadedCount = 0;
     let rejectedCount = 0;
 
-    usersData.forEach(user => {
-      user.services.forEach(service => {
-        service.years.forEach(year => {
-          year.months.forEach(month => {
-            month.documents.forEach(doc => {
+    usersData.forEach((user) => {
+      user.services.forEach((service) => {
+        service.years.forEach((year) => {
+          year.months.forEach((month) => {
+            month.documents.forEach((doc) => {
               totalDocuments++;
               if (doc.status === "approved") approvedCount++;
               if (doc.status === "verifying") verifyingCount++;
@@ -167,36 +175,52 @@ export default function AdminDocuments() {
       });
     });
 
-    return { totalDocuments, approvedCount, verifyingCount, uploadedCount, rejectedCount };
+    return {
+      totalDocuments,
+      approvedCount,
+      verifyingCount,
+      uploadedCount,
+      rejectedCount,
+    };
   }, [usersData]);
 
   // Filter documents based on search and status - memoized callback
-  const filterDocument = useCallback((doc: Document): boolean => {
-    const matchesStatus = filterStatus === "all" || doc.status === filterStatus;
-    const matchesSearch = searchQuery === "" || 
-      doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  }, [filterStatus, searchQuery]);
+  const filterDocument = useCallback(
+    (doc: Document): boolean => {
+      const matchesStatus =
+        filterStatus === "all" || doc.status === filterStatus;
+      const matchesSearch =
+        searchQuery === "" ||
+        doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    },
+    [filterStatus, searchQuery],
+  );
 
   // Check if user has matching documents - memoized callback
-  const hasMatchingDocuments = useCallback((user: UserDocumentsHierarchical): boolean => {
-    return user.services.some(service =>
-      service.years.some(year =>
-        year.months.some(month =>
-          month.documents.some(doc => filterDocument(doc))
-        )
-      )
-    );
-  }, [filterDocument]);
+  const hasMatchingDocuments = useCallback(
+    (user: UserDocumentsHierarchical): boolean => {
+      return user.services.some((service) =>
+        service.years.some((year) =>
+          year.months.some((month) =>
+            month.documents.some((doc) => filterDocument(doc)),
+          ),
+        ),
+      );
+    },
+    [filterDocument],
+  );
 
   // Filtered users - memoized to avoid recalculation
-  const filteredUsers = useMemo(() => 
-    usersData.filter(user => 
-      hasMatchingDocuments(user) || 
-      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    [usersData, hasMatchingDocuments, searchQuery]
+  const filteredUsers = useMemo(
+    () =>
+      usersData.filter(
+        (user) =>
+          hasMatchingDocuments(user) ||
+          user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.userEmail.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [usersData, hasMatchingDocuments, searchQuery],
   );
 
   return (
@@ -205,7 +229,9 @@ export default function AdminDocuments() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Documents Management</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Documents Management
+            </h1>
             <p className="text-muted-foreground mt-1">
               Hierarchical view: Users → Services → Year/Month → Documents
             </p>
@@ -223,7 +249,9 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-green-600 font-medium">Approved</p>
-                  <p className="text-3xl font-bold text-green-900 mt-1">{stats.approvedCount}</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">
+                    {stats.approvedCount}
+                  </p>
                 </div>
                 <Check className="w-10 h-10 text-green-400 opacity-50" />
               </div>
@@ -234,8 +262,12 @@ export default function AdminDocuments() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-yellow-600 font-medium">Verifying</p>
-                  <p className="text-3xl font-bold text-yellow-900 mt-1">{stats.verifyingCount}</p>
+                  <p className="text-sm text-yellow-600 font-medium">
+                    Verifying
+                  </p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">
+                    {stats.verifyingCount}
+                  </p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-50" />
               </div>
@@ -247,7 +279,9 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-600 font-medium">Uploaded</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-1">{stats.uploadedCount}</p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">
+                    {stats.uploadedCount}
+                  </p>
                 </div>
                 <FileText className="w-10 h-10 text-blue-400 opacity-50" />
               </div>
@@ -259,7 +293,9 @@ export default function AdminDocuments() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-red-600 font-medium">Rejected</p>
-                  <p className="text-3xl font-bold text-red-900 mt-1">{stats.rejectedCount}</p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">
+                    {stats.rejectedCount}
+                  </p>
                 </div>
                 <X className="w-10 h-10 text-red-400 opacity-50" />
               </div>
@@ -308,10 +344,12 @@ export default function AdminDocuments() {
           <Card>
             <CardContent className="p-12 text-center">
               <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No documents found</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No documents found
+              </h3>
               <p className="text-muted-foreground">
-                {searchQuery || filterStatus !== "all" 
-                  ? "Try adjusting your filters" 
+                {searchQuery || filterStatus !== "all"
+                  ? "Try adjusting your filters"
                   : "No users have uploaded documents yet"}
               </p>
             </CardContent>
@@ -321,7 +359,7 @@ export default function AdminDocuments() {
             {filteredUsers.map((user) => (
               <Card key={user.userId} className="overflow-hidden">
                 {/* User Level */}
-                <CardHeader 
+                <CardHeader
                   className="cursor-pointer hover:bg-gray-50 transition-colors bg-purple-50"
                   onClick={() => toggleUser(user.userId)}
                 >
@@ -332,7 +370,8 @@ export default function AdminDocuments() {
                         {user.userName}
                       </CardTitle>
                       <CardDescription className="mt-1">
-                        {user.userEmail} • {user.services.length} service{user.services.length !== 1 ? 's' : ''}
+                        {user.userEmail} • {user.services.length} service
+                        {user.services.length !== 1 ? "s" : ""}
                       </CardDescription>
                     </div>
                     <Button variant="ghost" size="sm">
@@ -350,7 +389,10 @@ export default function AdminDocuments() {
                     {user.services.map((service) => {
                       const serviceKey = `${user.userId}-${service.serviceId}`;
                       return (
-                        <div key={serviceKey} className="border border-border rounded-lg overflow-hidden">
+                        <div
+                          key={serviceKey}
+                          className="border border-border rounded-lg overflow-hidden"
+                        >
                           {/* Service Level */}
                           <div
                             className="p-3 bg-blue-50 cursor-pointer hover:bg-blue-100 transition-colors"
@@ -359,9 +401,12 @@ export default function AdminDocuments() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 flex-1">
                                 <Briefcase className="w-4 h-4 text-blue-600" />
-                                <span className="font-medium text-foreground">{service.serviceName}</span>
+                                <span className="font-medium text-foreground">
+                                  {service.serviceName}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                                  ({service.years.length} year{service.years.length !== 1 ? 's' : ''})
+                                  ({service.years.length} year
+                                  {service.years.length !== 1 ? "s" : ""})
                                 </span>
                               </div>
                               {expandedServices.has(serviceKey) ? (
@@ -377,7 +422,10 @@ export default function AdminDocuments() {
                               {service.years.map((year) => {
                                 const yearKey = `${serviceKey}-${year.year}`;
                                 return (
-                                  <div key={yearKey} className="border border-border rounded-md overflow-hidden bg-white">
+                                  <div
+                                    key={yearKey}
+                                    className="border border-border rounded-md overflow-hidden bg-white"
+                                  >
                                     {/* Year Level */}
                                     <div
                                       className="p-2 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
@@ -386,9 +434,15 @@ export default function AdminDocuments() {
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                           <Calendar className="w-4 h-4 text-green-600" />
-                                          <span className="font-medium text-sm">{year.year}</span>
+                                          <span className="font-medium text-sm">
+                                            {year.year}
+                                          </span>
                                           <span className="text-xs text-muted-foreground">
-                                            ({year.months.length} month{year.months.length !== 1 ? 's' : ''})
+                                            ({year.months.length} month
+                                            {year.months.length !== 1
+                                              ? "s"
+                                              : ""}
+                                            )
                                           </span>
                                         </div>
                                         {expandedYears.has(yearKey) ? (
@@ -403,26 +457,44 @@ export default function AdminDocuments() {
                                       <div className="p-2 space-y-2">
                                         {year.months.map((month) => {
                                           const monthKey = `${yearKey}-${month.month}`;
-                                          const filteredDocs = month.documents.filter(filterDocument);
-                                          
-                                          if (filteredDocs.length === 0) return null;
-                                          
+                                          const filteredDocs =
+                                            month.documents.filter(
+                                              filterDocument,
+                                            );
+
+                                          if (filteredDocs.length === 0)
+                                            return null;
+
                                           return (
-                                            <div key={monthKey} className="border border-border rounded-sm overflow-hidden">
+                                            <div
+                                              key={monthKey}
+                                              className="border border-border rounded-sm overflow-hidden"
+                                            >
                                               {/* Month Level */}
                                               <div
                                                 className="p-2 bg-orange-50 cursor-pointer hover:bg-orange-100 transition-colors"
-                                                onClick={() => toggleMonth(monthKey)}
+                                                onClick={() =>
+                                                  toggleMonth(monthKey)
+                                                }
                                               >
                                                 <div className="flex items-center justify-between">
                                                   <div className="flex items-center gap-2">
                                                     <FolderOpen className="w-3 h-3 text-orange-600" />
-                                                    <span className="font-medium text-sm">{month.monthName}</span>
+                                                    <span className="font-medium text-sm">
+                                                      {month.monthName}
+                                                    </span>
                                                     <span className="text-xs text-muted-foreground">
-                                                      ({filteredDocs.length} document{filteredDocs.length !== 1 ? 's' : ''})
+                                                      ({filteredDocs.length}{" "}
+                                                      document
+                                                      {filteredDocs.length !== 1
+                                                        ? "s"
+                                                        : ""}
+                                                      )
                                                     </span>
                                                   </div>
-                                                  {expandedMonths.has(monthKey) ? (
+                                                  {expandedMonths.has(
+                                                    monthKey,
+                                                  ) ? (
                                                     <ChevronUp className="w-3 h-3" />
                                                   ) : (
                                                     <ChevronDown className="w-3 h-3" />
@@ -445,8 +517,11 @@ export default function AdminDocuments() {
                                                             {doc.fileName}
                                                           </p>
                                                           <p className="text-xs text-muted-foreground">
-                                                            {new Date(doc.uploadedAt).toLocaleDateString()}
-                                                            {doc.fileSize && ` • ${formatFileSize(doc.fileSize)}`}
+                                                            {new Date(
+                                                              doc.uploadedAt,
+                                                            ).toLocaleDateString()}
+                                                            {doc.fileSize &&
+                                                              ` • ${formatFileSize(doc.fileSize)}`}
                                                           </p>
                                                         </div>
                                                       </div>
@@ -454,10 +529,12 @@ export default function AdminDocuments() {
                                                       <div className="flex items-center gap-2">
                                                         <span
                                                           className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                                            doc.status
+                                                            doc.status,
                                                           )}`}
                                                         >
-                                                          {getStatusIcon(doc.status)}
+                                                          {getStatusIcon(
+                                                            doc.status,
+                                                          )}
                                                           {doc.status}
                                                         </span>
 
@@ -478,7 +555,7 @@ export default function AdminDocuments() {
                                                           >
                                                             <Download className="w-3 h-3" />
                                                           </Button>
-                                                          <button 
+                                                          <button
                                                             className="h-7 w-7 p-0 hover:bg-gray-100 rounded transition-colors flex items-center justify-center"
                                                             title="More actions"
                                                           >

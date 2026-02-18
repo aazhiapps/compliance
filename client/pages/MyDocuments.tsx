@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   FileText,
@@ -19,7 +25,9 @@ export default function MyDocuments() {
   const { toast } = useToast();
   const [services, setServices] = useState<ServiceDocuments[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedServices, setExpandedServices] = useState<Set<number>>(new Set());
+  const [expandedServices, setExpandedServices] = useState<Set<number>>(
+    new Set(),
+  );
 
   useEffect(() => {
     fetchDocuments();
@@ -31,13 +39,15 @@ export default function MyDocuments() {
       const response = await fetch("/api/documents", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.ok) {
         const data: UserDocumentsResponse = await response.json();
         setServices(data.services || []);
         // Auto-expand services with documents
         const servicesWithDocs = new Set(
-          data.services.filter(s => s.documents.length > 0).map(s => s.serviceId)
+          data.services
+            .filter((s) => s.documents.length > 0)
+            .map((s) => s.serviceId),
         );
         setExpandedServices(servicesWithDocs);
       } else {
@@ -103,10 +113,13 @@ export default function MyDocuments() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  const totalDocuments = services.reduce((sum, s) => sum + s.documents.length, 0);
+  const totalDocuments = services.reduce(
+    (sum, s) => sum + s.documents.length,
+    0,
+  );
   const approvedDocuments = services.reduce(
-    (sum, s) => sum + s.documents.filter(d => d.status === "approved").length,
-    0
+    (sum, s) => sum + s.documents.filter((d) => d.status === "approved").length,
+    0,
   );
 
   return (
@@ -114,7 +127,9 @@ export default function MyDocuments() {
       <div className="container mx-auto max-w-6xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">My Documents</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            My Documents
+          </h1>
           <p className="text-muted-foreground">
             View and manage all your documents organized by service
           </p>
@@ -126,8 +141,12 @@ export default function MyDocuments() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Documents</p>
-                  <p className="text-3xl font-bold text-foreground">{totalDocuments}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Total Documents
+                  </p>
+                  <p className="text-3xl font-bold text-foreground">
+                    {totalDocuments}
+                  </p>
                 </div>
                 <FileText className="w-8 h-8 text-primary" />
               </div>
@@ -139,7 +158,9 @@ export default function MyDocuments() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Approved</p>
-                  <p className="text-3xl font-bold text-success">{approvedDocuments}</p>
+                  <p className="text-3xl font-bold text-success">
+                    {approvedDocuments}
+                  </p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
@@ -151,7 +172,9 @@ export default function MyDocuments() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Services</p>
-                  <p className="text-3xl font-bold text-foreground">{services.length}</p>
+                  <p className="text-3xl font-bold text-foreground">
+                    {services.length}
+                  </p>
                 </div>
                 <FolderOpen className="w-8 h-8 text-blue-600" />
               </div>
@@ -172,7 +195,9 @@ export default function MyDocuments() {
             <Card>
               <CardContent className="p-12 text-center">
                 <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No documents yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No documents yet
+                </h3>
                 <p className="text-muted-foreground mb-6">
                   Start an application to upload documents
                 </p>
@@ -186,7 +211,7 @@ export default function MyDocuments() {
           ) : (
             services.map((service) => (
               <Card key={service.serviceId} className="overflow-hidden">
-                <CardHeader 
+                <CardHeader
                   className="cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => toggleService(service.serviceId)}
                 >
@@ -197,8 +222,10 @@ export default function MyDocuments() {
                         {service.serviceName}
                       </CardTitle>
                       <CardDescription className="mt-1">
-                        {service.documents.length} document{service.documents.length !== 1 ? 's' : ''} • 
-                        {' '}{service.applicationIds.length} application{service.applicationIds.length !== 1 ? 's' : ''}
+                        {service.documents.length} document
+                        {service.documents.length !== 1 ? "s" : ""} •{" "}
+                        {service.applicationIds.length} application
+                        {service.applicationIds.length !== 1 ? "s" : ""}
                       </CardDescription>
                     </div>
                     <Button variant="ghost" size="sm">
@@ -234,8 +261,12 @@ export default function MyDocuments() {
                                   {doc.fileName}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
-                                  {doc.fileSize && ` • ${formatFileSize(doc.fileSize)}`}
+                                  Uploaded{" "}
+                                  {new Date(
+                                    doc.uploadedAt,
+                                  ).toLocaleDateString()}
+                                  {doc.fileSize &&
+                                    ` • ${formatFileSize(doc.fileSize)}`}
                                 </p>
                               </div>
                             </div>
@@ -243,7 +274,7 @@ export default function MyDocuments() {
                             <div className="flex items-center gap-3">
                               <span
                                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                  doc.status
+                                  doc.status,
                                 )}`}
                               >
                                 {getStatusIcon(doc.status)}
@@ -283,9 +314,12 @@ export default function MyDocuments() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1">Need to upload more documents?</h3>
+                  <h3 className="font-semibold text-foreground mb-1">
+                    Need to upload more documents?
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Go to your dashboard to manage applications and upload documents
+                    Go to your dashboard to manage applications and upload
+                    documents
                   </p>
                 </div>
                 <Link to="/dashboard">

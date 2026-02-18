@@ -1,8 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ArrowLeft,
   CheckCircle,
@@ -39,21 +52,23 @@ export default function AdminApplicationDetail() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { toast } = useToast();
-  
-  const [application, setApplication] = useState<ApplicationWithUserDetails | null>(null);
+
+  const [application, setApplication] =
+    useState<ApplicationWithUserDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [assignedExecutive, setAssignedExecutive] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [showRecordPaymentDialog, setShowRecordPaymentDialog] = useState(false);
   const [recordingPayment, setRecordingPayment] = useState(false);
   const [updating, setUpdating] = useState(false);
-  
+
   // Payment form state
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<RecordPaymentRequest["method"]>("manual");
+  const [paymentMethod, setPaymentMethod] =
+    useState<RecordPaymentRequest["method"]>("manual");
   const [transactionId, setTransactionId] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
 
@@ -112,7 +127,9 @@ export default function AdminApplicationDetail() {
       setApplication(appWithUser);
     } catch (err) {
       console.error("Error fetching application details:", err);
-      setError(err instanceof Error ? err.message : "Failed to load application");
+      setError(
+        err instanceof Error ? err.message : "Failed to load application",
+      );
       toast({
         title: "Error",
         description: "Failed to load application details",
@@ -133,7 +150,9 @@ export default function AdminApplicationDetail() {
         <div className="p-6 flex items-center justify-center min-h-screen">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Loading application details...</p>
+            <p className="text-muted-foreground">
+              Loading application details...
+            </p>
           </div>
         </div>
       </AdminLayout>
@@ -166,14 +185,17 @@ export default function AdminApplicationDetail() {
 
     try {
       setUpdating(true);
-      const response = await fetch(`/api/admin/applications/${application.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/admin/applications/${application.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "approved" }),
         },
-        body: JSON.stringify({ status: "approved" }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to approve application");
@@ -195,7 +217,8 @@ export default function AdminApplicationDetail() {
       console.error("Error approving application:", err);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to approve application",
+        description:
+          err instanceof Error ? err.message : "Failed to approve application",
         variant: "destructive",
       });
     } finally {
@@ -208,17 +231,20 @@ export default function AdminApplicationDetail() {
 
     try {
       setUpdating(true);
-      const response = await fetch(`/api/admin/applications/${application.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/admin/applications/${application.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: "rejected",
+            notes: rejectReason,
+          }),
         },
-        body: JSON.stringify({ 
-          status: "rejected",
-          notes: rejectReason,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to reject application");
@@ -243,7 +269,8 @@ export default function AdminApplicationDetail() {
       console.error("Error rejecting application:", err);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to reject application",
+        description:
+          err instanceof Error ? err.message : "Failed to reject application",
         variant: "destructive",
       });
     } finally {
@@ -256,16 +283,19 @@ export default function AdminApplicationDetail() {
 
     try {
       setUpdating(true);
-      const response = await fetch(`/api/admin/applications/${application.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/admin/applications/${application.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            assignedStaffName: assignedExecutive,
+          }),
         },
-        body: JSON.stringify({ 
-          assignedStaffName: assignedExecutive,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to assign executive");
@@ -289,7 +319,8 @@ export default function AdminApplicationDetail() {
       console.error("Error assigning executive:", err);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to assign executive",
+        description:
+          err instanceof Error ? err.message : "Failed to assign executive",
         variant: "destructive",
       });
     } finally {
@@ -333,7 +364,7 @@ export default function AdminApplicationDetail() {
           title: "Success",
           description: "Payment recorded successfully",
         });
-        
+
         // Reset form
         setPaymentAmount("");
         setTransactionId("");
@@ -416,8 +447,12 @@ export default function AdminApplicationDetail() {
             Back
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground">{application.serviceName}</h1>
-            <p className="text-muted-foreground mt-1">Application ID: {application.id}</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              {application.serviceName}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Application ID: {application.id}
+            </p>
           </div>
         </div>
 
@@ -425,7 +460,7 @@ export default function AdminApplicationDetail() {
         <div className="flex items-center gap-3 flex-wrap">
           <span
             className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${getStatusColor(
-              application.status
+              application.status,
             )}`}
           >
             {getStatusIcon(application.status)}
@@ -438,7 +473,9 @@ export default function AdminApplicationDetail() {
                 : "bg-yellow-50 text-yellow-700"
             }`}
           >
-            {application.paymentStatus === "paid" ? "✓ Paid" : "⏱ Pending Payment"}
+            {application.paymentStatus === "paid"
+              ? "✓ Paid"
+              : "⏱ Pending Payment"}
           </span>
           {application.paymentStatus === "pending" && (
             <Button
@@ -481,8 +518,12 @@ export default function AdminApplicationDetail() {
                     <FileText className="w-5 h-5" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="font-semibold text-foreground">Draft Created</p>
-                    <p className="text-sm text-muted-foreground">Application initiated</p>
+                    <p className="font-semibold text-foreground">
+                      Draft Created
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Application initiated
+                    </p>
                   </div>
                 </div>
 
@@ -502,11 +543,14 @@ export default function AdminApplicationDetail() {
                   <div className="flex-1 pt-1">
                     <p className="font-semibold text-foreground">Submitted</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(application.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(application.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                 </div>
@@ -515,7 +559,8 @@ export default function AdminApplicationDetail() {
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      application.status === "under_review" || application.status === "approved"
+                      application.status === "under_review" ||
+                      application.status === "approved"
                         ? "bg-primary text-white"
                         : "bg-gray-300 text-gray-600"
                     }`}
@@ -523,9 +568,12 @@ export default function AdminApplicationDetail() {
                     <Clock className="w-5 h-5" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="font-semibold text-foreground">Under Review</p>
+                    <p className="font-semibold text-foreground">
+                      Under Review
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {application.status === "under_review" || application.status === "approved"
+                      {application.status === "under_review" ||
+                      application.status === "approved"
                         ? "Documents being verified"
                         : "Pending review"}
                     </p>
@@ -615,7 +663,9 @@ export default function AdminApplicationDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Service</p>
-                <p className="font-semibold text-lg">{application.serviceName}</p>
+                <p className="font-semibold text-lg">
+                  {application.serviceName}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
@@ -633,13 +683,15 @@ export default function AdminApplicationDetail() {
                 <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
                   <DollarSign className="w-4 h-4" /> Amount
                 </p>
-                <p className="font-semibold text-lg">₹{application.paymentAmount}</p>
+                <p className="font-semibold text-lg">
+                  ₹{application.paymentAmount}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Status</p>
                 <span
                   className={`inline-flex items-center gap-2 px-3 py-1 rounded-full font-semibold ${getStatusColor(
-                    application.status
+                    application.status,
                   )}`}
                 >
                   {getStatusIcon(application.status)}
@@ -649,7 +701,9 @@ export default function AdminApplicationDetail() {
             </div>
             <div className="mt-6">
               <p className="text-sm text-muted-foreground mb-1">Remarks</p>
-              <p className="font-medium">{application.internalNotes || "No notes available"}</p>
+              <p className="font-medium">
+                {application.internalNotes || "No notes available"}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -661,7 +715,9 @@ export default function AdminApplicationDetail() {
               <FileText className="w-5 h-5 text-primary" />
               Documents ({application.documents.length})
             </CardTitle>
-            <CardDescription>Required and attached documents with verification status</CardDescription>
+            <CardDescription>
+              Required and attached documents with verification status
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-3">
@@ -673,13 +729,17 @@ export default function AdminApplicationDetail() {
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium text-foreground">{doc.fileName}</p>
-                      <p className="text-xs text-muted-foreground">ID: {doc.id}</p>
+                      <p className="font-medium text-foreground">
+                        {doc.fileName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ID: {doc.id}
+                      </p>
                     </div>
                   </div>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getDocStatusColor(
-                      doc.status
+                      doc.status,
                     )}`}
                   >
                     {doc.status}
@@ -702,7 +762,8 @@ export default function AdminApplicationDetail() {
             {application.assignedStaffName ? (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900">
-                  <strong>Currently assigned to:</strong> {application.assignedStaffName}
+                  <strong>Currently assigned to:</strong>{" "}
+                  {application.assignedStaffName}
                 </p>
               </div>
             ) : (
@@ -742,44 +803,47 @@ export default function AdminApplicationDetail() {
         </Card>
 
         {/* Actions */}
-        {application.status !== "approved" && application.status !== "rejected" && (
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 border-b">
-              <CardTitle>Actions</CardTitle>
-              <CardDescription>Approve, reject, or request changes for this application</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleApprove}
-                  disabled={updating}
-                  className="flex-1 bg-success hover:bg-success/90 flex items-center justify-center gap-2"
-                >
-                  {updating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4" />
-                      Approve Application
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={() => setShowRejectForm(!showRejectForm)}
-                  variant="outline"
-                  disabled={updating}
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 flex items-center justify-center gap-2"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Reject Application
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {application.status !== "approved" &&
+          application.status !== "rejected" && (
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 border-b">
+                <CardTitle>Actions</CardTitle>
+                <CardDescription>
+                  Approve, reject, or request changes for this application
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleApprove}
+                    disabled={updating}
+                    className="flex-1 bg-success hover:bg-success/90 flex items-center justify-center gap-2"
+                  >
+                    {updating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Approve Application
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowRejectForm(!showRejectForm)}
+                    variant="outline"
+                    disabled={updating}
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50 flex items-center justify-center gap-2"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Reject Application
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         {/* Reject Form */}
         {showRejectForm && (
@@ -789,7 +853,9 @@ export default function AdminApplicationDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Reason for Rejection</label>
+                <label className="block text-sm font-medium mb-2">
+                  Reason for Rejection
+                </label>
                 <textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
@@ -828,17 +894,22 @@ export default function AdminApplicationDetail() {
             </CardContent>
           </Card>
         )}
-        
+
         {/* Record Payment Dialog */}
-        <Dialog open={showRecordPaymentDialog} onOpenChange={setShowRecordPaymentDialog}>
+        <Dialog
+          open={showRecordPaymentDialog}
+          onOpenChange={setShowRecordPaymentDialog}
+        >
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Record Payment for {application.serviceName}</DialogTitle>
+              <DialogTitle>
+                Record Payment for {application.serviceName}
+              </DialogTitle>
               <DialogDescription>
                 Record a payment that was received for this application
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-4">
               {/* Amount */}
               <div className="space-y-2">
@@ -858,7 +929,11 @@ export default function AdminApplicationDetail() {
                 <label className="text-sm font-medium">Payment Method *</label>
                 <select
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as RecordPaymentRequest["method"])}
+                  onChange={(e) =>
+                    setPaymentMethod(
+                      e.target.value as RecordPaymentRequest["method"],
+                    )
+                  }
                   className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   disabled={recordingPayment}
                 >
@@ -872,7 +947,9 @@ export default function AdminApplicationDetail() {
 
               {/* Transaction ID */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Transaction ID / Reference *</label>
+                <label className="text-sm font-medium">
+                  Transaction ID / Reference *
+                </label>
                 <input
                   type="text"
                   value={transactionId}

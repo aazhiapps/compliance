@@ -3,7 +3,7 @@
 **Status**: Production Ready  
 **Completion Date**: February 16, 2026  
 **Files Created**: 11 major files  
-**Total Lines of Code**: 2,789  
+**Total Lines of Code**: 2,789
 
 ---
 
@@ -12,6 +12,7 @@
 Phase 4 implements a comprehensive background job processing and notification system powered by Bull queues and Redis. This enables automated workflows, scheduled tasks, and real-time user notifications across multiple channels (in-app, email, SMS).
 
 **Key Features**:
+
 - Bull queue-based job processing with retry logic
 - Scheduled recurring jobs (cron patterns)
 - Job monitoring and execution logging
@@ -66,9 +67,11 @@ Track Status & Delivery
 ### 1. Models (332 lines total)
 
 #### Notification Model (165 lines)
+
 **Location**: `server/models/Notification.ts`
 
 Schema:
+
 ```typescript
 interface NotificationRecord {
   userId: ObjectId
@@ -89,14 +92,17 @@ interface NotificationRecord {
 ```
 
 **Key Indexes**:
+
 - `{ userId: 1, status: 1, createdAt: -1 }` - User notifications query
 - `{ status: 1, nextRetryAt: 1 }` - Failed notification retry
 - `{ priority: 1, userId: 1 }` - Priority-based filtering
 
 #### JobLog Model (167 lines)
+
 **Location**: `server/models/JobLog.ts`
 
 Schema:
+
 ```typescript
 interface JobLogRecord {
   jobName: string
@@ -117,6 +123,7 @@ interface JobLogRecord {
 ```
 
 **Key Indexes**:
+
 - `{ jobType: 1, status: 1 }` - Job filtering
 - `{ nextRetryAt: 1, status: 1 }` - Retry queue
 - TTL: Auto-delete after 90 days
@@ -128,6 +135,7 @@ interface JobLogRecord {
 **Location**: `server/services/QueueService.ts`
 
 **Responsibilities**:
+
 - Manage Bull queue instances
 - Add jobs with priority, delay, retry logic
 - Process queue jobs with concurrency control
@@ -136,6 +144,7 @@ interface JobLogRecord {
 - Retry and cancel jobs
 
 **Key Methods**:
+
 ```typescript
 // Core Operations
 async addJob<T>(queueName, jobName, data, options?)
@@ -156,6 +165,7 @@ async resumeQueue(queueName)
 ```
 
 **Job Retry Strategy**:
+
 - Exponential backoff: `2s * (attempt ^ 2)`
 - Max 3 retries (configurable per job)
 - Automatic failed job cleanup after 1 hour
@@ -170,41 +180,48 @@ async resumeQueue(queueName)
 **Handler Functions**:
 
 #### handleITCSync
+
 - Calculates claimed ITC for all active clients
 - Syncs with GST portal data
 - Auto-flags discrepancies for review
 - Logs execution metrics (duration, success rate)
 
 #### handleFilingReminder
+
 - Finds filings due in next 5 days
 - Creates notifications for staff/clients
 - Critical priority for imminent deadlines
 
 #### handleNotificationSend
+
 - Sends queued notifications via configured channels
 - Updates delivery status and timestamps
 - Implements retry for failed channels
 - Handles channel-specific logic (email/SMS/in-app)
 
 #### handleComplianceCheck
+
 - Audits all clients for compliance issues
 - Detects: overdue filings, unresolved discrepancies
 - Generates compliance report with issue count
 - Triggers alerts for critical violations
 
 #### handleDataCleanup
+
 - Removes logs older than 90 days
 - Deletes temporary data
 - Optimizes database collections
 - Runs daily to maintain performance
 
 #### handleReportGeneration
+
 - Generates on-demand reports (ITC, filing status)
 - Stores reports for client access
 - Supports multiple report types
 - Scheduled or manual trigger
 
 #### handleWebhookRetry
+
 - Retries failed webhook deliveries
 - Implements exponential backoff
 - Maintains webhook event history
@@ -226,7 +243,7 @@ NotificationTemplates {
     priority: "high",
     actionUrl: "/gst/itc-reconciliation"
   },
-  
+
   "filing_due": {
     title: "GST Filing Due",
     message: "Your GST filing deadline is approaching",
@@ -234,14 +251,14 @@ NotificationTemplates {
     priority: "critical",
     actionUrl: "/gst/filings"
   },
-  
+
   "filing_status_changed": {
     title: "Filing Status Updated",
     message: "Your GST filing status has been updated",
     channels: ["in_app", "email"],
     priority: "normal"
   },
-  
+
   "document_rejected": {
     title: "Document Rejected",
     message: "Your document has been rejected for compliance",
@@ -249,12 +266,13 @@ NotificationTemplates {
     priority: "high",
     actionUrl: "/documents"
   },
-  
+
   // ... more templates
 }
 ```
 
 **Key Methods**:
+
 ```typescript
 // Core Operations
 async createNotification(input: CreateNotificationInput)
@@ -282,78 +300,82 @@ async notifyComplianceAlert(userId, clientId, issueType, details)
 ### 5. API Routes
 
 #### Notification Routes (149 lines)
+
 **Location**: `server/routes/notifications.ts`
 
 **Endpoints**:
+
 ```
 GET    /api/notifications
        Get user notifications with pagination & filters
        Query: limit, skip, unreadOnly, type
-       
+
 GET    /api/notifications/unread/count
        Get unread notification count
-       
+
 GET    /api/notifications/stats
        Get notification statistics (total, unread, read, failed, byType)
-       
+
 PATCH  /api/notifications/:notificationId/read
        Mark single notification as read
-       
+
 PATCH  /api/notifications/read-all
        Mark all notifications as read
-       
+
 DELETE /api/notifications/:notificationId
        Delete a notification
 ```
 
 #### Job Routes (310 lines)
+
 **Location**: `server/routes/jobs.ts`
 
 **Endpoints**:
+
 ```
 POST   /api/jobs/trigger-itc-sync
        Manually trigger ITC sync job
        Auth: Admin
-       
+
 POST   /api/jobs/trigger-filing-reminder
        Manually trigger filing reminder job
        Auth: Admin
-       
+
 POST   /api/jobs/trigger-compliance-check
        Manually trigger compliance check
        Auth: Admin
-       
+
 POST   /api/jobs/trigger-cleanup
        Manually trigger data cleanup
        Auth: Admin
-       
+
 POST   /api/jobs/trigger-report
        Trigger report generation
        Auth: Admin
        Body: { clientId, reportType }
-       
+
 GET    /api/jobs/queue-stats/:queueName
        Get queue statistics (active, delayed, failed, completed)
        Auth: Admin
-       
+
 GET    /api/jobs/:jobId/status
        Get job execution details
        Auth: Admin
-       
+
 GET    /api/jobs/logs
        Get job logs with filtering
        Auth: Admin
        Query: jobType, status, limit, skip, clientId
-       
+
 GET    /api/jobs/logs/summary
        Get job execution summary (7-day period)
        Auth: Admin
-       
+
 POST   /api/jobs/:jobId/retry
        Retry a failed job
        Auth: Admin
        Body: { queueName }
-       
+
 DELETE /api/jobs/:jobId/cancel
        Cancel a queued/running job
        Auth: Admin
@@ -367,6 +389,7 @@ DELETE /api/jobs/:jobId/cancel
 **Location**: `client/components/NotificationCenter.tsx`
 
 **Features**:
+
 - Display user notifications with priority coloring
 - Filter by: All, Unread, Read
 - Real-time polling (30-second intervals)
@@ -377,12 +400,14 @@ DELETE /api/jobs/:jobId/cancel
 - Status indicators (sent, pending, failed)
 
 **Stats Display**:
+
 - Total notifications
 - Unread count
 - Read count
 - Failed count
 
 **UI Components**:
+
 - Notification list with cards
 - Priority badges (critical, high, normal, low)
 - Status icons (checkmark, clock, alert)
@@ -395,6 +420,7 @@ DELETE /api/jobs/:jobId/cancel
 ## API Request/Response Examples
 
 ### Create Notification
+
 ```bash
 POST /api/notifications
 Content-Type: application/json
@@ -423,6 +449,7 @@ Response:
 ```
 
 ### Get User Notifications
+
 ```bash
 GET /api/notifications?limit=20&skip=0&unreadOnly=true
 
@@ -444,6 +471,7 @@ Response:
 ```
 
 ### Trigger Job
+
 ```bash
 POST /api/jobs/trigger-itc-sync
 Authorization: Bearer <token>
@@ -456,6 +484,7 @@ Response:
 ```
 
 ### Get Queue Stats
+
 ```bash
 GET /api/jobs/queue-stats/jobs
 
@@ -479,19 +508,19 @@ Response:
 
 ```typescript
 // Daily 6 AM: ITC Sync
-"0 6 * * *"
+"0 6 * * *";
 
 // Daily 9 AM: Filing Reminders
-"0 9 * * *"
+"0 9 * * *";
 
 // Daily 3 PM: Compliance Check
-"0 15 * * *"
+"0 15 * * *";
 
 // Weekly Sunday 2 AM: Data Cleanup
-"0 2 * * 0"
+"0 2 * * 0";
 
 // Monthly 1st at 4 AM: Report Generation
-"0 4 1 * *"
+"0 4 1 * *";
 ```
 
 ### Integration with Existing Jobs
@@ -512,20 +541,20 @@ async function initializeScheduledJobs() {
     "jobs",
     "itc_sync",
     { triggeredBy: "schedule" },
-    "0 6 * * *"  // Daily 6 AM
+    "0 6 * * *", // Daily 6 AM
   );
 
   await QueueService.addRecurringJob(
     "jobs",
     "filing_reminder",
     { triggeredBy: "schedule" },
-    "0 9 * * *"  // Daily 9 AM
+    "0 9 * * *", // Daily 9 AM
   );
 
   // Setup processors
   await QueueService.processQueue(
     "jobs",
-    5,  // 5 concurrent jobs
+    5, // 5 concurrent jobs
     async (job) => {
       switch (job.name) {
         case "itc_sync":
@@ -534,16 +563,16 @@ async function initializeScheduledJobs() {
           return await handleFilingReminder(job);
         // ... more handlers
       }
-    }
+    },
   );
 
   // Setup notification processor
   await QueueService.processQueue(
     "notifications",
-    10,  // 10 concurrent notifications
+    10, // 10 concurrent notifications
     async (job) => {
       return await handleNotificationSend(job);
-    }
+    },
   );
 }
 ```
@@ -564,13 +593,13 @@ Failed: After max retries exceeded
 
 ### Failure Scenarios
 
-| Scenario | Handling |
-|----------|----------|
-| Job timeout | Auto-retry with exponential backoff |
-| Database error | Log and retry |
-| Queue overload | Delay job with backoff |
-| Missing dependencies | Log error and mark failed |
-| Notification channel down | Try next channel / queue retry |
+| Scenario                  | Handling                            |
+| ------------------------- | ----------------------------------- |
+| Job timeout               | Auto-retry with exponential backoff |
+| Database error            | Log and retry                       |
+| Queue overload            | Delay job with backoff              |
+| Missing dependencies      | Log error and mark failed           |
+| Notification channel down | Try next channel / queue retry      |
 
 ---
 
@@ -603,12 +632,12 @@ GET /api/jobs/logs/summary
 
 ### Retention Policies
 
-| Data Type | Retention | Auto-Delete |
-|-----------|-----------|------------|
-| Job Logs | 90 days | Yes (TTL) |
-| Notifications | Indefinite | Manual only |
-| Read Notifications | 30 days | Yes (configurable) |
-| Failed Jobs | 7 days | Yes (cleanup job) |
+| Data Type          | Retention  | Auto-Delete        |
+| ------------------ | ---------- | ------------------ |
+| Job Logs           | 90 days    | Yes (TTL)          |
+| Notifications      | Indefinite | Manual only        |
+| Read Notifications | 30 days    | Yes (configurable) |
+| Failed Jobs        | 7 days     | Yes (cleanup job)  |
 
 ---
 
@@ -620,11 +649,11 @@ GET /api/jobs/logs/summary
 // Adjust in QueueService constructor
 const queueConfig = {
   settings: {
-    maxStalledCount: 2,           // Max stalled count before remove
-    maxStalledInterval: 5000,     // Check stall every 5s
-    stalledInterval: 5000,        // Mark stalled after 5s
-    lockRenewTime: 15000,         // Renew lock every 15s
-  }
+    maxStalledCount: 2, // Max stalled count before remove
+    maxStalledInterval: 5000, // Check stall every 5s
+    stalledInterval: 5000, // Mark stalled after 5s
+    lockRenewTime: 15000, // Renew lock every 15s
+  },
 };
 ```
 
@@ -633,11 +662,11 @@ const queueConfig = {
 ```typescript
 // Custom per job
 await QueueService.addJob("jobs", "custom_job", data, {
-  attempts: 5,                    // Max attempts
+  attempts: 5, // Max attempts
   backoff: {
     type: "exponential",
-    delay: 2000                   // Initial delay
-  }
+    delay: 2000, // Initial delay
+  },
 });
 ```
 
@@ -649,12 +678,12 @@ Easily add new channels:
 // Extend NOTIFICATION_TEMPLATES
 const NOTIFICATION_TEMPLATES = {
   ...existing,
-  
-  "new_type": {
-    channels: ["pushNotification", "telegram"],  // Add custom channels
+
+  new_type: {
+    channels: ["pushNotification", "telegram"], // Add custom channels
     title: "New Type",
-    message: "Message"
-  }
+    message: "Message",
+  },
 };
 
 // Handle in notificationSend
@@ -721,6 +750,7 @@ describe("Background Jobs", () => {
 ## Dependencies
 
 **Existing Packages Used**:
+
 - `bull` (v4.x) - Job queue system
 - `ioredis` - Redis connection
 - `mongoose` - Database ORM
@@ -733,33 +763,36 @@ describe("Background Jobs", () => {
 
 ## Files Summary
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| Notification.ts | 165 | User notification model |
-| JobLog.ts | 167 | Job execution audit trail |
-| QueueService.ts | 400 | Bull queue management |
-| handlers.ts | 480 | Background job implementations |
-| NotificationService.ts | 485 | Notification creation & management |
-| routes/notifications.ts | 149 | Notification API endpoints |
-| routes/jobs.ts | 310 | Job management API |
-| NotificationCenter.tsx | 455 | React notification UI |
-| server/index.ts | +8 | Route registration |
-| **Total** | **2,789** | Production-ready implementation |
+| File                    | Lines     | Purpose                            |
+| ----------------------- | --------- | ---------------------------------- |
+| Notification.ts         | 165       | User notification model            |
+| JobLog.ts               | 167       | Job execution audit trail          |
+| QueueService.ts         | 400       | Bull queue management              |
+| handlers.ts             | 480       | Background job implementations     |
+| NotificationService.ts  | 485       | Notification creation & management |
+| routes/notifications.ts | 149       | Notification API endpoints         |
+| routes/jobs.ts          | 310       | Job management API                 |
+| NotificationCenter.tsx  | 455       | React notification UI              |
+| server/index.ts         | +8        | Route registration                 |
+| **Total**               | **2,789** | Production-ready implementation    |
 
 ---
 
 ## Integration with Previous Phases
 
 ### Phase 1 (Filing Workflow)
+
 - Notifications for filing status changes
 - Auto-notifications when filing due
 - Job to calculate filing deadlines
 
 ### Phase 2 (Document Management)
+
 - Notifications for document uploads/rejections
 - Jobs to scan documents for compliance
 
 ### Phase 3 (ITC Reconciliation)
+
 - Auto-ITC sync job (daily)
 - Notifications for discrepancies detected
 - Compliance checks for unresolved items

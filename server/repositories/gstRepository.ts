@@ -42,17 +42,17 @@ class GSTRepository {
     if (!client.status) {
       client.status = "active";
     }
-    
+
     // Exclude id from the update data to avoid trying to update immutable _id field
     const { id, ...clientData } = client;
-    
+
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await GSTClientModel.findOneAndUpdate(
       { _id: id },
       { ...clientData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     return result.toJSON() as unknown as GSTClient;
   }
 
@@ -95,11 +95,14 @@ class GSTRepository {
   /**
    * Update a client
    */
-  async updateClient(id: string, updates: Partial<GSTClient>): Promise<GSTClient | undefined> {
+  async updateClient(
+    id: string,
+    updates: Partial<GSTClient>,
+  ): Promise<GSTClient | undefined> {
     const client = await GSTClientModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true }
+      { new: true },
     );
     if (!client) return undefined;
     const json = client.toJSON();
@@ -119,7 +122,9 @@ class GSTRepository {
   /**
    * Create a purchase invoice
    */
-  async createPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+  async createPurchaseInvoice(
+    invoice: PurchaseInvoice,
+  ): Promise<PurchaseInvoice> {
     const newInvoice = await PurchaseInvoiceModel.create(invoice);
     return newInvoice.toJSON() as PurchaseInvoice;
   }
@@ -127,24 +132,28 @@ class GSTRepository {
   /**
    * Upsert a purchase invoice (create or update based on ID)
    */
-  async upsertPurchaseInvoice(invoice: PurchaseInvoice): Promise<PurchaseInvoice> {
+  async upsertPurchaseInvoice(
+    invoice: PurchaseInvoice,
+  ): Promise<PurchaseInvoice> {
     // Exclude id from the update data to avoid trying to update immutable _id field
     const { id, ...invoiceData } = invoice;
-    
+
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await PurchaseInvoiceModel.findOneAndUpdate(
       { _id: id },
       { ...invoiceData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     return result.toJSON() as PurchaseInvoice;
   }
 
   /**
    * Find purchase invoice by ID
    */
-  async findPurchaseInvoiceById(id: string): Promise<PurchaseInvoice | undefined> {
+  async findPurchaseInvoiceById(
+    id: string,
+  ): Promise<PurchaseInvoice | undefined> {
     const invoice = await PurchaseInvoiceModel.findById(id);
     return invoice ? (invoice.toJSON() as PurchaseInvoice) : undefined;
   }
@@ -152,8 +161,12 @@ class GSTRepository {
   /**
    * Find all purchase invoices for a client
    */
-  async findPurchaseInvoicesByClientId(clientId: string): Promise<PurchaseInvoice[]> {
-    const invoices = await PurchaseInvoiceModel.find({ clientId }).sort({ invoiceDate: -1 });
+  async findPurchaseInvoicesByClientId(
+    clientId: string,
+  ): Promise<PurchaseInvoice[]> {
+    const invoices = await PurchaseInvoiceModel.find({ clientId }).sort({
+      invoiceDate: -1,
+    });
     return invoices.map((invoice) => invoice.toJSON() as PurchaseInvoice);
   }
 
@@ -162,7 +175,7 @@ class GSTRepository {
    */
   async findPurchaseInvoicesByMonth(
     clientId: string,
-    month: string
+    month: string,
   ): Promise<PurchaseInvoice[]> {
     const invoices = await PurchaseInvoiceModel.find({ clientId, month });
     return invoices.map((invoice) => invoice.toJSON() as PurchaseInvoice);
@@ -173,12 +186,12 @@ class GSTRepository {
    */
   async updatePurchaseInvoice(
     id: string,
-    updates: Partial<PurchaseInvoice>
+    updates: Partial<PurchaseInvoice>,
   ): Promise<PurchaseInvoice | undefined> {
     const invoice = await PurchaseInvoiceModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true }
+      { new: true },
     );
     return invoice ? (invoice.toJSON() as PurchaseInvoice) : undefined;
   }
@@ -207,14 +220,14 @@ class GSTRepository {
   async upsertSalesInvoice(invoice: SalesInvoice): Promise<SalesInvoice> {
     // Exclude id from the update data to avoid trying to update immutable _id field
     const { id, ...invoiceData } = invoice;
-    
+
     // Use findOneAndUpdate with upsert option for atomic operation
     const result = await SalesInvoiceModel.findOneAndUpdate(
       { _id: id },
       { ...invoiceData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
-    
+
     return result.toJSON() as SalesInvoice;
   }
 
@@ -230,14 +243,19 @@ class GSTRepository {
    * Find all sales invoices for a client
    */
   async findSalesInvoicesByClientId(clientId: string): Promise<SalesInvoice[]> {
-    const invoices = await SalesInvoiceModel.find({ clientId }).sort({ invoiceDate: -1 });
+    const invoices = await SalesInvoiceModel.find({ clientId }).sort({
+      invoiceDate: -1,
+    });
     return invoices.map((invoice) => invoice.toJSON() as SalesInvoice);
   }
 
   /**
    * Find sales invoices by client and month
    */
-  async findSalesInvoicesByMonth(clientId: string, month: string): Promise<SalesInvoice[]> {
+  async findSalesInvoicesByMonth(
+    clientId: string,
+    month: string,
+  ): Promise<SalesInvoice[]> {
     const invoices = await SalesInvoiceModel.find({ clientId, month });
     return invoices.map((invoice) => invoice.toJSON() as SalesInvoice);
   }
@@ -247,12 +265,12 @@ class GSTRepository {
    */
   async updateSalesInvoice(
     id: string,
-    updates: Partial<SalesInvoice>
+    updates: Partial<SalesInvoice>,
   ): Promise<SalesInvoice | undefined> {
     const invoice = await SalesInvoiceModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true }
+      { new: true },
     );
     return invoice ? (invoice.toJSON() as SalesInvoice) : undefined;
   }
@@ -275,13 +293,13 @@ class GSTRepository {
       clientId: filing.clientId,
       month: filing.month,
     });
-    
+
     if (existing) {
       // Update existing
       const updated = await GSTReturnFilingModel.findByIdAndUpdate(
         existing._id,
         { ...filing, updatedAt: new Date().toISOString() },
-        { new: true }
+        { new: true },
       );
       return updated!.toJSON() as GSTReturnFiling;
     } else {
@@ -296,7 +314,7 @@ class GSTRepository {
    */
   async findGSTFilingByMonth(
     clientId: string,
-    month: string
+    month: string,
   ): Promise<GSTReturnFiling | undefined> {
     const filing = await GSTReturnFilingModel.findOne({ clientId, month });
     return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
@@ -306,7 +324,9 @@ class GSTRepository {
    * Find all GST filings for a client
    */
   async findGSTFilingsByClientId(clientId: string): Promise<GSTReturnFiling[]> {
-    const filings = await GSTReturnFilingModel.find({ clientId }).sort({ month: -1 });
+    const filings = await GSTReturnFilingModel.find({ clientId }).sort({
+      month: -1,
+    });
     return filings.map((filing) => filing.toJSON() as GSTReturnFiling);
   }
 
@@ -315,9 +335,12 @@ class GSTRepository {
    */
   async findGSTFilingsByYear(
     clientId: string,
-    financialYear: string
+    financialYear: string,
   ): Promise<GSTReturnFiling[]> {
-    const filings = await GSTReturnFilingModel.find({ clientId, financialYear }).sort({ month: 1 });
+    const filings = await GSTReturnFilingModel.find({
+      clientId,
+      financialYear,
+    }).sort({ month: 1 });
     return filings.map((filing) => filing.toJSON() as GSTReturnFiling);
   }
 
@@ -333,8 +356,13 @@ class GSTRepository {
   /**
    * Get audit logs for an entity
    */
-  async getAuditLogs(entityType: string, entityId: string): Promise<GSTAuditLog[]> {
-    const logs = await GSTAuditLogModel.find({ entityType, entityId }).sort({ performedAt: -1 });
+  async getAuditLogs(
+    entityType: string,
+    entityId: string,
+  ): Promise<GSTAuditLog[]> {
+    const logs = await GSTAuditLogModel.find({ entityType, entityId }).sort({
+      performedAt: -1,
+    });
     return logs.map((log) => log.toJSON() as GSTAuditLog);
   }
 
@@ -342,7 +370,9 @@ class GSTRepository {
    * Get recent audit logs
    */
   async getRecentAuditLogs(limit: number = 100): Promise<GSTAuditLog[]> {
-    const logs = await GSTAuditLogModel.find().sort({ performedAt: -1 }).limit(limit);
+    const logs = await GSTAuditLogModel.find()
+      .sort({ performedAt: -1 })
+      .limit(limit);
     return logs.map((log) => log.toJSON() as GSTAuditLog);
   }
 
@@ -367,7 +397,10 @@ class GSTRepository {
   /**
    * Deactivate a client
    */
-  async deactivateClient(clientId: string, userId: string): Promise<GSTClient | undefined> {
+  async deactivateClient(
+    clientId: string,
+    userId: string,
+  ): Promise<GSTClient | undefined> {
     const client = await GSTClientModel.findByIdAndUpdate(
       clientId,
       {
@@ -375,7 +408,7 @@ class GSTRepository {
         deactivatedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return client ? (client.toJSON() as GSTClient) : undefined;
   }
@@ -391,7 +424,7 @@ class GSTRepository {
         $unset: { deactivatedAt: "" },
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return client ? (client.toJSON() as GSTClient) : undefined;
   }
@@ -407,7 +440,11 @@ class GSTRepository {
   /**
    * Lock a month to prevent further edits
    */
-  async lockMonth(clientId: string, month: string, userId: string): Promise<GSTReturnFiling | undefined> {
+  async lockMonth(
+    clientId: string,
+    month: string,
+    userId: string,
+  ): Promise<GSTReturnFiling | undefined> {
     const filing = await GSTReturnFilingModel.findOneAndUpdate(
       { clientId, month },
       {
@@ -416,7 +453,7 @@ class GSTRepository {
         lockedBy: userId,
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
@@ -424,7 +461,10 @@ class GSTRepository {
   /**
    * Unlock a month to allow edits (admin only, for amendments)
    */
-  async unlockMonth(clientId: string, month: string): Promise<GSTReturnFiling | undefined> {
+  async unlockMonth(
+    clientId: string,
+    month: string,
+  ): Promise<GSTReturnFiling | undefined> {
     const filing = await GSTReturnFilingModel.findOneAndUpdate(
       { clientId, month },
       {
@@ -432,7 +472,7 @@ class GSTRepository {
         $unset: { lockedAt: "", lockedBy: "" },
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
@@ -440,7 +480,10 @@ class GSTRepository {
   /**
    * Assign staff to a client
    */
-  async assignStaffToClient(clientId: string, staffUserId: string): Promise<boolean> {
+  async assignStaffToClient(
+    clientId: string,
+    staffUserId: string,
+  ): Promise<boolean> {
     const client = await GSTClientModel.findById(clientId);
     if (!client) {
       return false;
@@ -459,14 +502,17 @@ class GSTRepository {
   /**
    * Remove staff assignment from a client
    */
-  async removeStaffFromClient(clientId: string, staffUserId: string): Promise<boolean> {
+  async removeStaffFromClient(
+    clientId: string,
+    staffUserId: string,
+  ): Promise<boolean> {
     const client = await GSTClientModel.findByIdAndUpdate(
       clientId,
       {
         $pull: { assignedStaff: staffUserId },
         updatedAt: new Date().toISOString(),
       },
-      { new: true }
+      { new: true },
     );
     return client !== null;
   }
@@ -484,13 +530,17 @@ class GSTRepository {
    */
   async getAllStaffAssignments(): Promise<StaffAssignment[]> {
     const assignments = await StaffAssignmentModel.find();
-    return assignments.map((assignment) => assignment.toJSON() as StaffAssignment);
+    return assignments.map(
+      (assignment) => assignment.toJSON() as StaffAssignment,
+    );
   }
 
   /**
    * Create a staff assignment record
    */
-  async createStaffAssignment(assignment: StaffAssignment): Promise<StaffAssignment> {
+  async createStaffAssignment(
+    assignment: StaffAssignment,
+  ): Promise<StaffAssignment> {
     const newAssignment = await StaffAssignmentModel.create(assignment);
     return newAssignment.toJSON() as StaffAssignment;
   }
@@ -498,7 +548,9 @@ class GSTRepository {
   /**
    * Find staff assignment by ID
    */
-  async findStaffAssignmentById(id: string): Promise<StaffAssignment | undefined> {
+  async findStaffAssignmentById(
+    id: string,
+  ): Promise<StaffAssignment | undefined> {
     const assignment = await StaffAssignmentModel.findById(id);
     return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
@@ -506,7 +558,9 @@ class GSTRepository {
   /**
    * Find staff assignment by staff user ID
    */
-  async findStaffAssignmentByUserId(staffUserId: string): Promise<StaffAssignment | undefined> {
+  async findStaffAssignmentByUserId(
+    staffUserId: string,
+  ): Promise<StaffAssignment | undefined> {
     const assignment = await StaffAssignmentModel.findOne({ staffUserId });
     return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
@@ -514,11 +568,14 @@ class GSTRepository {
   /**
    * Update staff assignment
    */
-  async updateStaffAssignment(id: string, updates: Partial<StaffAssignment>): Promise<StaffAssignment | undefined> {
+  async updateStaffAssignment(
+    id: string,
+    updates: Partial<StaffAssignment>,
+  ): Promise<StaffAssignment | undefined> {
     const assignment = await StaffAssignmentModel.findByIdAndUpdate(
       id,
       updates,
-      { new: true }
+      { new: true },
     );
     return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }
@@ -534,7 +591,9 @@ class GSTRepository {
   /**
    * Get client filing status report
    */
-  async getClientFilingStatusReport(clientId: string): Promise<ClientFilingStatusReport | undefined> {
+  async getClientFilingStatusReport(
+    clientId: string,
+  ): Promise<ClientFilingStatusReport | undefined> {
     const client = await this.findClientById(clientId);
     if (!client) {
       return undefined;
@@ -548,23 +607,24 @@ class GSTRepository {
     let totalPendingAmount = 0;
     let lastFiledMonth: string | undefined;
 
-    filings.forEach(filing => {
+    filings.forEach((filing) => {
       // Check if fully filed
       const isFullyFiled = filing.gstr1Filed && filing.gstr3bFiled;
-      
+
       if (isFullyFiled) {
         if (!lastFiledMonth || filing.month > lastFiledMonth) {
           lastFiledMonth = filing.month;
         }
       } else {
         pendingMonths.push(filing.month);
-        
+
         // Check if overdue
         if (filing.gstr3bDueDate) {
           const dueDate = new Date(filing.gstr3bDueDate);
           if (today > dueDate) {
             overdueMonths.push(filing.month);
-            totalPendingAmount += filing.taxPaid + filing.lateFee + filing.interest;
+            totalPendingAmount +=
+              filing.taxPaid + filing.lateFee + filing.interest;
           }
         }
       }
@@ -572,14 +632,15 @@ class GSTRepository {
 
     // Calculate compliance score (on-time filings / total filings)
     const totalFilings = filings.length;
-    const onTimeFilings = filings.filter(f => 
-      f.gstr1Filed && f.gstr3bFiled && f.filingStatus === "filed"
+    const onTimeFilings = filings.filter(
+      (f) => f.gstr1Filed && f.gstr3bFiled && f.filingStatus === "filed",
     ).length;
-    const complianceScore = totalFilings > 0 ? Math.round((onTimeFilings / totalFilings) * 100) : 0;
+    const complianceScore =
+      totalFilings > 0 ? Math.round((onTimeFilings / totalFilings) * 100) : 0;
 
     // Get current period based on filing frequency
     const currentDate = new Date();
-    const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
 
     return {
       clientId: client.id,
@@ -592,14 +653,17 @@ class GSTRepository {
       pendingMonths,
       overdueMonths,
       totalPendingAmount,
-      complianceScore
+      complianceScore,
     };
   }
 
   /**
    * Get annual compliance summary
    */
-  async getAnnualComplianceSummary(clientId: string, financialYear: string): Promise<AnnualComplianceSummary | undefined> {
+  async getAnnualComplianceSummary(
+    clientId: string,
+    financialYear: string,
+  ): Promise<AnnualComplianceSummary | undefined> {
     const client = await this.findClientById(clientId);
     if (!client) {
       return undefined;
@@ -607,13 +671,22 @@ class GSTRepository {
 
     const filings = await this.findGSTFilingsByYear(clientId, financialYear);
 
-    const purchases = await PurchaseInvoiceModel.find({ clientId, financialYear });
+    const purchases = await PurchaseInvoiceModel.find({
+      clientId,
+      financialYear,
+    });
     const sales = await SalesInvoiceModel.find({ clientId, financialYear });
 
     const totalMonthsTracked = filings.length;
-    const monthsFiled = filings.filter(f => f.gstr1Filed && f.gstr3bFiled).length;
-    const monthsPending = filings.filter(f => !f.gstr1Filed || !f.gstr3bFiled).length;
-    const monthsLate = filings.filter(f => f.filingStatus === "late" || f.filingStatus === "overdue").length;
+    const monthsFiled = filings.filter(
+      (f) => f.gstr1Filed && f.gstr3bFiled,
+    ).length;
+    const monthsPending = filings.filter(
+      (f) => !f.gstr1Filed || !f.gstr3bFiled,
+    ).length;
+    const monthsLate = filings.filter(
+      (f) => f.filingStatus === "late" || f.filingStatus === "overdue",
+    ).length;
 
     const totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
     const totalPurchases = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
@@ -621,9 +694,10 @@ class GSTRepository {
     const totalLateFees = filings.reduce((sum, f) => sum + f.lateFee, 0);
     const totalInterest = filings.reduce((sum, f) => sum + f.interest, 0);
 
-    const complianceRate = totalMonthsTracked > 0 
-      ? Math.round((monthsFiled / totalMonthsTracked) * 100) 
-      : 0;
+    const complianceRate =
+      totalMonthsTracked > 0
+        ? Math.round((monthsFiled / totalMonthsTracked) * 100)
+        : 0;
 
     // Check for GSTR-9 (annual return) - this would be a separate filing
     // For now, we'll assume it's not implemented
@@ -643,7 +717,7 @@ class GSTRepository {
       totalLateFees,
       totalInterest,
       complianceRate,
-      gstr9Filed
+      gstr9Filed,
     };
   }
 

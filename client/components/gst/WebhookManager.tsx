@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { ObjectId } from "mongodb";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,18 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { Badge } from "../ui/badge";
 import {
   AlertCircle,
-  Check,
-  Copy,
   Eye,
   RotateCcw,
   Trash2,
@@ -47,7 +37,7 @@ import {
 import { toast } from "sonner";
 
 interface WebhookEndpoint {
-  id: ObjectId;
+  id: string;
   url: string;
   description?: string;
   events: string[];
@@ -62,8 +52,8 @@ interface WebhookEndpoint {
 }
 
 interface WebhookDelivery {
-  id: ObjectId;
-  eventId: ObjectId;
+  id: string;
+  eventId: string;
   attemptNumber: number;
   status: "success" | "failed" | "pending" | "timeout" | "invalid_url";
   httpStatusCode?: number;
@@ -73,15 +63,6 @@ interface WebhookDelivery {
   respondedAt?: string;
   willRetry: boolean;
   nextRetryAt?: string;
-}
-
-interface WebhookEvent {
-  id: ObjectId;
-  eventType: string;
-  status: "pending" | "processing" | "delivered" | "failed";
-  entityType: string;
-  entityId: ObjectId;
-  createdAt: string;
 }
 
 interface WebhookStats {
@@ -117,7 +98,10 @@ const AVAILABLE_EVENTS: { value: WebhookEventType; label: string }[] = [
   { value: "document.uploaded", label: "Document Uploaded" },
   { value: "document.processed", label: "Document Processed" },
   { value: "document.rejected", label: "Document Rejected" },
-  { value: "itc.reconciliation_completed", label: "ITC Reconciliation Completed" },
+  {
+    value: "itc.reconciliation_completed",
+    label: "ITC Reconciliation Completed",
+  },
   { value: "itc.discrepancy_detected", label: "ITC Discrepancy Detected" },
   { value: "payment.received", label: "Payment Received" },
   { value: "payment.failed", label: "Payment Failed" },
@@ -130,8 +114,10 @@ export function WebhookManager() {
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDeliveriesDialog, setShowDeliveriesDialog] = useState(false);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<WebhookEndpoint | null>(null);
-  const [selectedEndpointStats, setSelectedEndpointStats] = useState<WebhookStats | null>(null);
+  const [selectedEndpoint, setSelectedEndpoint] =
+    useState<WebhookEndpoint | null>(null);
+  const [selectedEndpointStats, setSelectedEndpointStats] =
+    useState<WebhookStats | null>(null);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [expandedEndpoint, setExpandedEndpoint] = useState<string | null>(null);
   const [newEndpoint, setNewEndpoint] = useState({
@@ -161,9 +147,11 @@ export function WebhookManager() {
     }
   };
 
-  const fetchEndpointStats = async (endpointId: ObjectId) => {
+  const fetchEndpointStats = async (endpointId: string) => {
     try {
-      const response = await fetch(`/api/webhooks/endpoints/${endpointId}/stats`);
+      const response = await fetch(
+        `/api/webhooks/endpoints/${endpointId}/stats`,
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
       const data = await response.json();
       setSelectedEndpointStats(data.stats);
@@ -173,9 +161,11 @@ export function WebhookManager() {
     }
   };
 
-  const fetchDeliveries = async (endpointId: ObjectId) => {
+  const fetchDeliveries = async (endpointId: string) => {
     try {
-      const response = await fetch(`/api/webhooks/endpoints/${endpointId}/deliveries`);
+      const response = await fetch(
+        `/api/webhooks/endpoints/${endpointId}/deliveries`,
+      );
       if (!response.ok) throw new Error("Failed to fetch deliveries");
       const data = await response.json();
       setDeliveries(data.deliveries);
@@ -224,8 +214,9 @@ export function WebhookManager() {
     });
   };
 
-  const handleDeleteEndpoint = async (endpointId: ObjectId) => {
-    if (!confirm("Are you sure you want to delete this webhook endpoint?")) return;
+  const handleDeleteEndpoint = async (endpointId: string) => {
+    if (!confirm("Are you sure you want to delete this webhook endpoint?"))
+      return;
 
     try {
       const response = await fetch(`/api/webhooks/endpoints/${endpointId}`, {
@@ -242,12 +233,15 @@ export function WebhookManager() {
     }
   };
 
-  const handleTestWebhook = async (endpointId: ObjectId) => {
+  const handleTestWebhook = async (endpointId: string) => {
     try {
-      setTestingEndpoint(endpointId.toString());
-      const response = await fetch(`/api/webhooks/endpoints/${endpointId}/test`, {
-        method: "POST",
-      });
+      setTestingEndpoint(endpointId);
+      const response = await fetch(
+        `/api/webhooks/endpoints/${endpointId}/test`,
+        {
+          method: "POST",
+        },
+      );
 
       if (!response.ok) throw new Error("Failed to test webhook");
 
@@ -292,7 +286,7 @@ export function WebhookManager() {
       {
         description: "Save this secret securely. It will not be shown again.",
         duration: 10000,
-      }
+      },
     );
   };
 
@@ -320,7 +314,9 @@ export function WebhookManager() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Webhook Management</h2>
-          <p className="text-gray-600">Configure webhooks to receive real-time updates</p>
+          <p className="text-gray-600">
+            Configure webhooks to receive real-time updates
+          </p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)}>+ New Webhook</Button>
       </div>
@@ -332,7 +328,9 @@ export function WebhookManager() {
             <div className="text-center text-gray-500">
               <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>No webhook endpoints configured</p>
-              <p className="text-sm">Create your first webhook to get started</p>
+              <p className="text-sm">
+                Create your first webhook to get started
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -346,7 +344,7 @@ export function WebhookManager() {
                   setExpandedEndpoint(
                     expandedEndpoint === endpoint.id.toString()
                       ? null
-                      : endpoint.id.toString()
+                      : endpoint.id.toString(),
                   )
                 }
               >
@@ -354,10 +352,14 @@ export function WebhookManager() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-lg">{endpoint.url}</CardTitle>
-                      <Badge variant={endpoint.isActive ? "default" : "secondary"}>
+                      <Badge
+                        variant={endpoint.isActive ? "default" : "secondary"}
+                      >
                         {endpoint.isActive ? "Active" : "Inactive"}
                       </Badge>
-                      {endpoint.isTestMode && <Badge variant="outline">Test Mode</Badge>}
+                      {endpoint.isTestMode && (
+                        <Badge variant="outline">Test Mode</Badge>
+                      )}
                     </div>
                     {endpoint.description && (
                       <CardDescription>{endpoint.description}</CardDescription>
@@ -373,7 +375,9 @@ export function WebhookManager() {
                         <span>
                           Last Success:{" "}
                           <strong>
-                            {new Date(endpoint.lastSuccessfulDeliveryAt).toLocaleDateString()}
+                            {new Date(
+                              endpoint.lastSuccessfulDeliveryAt,
+                            ).toLocaleDateString()}
                           </strong>
                         </span>
                       )}
@@ -418,7 +422,9 @@ export function WebhookManager() {
                       disabled={testingEndpoint === endpoint.id.toString()}
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
-                      {testingEndpoint === endpoint.id.toString() ? "Testing..." : "Test"}
+                      {testingEndpoint === endpoint.id.toString()
+                        ? "Testing..."
+                        : "Test"}
                     </Button>
                     <Button
                       size="sm"
@@ -431,8 +437,14 @@ export function WebhookManager() {
                   </div>
 
                   {testResult && (
-                    <div className={`p-3 rounded ${testResult.success ? "bg-green-50" : "bg-red-50"}`}>
-                      <p className={testResult.success ? "text-green-800" : "text-red-800"}>
+                    <div
+                      className={`p-3 rounded ${testResult.success ? "bg-green-50" : "bg-red-50"}`}
+                    >
+                      <p
+                        className={
+                          testResult.success ? "text-green-800" : "text-red-800"
+                        }
+                      >
                         {testResult.message}
                       </p>
                       {testResult.responseTime && (
@@ -461,21 +473,32 @@ export function WebhookManager() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Webhook URL *</label>
+              <label className="block text-sm font-medium mb-1">
+                Webhook URL *
+              </label>
               <Input
                 type="url"
                 placeholder="https://example.com/webhooks"
                 value={newEndpoint.url}
-                onChange={(e) => setNewEndpoint({ ...newEndpoint, url: e.target.value })}
+                onChange={(e) =>
+                  setNewEndpoint({ ...newEndpoint, url: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="block text-sm font-medium mb-1">
+                Description
+              </label>
               <Textarea
                 placeholder="Optional description for this webhook"
                 value={newEndpoint.description}
-                onChange={(e) => setNewEndpoint({ ...newEndpoint, description: e.target.value })}
+                onChange={(e) =>
+                  setNewEndpoint({
+                    ...newEndpoint,
+                    description: e.target.value,
+                  })
+                }
                 rows={2}
               />
             </div>
@@ -484,7 +507,10 @@ export function WebhookManager() {
               <label className="block text-sm font-medium mb-2">Events *</label>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded">
                 {AVAILABLE_EVENTS.map((event) => (
-                  <label key={event.value} className="flex items-center gap-2 cursor-pointer">
+                  <label
+                    key={event.value}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={newEndpoint.events.includes(event.value)}
@@ -498,7 +524,10 @@ export function WebhookManager() {
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleCreateWebhook}>Create Webhook</Button>
@@ -508,7 +537,10 @@ export function WebhookManager() {
       </Dialog>
 
       {/* Deliveries Dialog */}
-      <Dialog open={showDeliveriesDialog} onOpenChange={setShowDeliveriesDialog}>
+      <Dialog
+        open={showDeliveriesDialog}
+        onOpenChange={setShowDeliveriesDialog}
+      >
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Webhook Deliveries</DialogTitle>
@@ -536,7 +568,9 @@ export function WebhookManager() {
               <Card>
                 <CardContent className="pt-4 text-center">
                   <p className="text-gray-600 text-sm">Total Deliveries</p>
-                  <p className="text-2xl font-bold">{selectedEndpointStats.totalDeliveries}</p>
+                  <p className="text-2xl font-bold">
+                    {selectedEndpointStats.totalDeliveries}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -562,12 +596,19 @@ export function WebhookManager() {
                       </Badge>
                     </TableCell>
                     <TableCell>{delivery.httpStatusCode || "-"}</TableCell>
-                    <TableCell>{delivery.responseTime ? `${delivery.responseTime}ms` : "-"}</TableCell>
-                    <TableCell>{new Date(delivery.sentAt).toLocaleString()}</TableCell>
+                    <TableCell>
+                      {delivery.responseTime
+                        ? `${delivery.responseTime}ms`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(delivery.sentAt).toLocaleString()}
+                    </TableCell>
                     <TableCell>
                       {delivery.status === "failed" && delivery.willRetry && (
                         <span className="text-sm text-gray-600">
-                          Retry at {new Date(delivery.nextRetryAt!).toLocaleString()}
+                          Retry at{" "}
+                          {new Date(delivery.nextRetryAt!).toLocaleString()}
                         </span>
                       )}
                     </TableCell>

@@ -20,16 +20,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import {
   AlertCircle,
   TrendingDown,
-  TrendingUp,
   CheckCircle2,
   RefreshCw,
   FileText,
-  Download,
   Loader2,
   Calendar,
 } from "lucide-react";
@@ -92,16 +89,16 @@ interface ITCReconciliationDashboardProps {
   clientId: string;
 }
 
-export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProps> = ({
-  clientId,
-}) => {
+export const ITCReconciliationDashboard: React.FC<
+  ITCReconciliationDashboardProps
+> = ({ clientId }) => {
   // State
   const [records, setRecords] = useState<ReconciliationRecord[]>([]);
   const [report, setReport] = useState<Report | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<ReconciliationRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] =
+    useState<ReconciliationRecord | null>(null);
   const [analysis, setAnalysis] = useState<DiscrepancyAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [filterDiscrepancies, setFilterDiscrepancies] = useState(false);
   const [filterNeedsReview, setFilterNeedsReview] = useState(false);
   const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
@@ -123,7 +120,13 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
       if (!response.ok) throw new Error("Failed to fetch reconciliations");
 
       const data: ReconciliationRecord[] = await response.json();
-      setRecords(data.sort((a, b) => new Date(b.month + "-01").getTime() - new Date(a.month + "-01").getTime()));
+      setRecords(
+        data.sort(
+          (a, b) =>
+            new Date(b.month + "-01").getTime() -
+            new Date(a.month + "-01").getTime(),
+        ),
+      );
     } catch (error) {
       toast({
         title: "Error",
@@ -137,7 +140,9 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
 
   const fetchReport = async () => {
     try {
-      const response = await fetch(`/api/itc-reconciliation/${clientId}/report`);
+      const response = await fetch(
+        `/api/itc-reconciliation/${clientId}/report`,
+      );
       if (!response.ok) throw new Error("Failed to fetch report");
 
       const data: Report = await response.json();
@@ -151,7 +156,7 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/itc-reconciliation/${clientId}/${month}/analysis`
+        `/api/itc-reconciliation/${clientId}/${month}/analysis`,
       );
       if (!response.ok) throw new Error("Failed to fetch analysis");
 
@@ -187,7 +192,7 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ resolution: resolutionText }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to resolve");
@@ -227,24 +232,6 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
     discrepancy: record.discrepancy || 0,
   }));
 
-  // Get discrepancy reason breakdown for pie chart
-  const discrepancyBreakdown = report?.discrepancyByReason || {};
-  const reasonData = Object.entries(discrepancyBreakdown)
-    .filter(([, count]) => count > 0)
-    .map(([reason, count]) => ({
-      name: reason.replace(/_/g, " ").toUpperCase(),
-      value: count,
-    }));
-
-  const reasonColors: Record<string, string> = {
-    "EXCESS CLAIMED": "#ef4444",
-    "UNCLAIMED": "#f97316",
-    "GST REJECTED": "#dc2626",
-    "PENDING ACCEPTANCE": "#eab308",
-    "RECONCILED": "#22c55e",
-    "AWAITING GSTR2B": "#0ea5e9",
-  };
-
   return (
     <div className="w-full space-y-6">
       {/* Header with Stats */}
@@ -260,7 +247,9 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
 
           <Card className="p-4">
             <div className="text-sm text-gray-600">Total Claimed</div>
-            <div className="text-2xl font-bold">₹{(report.totalClaimed / 100000).toFixed(2)}L</div>
+            <div className="text-2xl font-bold">
+              ₹{(report.totalClaimed / 100000).toFixed(2)}L
+            </div>
             <div className="text-xs text-gray-500 mt-2">
               Available: ₹{(report.totalAvailable / 100000).toFixed(2)}L
             </div>
@@ -268,7 +257,9 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
 
           <Card className="p-4">
             <div className="text-sm text-gray-600">Total Discrepancy</div>
-            <div className={`text-2xl font-bold ${report.totalDiscrepancy > 0 ? "text-red-600" : "text-green-600"}`}>
+            <div
+              className={`text-2xl font-bold ${report.totalDiscrepancy > 0 ? "text-red-600" : "text-green-600"}`}
+            >
               ₹{(Math.abs(report.totalDiscrepancy) / 100000).toFixed(2)}L
             </div>
             <div className="text-xs text-gray-500 mt-2">
@@ -278,7 +269,9 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
 
           <Card className="p-4">
             <div className="text-sm text-gray-600">Pending Review</div>
-            <div className="text-2xl font-bold text-amber-600">{report.flaggedForReview}</div>
+            <div className="text-2xl font-bold text-amber-600">
+              {report.flaggedForReview}
+            </div>
             <div className="text-xs text-gray-500 mt-2">
               {report.resolved} resolved
             </div>
@@ -341,8 +334,15 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
           Needs Review
         </Button>
 
-        <Button variant="outline" size="sm" onClick={fetchReconciliations} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchReconciliations}
+          disabled={loading}
+        >
+          <RefreshCw
+            className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -382,7 +382,9 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
                       {record.month}
                     </td>
                     <td className="py-3">{record.financialYear}</td>
-                    <td className="py-3">₹{(record.claimedITC / 100000).toFixed(2)}L</td>
+                    <td className="py-3">
+                      ₹{(record.claimedITC / 100000).toFixed(2)}L
+                    </td>
                     <td className="py-3">
                       {record.availableITCFromGST
                         ? `₹${(record.availableITCFromGST / 100000).toFixed(2)}L`
@@ -390,10 +392,19 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
                     </td>
                     <td className="py-3">
                       {record.discrepancy ? (
-                        <span className={record.discrepancy > 0 ? "text-red-600" : "text-green-600"}>
-                          {record.discrepancy > 0 ? "+" : ""}₹{(Math.abs(record.discrepancy) / 100000).toFixed(2)}L
+                        <span
+                          className={
+                            record.discrepancy > 0
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }
+                        >
+                          {record.discrepancy > 0 ? "+" : ""}₹
+                          {(Math.abs(record.discrepancy) / 100000).toFixed(2)}L
                           {record.discrepancyPercentage && (
-                            <span className="text-xs ml-1">({record.discrepancyPercentage.toFixed(1)}%)</span>
+                            <span className="text-xs ml-1">
+                              ({record.discrepancyPercentage.toFixed(1)}%)
+                            </span>
                           )}
                         </span>
                       ) : (
@@ -415,7 +426,10 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
                           </Badge>
                         )}
                         {!record.hasDiscrepancy && !record.needsReview && (
-                          <Badge variant="outline" className="text-xs text-green-700">
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-green-700"
+                          >
                             <CheckCircle2 className="w-3 h-3 mr-1" />
                             OK
                           </Badge>
@@ -468,37 +482,79 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Claimed ITC</div>
-                  <div className="text-xl font-bold">₹{(analysis.claimed / 100000).toFixed(2)}L</div>
+                  <div className="text-xl font-bold">
+                    ₹{(analysis.claimed / 100000).toFixed(2)}L
+                  </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Available from Portal</div>
-                  <div className="text-xl font-bold">₹{(analysis.available / 100000).toFixed(2)}L</div>
+                  <div className="text-sm text-gray-600">
+                    Available from Portal
+                  </div>
+                  <div className="text-xl font-bold">
+                    ₹{(analysis.available / 100000).toFixed(2)}L
+                  </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Pending Acceptance</div>
-                  <div className="text-xl font-bold text-amber-600">₹{(analysis.pending / 100000).toFixed(2)}L</div>
+                  <div className="text-sm text-gray-600">
+                    Pending Acceptance
+                  </div>
+                  <div className="text-xl font-bold text-amber-600">
+                    ₹{(analysis.pending / 100000).toFixed(2)}L
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Rejected</div>
-                  <div className="text-xl font-bold text-red-600">₹{(analysis.rejected / 100000).toFixed(2)}L</div>
+                  <div className="text-xl font-bold text-red-600">
+                    ₹{(analysis.rejected / 100000).toFixed(2)}L
+                  </div>
                 </div>
               </div>
 
               <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
-                <div className="font-semibold">Reason: {analysis.reason.replace(/_/g, " ").toUpperCase()}</div>
+                <div className="font-semibold">
+                  Reason: {analysis.reason.replace(/_/g, " ").toUpperCase()}
+                </div>
                 <div className="text-sm mt-1">
-                  Discrepancy: {analysis.discrepancy > 0 ? "+" : ""}₹{(Math.abs(analysis.discrepancy) / 100000).toFixed(2)}L ({analysis.discrepancyPercentage.toFixed(1)}%)
+                  Discrepancy: {analysis.discrepancy > 0 ? "+" : ""}₹
+                  {(Math.abs(analysis.discrepancy) / 100000).toFixed(2)}L (
+                  {analysis.discrepancyPercentage.toFixed(1)}%)
                 </div>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">Invoice Breakdown</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>Total Invoices: {analysis.invoiceBreakdown.totalInvoices}</div>
-                  <div>Total Amount: ₹{(analysis.invoiceBreakdown.totalAmount / 100000).toFixed(2)}L</div>
-                  <div>SGST: ₹{(analysis.invoiceBreakdown.breakdown.sgst / 100000).toFixed(2)}L</div>
-                  <div>CGST: ₹{(analysis.invoiceBreakdown.breakdown.cgst / 100000).toFixed(2)}L</div>
-                  <div className="col-span-2">IGST: ₹{(analysis.invoiceBreakdown.breakdown.igst / 100000).toFixed(2)}L</div>
+                  <div>
+                    Total Invoices: {analysis.invoiceBreakdown.totalInvoices}
+                  </div>
+                  <div>
+                    Total Amount: ₹
+                    {(analysis.invoiceBreakdown.totalAmount / 100000).toFixed(
+                      2,
+                    )}
+                    L
+                  </div>
+                  <div>
+                    SGST: ₹
+                    {(
+                      analysis.invoiceBreakdown.breakdown.sgst / 100000
+                    ).toFixed(2)}
+                    L
+                  </div>
+                  <div>
+                    CGST: ₹
+                    {(
+                      analysis.invoiceBreakdown.breakdown.cgst / 100000
+                    ).toFixed(2)}
+                    L
+                  </div>
+                  <div className="col-span-2">
+                    IGST: ₹
+                    {(
+                      analysis.invoiceBreakdown.breakdown.igst / 100000
+                    ).toFixed(2)}
+                    L
+                  </div>
                 </div>
               </div>
 
@@ -524,13 +580,17 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
           <DialogHeader>
             <DialogTitle>Resolve Discrepancy</DialogTitle>
             <DialogDescription>
-              Month: {selectedRecord?.month} | Discrepancy: ₹{(Math.abs(selectedRecord?.discrepancy || 0) / 100000).toFixed(2)}L
+              Month: {selectedRecord?.month} | Discrepancy: ₹
+              {(Math.abs(selectedRecord?.discrepancy || 0) / 100000).toFixed(2)}
+              L
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-semibold mb-2 block">Resolution Details</label>
+              <label className="text-sm font-semibold mb-2 block">
+                Resolution Details
+              </label>
               <textarea
                 value={resolutionText}
                 onChange={(e) => setResolutionText(e.target.value)}
@@ -541,7 +601,10 @@ export const ITCReconciliationDashboard: React.FC<ITCReconciliationDashboardProp
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowResolveDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowResolveDialog(false)}
+              >
                 Cancel
               </Button>
               <Button

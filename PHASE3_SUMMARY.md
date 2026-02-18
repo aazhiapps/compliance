@@ -3,7 +3,7 @@
 **Status**: Production Ready  
 **Completion Date**: February 16, 2026  
 **Files Created**: 4 major + 1 documentation  
-**Total Lines of Code**: 1,876  
+**Total Lines of Code**: 1,876
 
 ---
 
@@ -12,6 +12,7 @@
 Phase 3 implements a comprehensive ITC (Input Tax Credit) Reconciliation Engine that automatically calculates claimed ITC from purchase invoices, syncs with GST portal data, detects discrepancies, and flags items for review.
 
 **Key Features**:
+
 - Automatic claimed ITC calculation from purchase invoices
 - GST portal data synchronization
 - Intelligent discrepancy detection and auto-flagging
@@ -46,7 +47,7 @@ ITCReconciliation {
   clientId: ObjectId
   month: string (YYYY-MM)
   financialYear: string (YYYY-YY)
-  
+
   // Claimed ITC from invoices
   claimedITC: number
   claimedInvoiceCount: number
@@ -55,12 +56,12 @@ ITCReconciliation {
     cgst: number
     igst: number
   }
-  
+
   // Available from GST Portal
   availableITCFromGST?: number
   pendingITC?: number (Awaiting acceptance)
   rejectedITC?: number (Rejected by GST)
-  
+
   // Discrepancy Analysis
   discrepancy: number (Claimed - Available)
   discrepancyPercentage: number
@@ -72,16 +73,16 @@ ITCReconciliation {
     "reconciled"        // Resolved
     "awaiting_gstr2b"   // Waiting for GSTR-2B upload
   ]
-  
+
   // Resolution
   resolution?: string
   resolvedBy?: ObjectId
   resolvedAt?: Date
-  
+
   // Flags
   hasDiscrepancy: boolean
   needsReview: boolean
-  
+
   // Audit
   lastSyncedAt?: Date
   syncedBy?: ObjectId
@@ -126,6 +127,7 @@ async deleteReconciliation(clientId: ObjectId, month: string)
 ```
 
 **Features**:
+
 - Automatic discrepancy calculation (Claimed - Available)
 - Smart reason detection based on amounts
 - Comprehensive statistics aggregation
@@ -158,16 +160,18 @@ async bulkCalculateClaimedITC(month: string, financialYear: string)
 **Business Logic**:
 
 #### Auto-Review Threshold Configuration
+
 ```typescript
 const AUTO_REVIEW_THRESHOLDS = {
-  discrepancyPercentageThreshold: 5,      // Flag if |discrepancy%| > 5%
-  absoluteDiscrepancyThreshold: 10000,    // Flag if |discrepancy| > ₹10,000
-  pendingITCThreshold: 50000,             // Flag if pending > ₹50,000
-  rejectedITCThreshold: 25000,            // Flag if rejected > ₹25,000
+  discrepancyPercentageThreshold: 5, // Flag if |discrepancy%| > 5%
+  absoluteDiscrepancyThreshold: 10000, // Flag if |discrepancy| > ₹10,000
+  pendingITCThreshold: 50000, // Flag if pending > ₹50,000
+  rejectedITCThreshold: 25000, // Flag if rejected > ₹25,000
 };
 ```
 
 #### Reconciliation Process
+
 1. **Calculate Claimed ITC**: Sum SGST/CGST/IGST from all purchase invoices
 2. **Sync Portal Data**: Update with available ITC from GST portal
 3. **Detect Discrepancy**: Calculate difference and percentage
@@ -176,6 +180,7 @@ const AUTO_REVIEW_THRESHOLDS = {
 6. **Generate Recommendations**: Based on discrepancy type
 
 #### Recommendation Examples
+
 - **Excess Claimed**: "Review purchase invoices to ensure all GSTs are correctly claimed"
 - **Pending ITC**: "Monitor pending ITC acceptance status on GST portal"
 - **Rejected ITC**: "Review rejected invoices for compliance issues"
@@ -189,56 +194,60 @@ const AUTO_REVIEW_THRESHOLDS = {
 **API Endpoints**:
 
 #### Core Operations
+
 ```
 POST   /api/itc-reconciliation/calculate
        Calculate claimed ITC for a specific month
        Auth: Staff required
-       
+
 POST   /api/itc-reconciliation/sync
        Sync with GST portal data
        Auth: Admin required
-       
+
 POST   /api/itc-reconciliation/bulk-calculate
        Calculate for all clients in a month
        Auth: Admin required
 ```
 
 #### Retrieval
+
 ```
 GET    /api/itc-reconciliation/:clientId
        Get all reconciliation records for client
-       
+
 GET    /api/itc-reconciliation/:clientId/fy/:fy
        Get FY-specific reconciliations
-       
+
 GET    /api/itc-reconciliation/:clientId/:month
        Get specific month details
-       
+
 GET    /api/itc-reconciliation/:clientId/:month/analysis
        Get detailed discrepancy analysis
-       
+
 GET    /api/itc-reconciliation/:clientId/report
        Generate comprehensive report
-       
+
 GET    /api/itc-reconciliation/:clientId/stats
        Get statistics (claimed, available, discrepancy)
-       
+
 GET    /api/itc-reconciliation/:clientId/pending-review
        Get items pending review
 ```
 
 #### Management
+
 ```
 POST   /api/itc-reconciliation/:clientId/:month/resolve
        Resolve a discrepancy
        Auth: Staff required
-       
+
 POST   /api/itc-reconciliation/:clientId/:month/review
        Mark for review
        Auth: Staff required
 ```
 
 #### Admin
+
 ```
 GET    /api/itc-reconciliation/discrepancies/list
        Get all discrepancies with filtering
@@ -254,17 +263,21 @@ GET    /api/itc-reconciliation/discrepancies/list
 **Features**:
 
 #### Stats Cards
+
 - Total months tracked
 - Total claimed vs available
 - Total discrepancy with percentage
 - Pending review count
 
 #### Charts
+
 1. **Line Chart**: Claimed vs Available ITC trend
 2. **Bar Chart**: Monthly discrepancy trend
 
 #### Data Table
+
 Columns:
+
 - Month with calendar icon
 - Financial Year
 - Claimed Amount
@@ -274,6 +287,7 @@ Columns:
 - Action buttons (Analyze, Resolve)
 
 #### Dialogs
+
 1. **Analysis Dialog**
    - Monthly breakdown
    - Invoice analysis
@@ -284,6 +298,7 @@ Columns:
    - Submit and tracking
 
 #### Filtering
+
 - By discrepancies
 - By review status
 - Combined filters
@@ -293,6 +308,7 @@ Columns:
 ## API Request/Response Examples
 
 ### Calculate Claimed ITC
+
 ```bash
 POST /api/itc-reconciliation/calculate
 Content-Type: application/json
@@ -320,6 +336,7 @@ Response:
 ```
 
 ### Sync with GST Portal
+
 ```bash
 POST /api/itc-reconciliation/sync
 Content-Type: application/json
@@ -349,6 +366,7 @@ Response:
 ```
 
 ### Get Discrepancy Analysis
+
 ```bash
 GET /api/itc-reconciliation/65d1a2b3c4d5e6f7g8h9i0j1/2024-02/analysis
 
@@ -380,6 +398,7 @@ Response:
 ```
 
 ### Get Reconciliation Report
+
 ```bash
 GET /api/itc-reconciliation/65d1a2b3c4d5e6f7g8h9i0j1/report?financialYear=2023-24
 
@@ -424,16 +443,19 @@ Response:
 ## Integration Points
 
 ### With Phase 1 (Filing Workflow)
+
 - Reference `GSTReturnFilingModel` for filing status
 - Link ITC discrepancies to filing steps
 - Use discrepancy analysis in filing validation
 
 ### With Phase 2 (Document Management)
+
 - Attach supporting documents to discrepancy resolutions
 - Store invoice PDFs and verification documents
 - Maintain version history of discrepancy analysis
 
 ### With Future Phases
+
 - Phase 4: Use ITC data in background jobs
 - Phase 5: Include in reconciliation reports
 - Phase 6: Factor into risk scoring
@@ -443,6 +465,7 @@ Response:
 ## Error Handling
 
 ### Common Scenarios
+
 ```typescript
 // Missing reconciliation record
 ERROR 404: Reconciliation record not found
@@ -458,6 +481,7 @@ ERROR 403: Insufficient permissions
 ```
 
 ### Graceful Degradation
+
 - Non-critical field failures don't block primary operations
 - Portal sync failures are logged but don't crash processing
 - Missing threshold configurations fall back to defaults
@@ -467,16 +491,19 @@ ERROR 403: Insufficient permissions
 ## Performance Considerations
 
 ### Query Optimization
+
 - Indexes on `clientId`, `month`, `hasDiscrepancy`, `needsReview`
 - Aggregation pipelines for statistics calculation
 - Pagination ready for large datasets
 
 ### Caching Opportunities (Future)
+
 - Cache FY report generation (low update frequency)
 - Cache discrepancy breakdown by reason
 - Cache client statistics (5-minute TTL)
 
 ### Scalability
+
 - Bulk calculation designed for 1000s of clients
 - Batch processing for monthly syncs
 - Streaming for large report generation
@@ -486,34 +513,36 @@ ERROR 403: Insufficient permissions
 ## Testing Examples
 
 ### Unit Tests (Recommended)
+
 ```typescript
-describe('ITCReconciliationService', () => {
-  it('should calculate claimed ITC correctly', async () => {
+describe("ITCReconciliationService", () => {
+  it("should calculate claimed ITC correctly", async () => {
     // Sum of SGST/CGST/IGST = claimedITC
   });
-  
-  it('should auto-detect discrepancy reason', async () => {
+
+  it("should auto-detect discrepancy reason", async () => {
     // Based on claimed vs available
   });
-  
-  it('should flag for review based on thresholds', async () => {
+
+  it("should flag for review based on thresholds", async () => {
     // 5% discrepancy > threshold
   });
 });
 ```
 
 ### Integration Tests (Recommended)
+
 ```typescript
-describe('ITC Reconciliation API', () => {
-  it('should POST to /calculate endpoint', async () => {
+describe("ITC Reconciliation API", () => {
+  it("should POST to /calculate endpoint", async () => {
     // Full flow: invoice → calculation → storage
   });
-  
-  it('should sync with GST portal data', async () => {
+
+  it("should sync with GST portal data", async () => {
     // Update and recalculate discrepancy
   });
-  
-  it('should resolve discrepancy and audit', async () => {
+
+  it("should resolve discrepancy and audit", async () => {
     // Mark resolved with timestamp and user ID
   });
 });
@@ -524,20 +553,24 @@ describe('ITC Reconciliation API', () => {
 ## Configuration & Customization
 
 ### Auto-Review Thresholds
+
 Modify in `ITCReconciliationService.ts`:
+
 ```typescript
 const AUTO_REVIEW_THRESHOLDS = {
-  discrepancyPercentageThreshold: 5,    // Adjust % threshold
-  absoluteDiscrepancyThreshold: 10000,  // Adjust amount
-  pendingITCThreshold: 50000,           // Adjust pending limit
-  rejectedITCThreshold: 25000,          // Adjust rejection limit
+  discrepancyPercentageThreshold: 5, // Adjust % threshold
+  absoluteDiscrepancyThreshold: 10000, // Adjust amount
+  pendingITCThreshold: 50000, // Adjust pending limit
+  rejectedITCThreshold: 25000, // Adjust rejection limit
 };
 ```
 
 ### Discrepancy Reasons
+
 Extend enum in `ITCReconciliationRecord`:
+
 ```typescript
-discrepancyReason?: 
+discrepancyReason?:
   | "excess_claimed"
   | "unclaimed"
   | "gst_rejected"
@@ -552,12 +585,14 @@ discrepancyReason?:
 ## Monitoring & Alerts (Recommended)
 
 ### Key Metrics
+
 - Reconciliation processing time
 - Discrepancy detection rate
 - Resolution turnaround time
 - Portal sync success rate
 
 ### Recommended Alerts
+
 - Sync failures (3+ consecutive months)
 - High discrepancy rate (>10% of months)
 - Unresolved items older than 30 days
@@ -568,9 +603,11 @@ discrepancyReason?:
 ## Dependencies
 
 **New Packages**:
+
 - None required (uses existing: mongoose, express, ioredis)
 
 **Existing Packages Used**:
+
 - `mongoose`: MongoDB queries and aggregations
 - `express`: API routing
 - `recharts`: (Client) Chart visualizations
@@ -590,13 +627,13 @@ discrepancyReason?:
 
 ## Files Summary
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| ITCReconciliationRepository.ts | 467 | Data access layer with 18 methods |
-| ITCReconciliationService.ts | 439 | Business logic with auto-detection |
-| server/routes/itc-reconciliation.ts | 407 | 13 API endpoints |
-| ITCReconciliationDashboard.tsx | 563 | React UI with charts & dialogs |
-| **Total** | **1,876** | Production-ready implementation |
+| File                                | Lines     | Purpose                            |
+| ----------------------------------- | --------- | ---------------------------------- |
+| ITCReconciliationRepository.ts      | 467       | Data access layer with 18 methods  |
+| ITCReconciliationService.ts         | 439       | Business logic with auto-detection |
+| server/routes/itc-reconciliation.ts | 407       | 13 API endpoints                   |
+| ITCReconciliationDashboard.tsx      | 563       | React UI with charts & dialogs     |
+| **Total**                           | **1,876** | Production-ready implementation    |
 
 ---
 

@@ -34,14 +34,22 @@ export const s3Paths = {
   /**
    * Build path for GST document
    */
-  gstDocument: (clientId: string, fy: string, month: string, type: string, documentId: string) =>
-    `gst/${clientId}/fy-${fy}/month-${month}/${type}/${documentId}`,
+  gstDocument: (
+    clientId: string,
+    fy: string,
+    month: string,
+    type: string,
+    documentId: string,
+  ) => `gst/${clientId}/fy-${fy}/month-${month}/${type}/${documentId}`,
 
   /**
    * Build path for invoice document
    */
-  invoice: (clientId: string, invoiceType: "purchase" | "sales", invoiceId: string) =>
-    `gst/${clientId}/invoices/${invoiceType}/${invoiceId}`,
+  invoice: (
+    clientId: string,
+    invoiceType: "purchase" | "sales",
+    invoiceId: string,
+  ) => `gst/${clientId}/invoices/${invoiceType}/${invoiceId}`,
 
   /**
    * Build path for application document
@@ -58,8 +66,7 @@ export const s3Paths = {
   /**
    * Build path for user avatar
    */
-  avatar: (userId: string, fileName: string) =>
-    `avatars/${userId}/${fileName}`,
+  avatar: (userId: string, fileName: string) => `avatars/${userId}/${fileName}`,
 };
 
 /**
@@ -73,7 +80,7 @@ export const s3Service = {
     key: string,
     body: Buffer | Blob,
     contentType: string = "application/octet-stream",
-    metadata?: Record<string, string>
+    metadata?: Record<string, string>,
   ): Promise<string> {
     try {
       const command = new PutObjectCommand({
@@ -107,8 +114,9 @@ export const s3Service = {
       const chunks: Uint8Array[] = [];
 
       if (response.Body) {
-        for await (const chunk of response.Body) {
-          chunks.push(chunk as Uint8Array);
+        const stream = response.Body as AsyncIterable<Uint8Array>;
+        for await (const chunk of stream) {
+          chunks.push(chunk);
         }
       }
 
@@ -140,7 +148,10 @@ export const s3Service = {
    * Generate presigned URL for file access (download)
    * Default expiry: 1 hour (3600 seconds)
    */
-  async getPresignedDownloadUrl(key: string, expiresIn: number = 3600): Promise<string> {
+  async getPresignedDownloadUrl(
+    key: string,
+    expiresIn: number = 3600,
+  ): Promise<string> {
     try {
       const command = new GetObjectCommand({
         Bucket: S3_BUCKET,
@@ -158,7 +169,10 @@ export const s3Service = {
    * Generate presigned URL for file upload (PUT)
    * Default expiry: 15 minutes (900 seconds)
    */
-  async getPresignedUploadUrl(key: string, expiresIn: number = 900): Promise<string> {
+  async getPresignedUploadUrl(
+    key: string,
+    expiresIn: number = 900,
+  ): Promise<string> {
     try {
       const command = new PutObjectCommand({
         Bucket: S3_BUCKET,
@@ -215,10 +229,11 @@ export const s3MockService = {
   async uploadFile(
     key: string,
     body: Buffer | Blob,
-    contentType: string = "application/octet-stream",
-    metadata?: Record<string, string>
+    _contentType: string = "application/octet-stream",
   ): Promise<string> {
-    const buffer = Buffer.isBuffer(body) ? body : Buffer.from(await body.arrayBuffer());
+    const buffer = Buffer.isBuffer(body)
+      ? body
+      : Buffer.from(await body.arrayBuffer());
     this.mockStorage.set(key, buffer);
     console.log(`[MOCK S3] Uploaded ${key}`);
     return `s3://${S3_BUCKET}/${key}`;
@@ -235,11 +250,11 @@ export const s3MockService = {
     console.log(`[MOCK S3] Deleted ${key}`);
   },
 
-  async getPresignedDownloadUrl(key: string, expiresIn: number = 3600): Promise<string> {
+  async getPresignedDownloadUrl(key: string): Promise<string> {
     return `/api/documents/download?key=${encodeURIComponent(key)}`;
   },
 
-  async getPresignedUploadUrl(key: string, expiresIn: number = 900): Promise<string> {
+  async getPresignedUploadUrl(key: string): Promise<string> {
     return `/api/documents/upload?key=${encodeURIComponent(key)}`;
   },
 
