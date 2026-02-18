@@ -34,6 +34,8 @@ import StaffDashboard from "./pages/StaffDashboard";
 import UserGST from "./pages/UserGST";
 import GSTSummary from "./pages/GSTSummary";
 import ApplicationTracking from "./pages/ApplicationTracking";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import {
   BookOpen,
@@ -210,17 +212,9 @@ const AppRoutes = () => (
       }
     />
 
-    {/* Placeholder Routes */}
-    <Route
-      path="/about"
-      element={
-        <PlaceholderPage
-          title="About Us"
-          description="Learn more about ComplianCe and our mission"
-          icon={<Briefcase className="w-16 h-16 text-muted-foreground" />}
-        />
-      }
-    />
+    {/* Content Pages */}
+    <Route path="/about" element={<About />} />
+    <Route path="/contact" element={<Contact />} />
     <Route
       path="/blog"
       element={
@@ -238,16 +232,6 @@ const AppRoutes = () => (
           title="Careers"
           description="Join our team and help businesses succeed"
           icon={<Users className="w-16 h-16 text-muted-foreground" />}
-        />
-      }
-    />
-    <Route
-      path="/contact"
-      element={
-        <PlaceholderPage
-          title="Contact Us"
-          description="Get in touch with our support team"
-          icon={<HelpCircle className="w-16 h-16 text-muted-foreground" />}
         />
       }
     />
