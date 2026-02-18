@@ -37,12 +37,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { RecordPaymentRequest } from "@shared/api";
 import { Application, User as UserType } from "@shared/auth";
+import { Client } from "@shared/client";
 
 // Helper interface to combine application and user data for display
 interface ApplicationWithUserDetails extends Application {
   userName: string;
   userEmail: string;
   userPhone: string;
+}
+
+interface ApplicationDetailData {
+  application: ApplicationWithUserDetails;
+  client?: Client;
 }
 
 const executives = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Neha Sharma"];
@@ -55,6 +61,7 @@ export default function AdminApplicationDetail() {
 
   const [application, setApplication] =
     useState<ApplicationWithUserDetails | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,6 +132,27 @@ export default function AdminApplicationDetail() {
       };
 
       setApplication(appWithUser);
+
+      // Fetch client data if clientId exists
+      if (app.clientId) {
+        try {
+          const clientResponse = await fetch(`/api/admin/clients/${app.clientId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (clientResponse.ok) {
+            const clientData = await clientResponse.json();
+            if (clientData.success && clientData.data) {
+              setClient(clientData.data.client);
+            }
+          }
+        } catch (clientError) {
+          console.error("Error fetching client:", clientError);
+          // Don't fail the whole page if client fetch fails
+        }
+      }
     } catch (err) {
       console.error("Error fetching application details:", err);
       setError(
@@ -650,6 +678,79 @@ export default function AdminApplicationDetail() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Client Information */}
+        {client && (
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Client Information
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/admin/clients/${client.id}`)}
+                >
+                  View Full Profile
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Client Name</p>
+                  <p className="font-semibold text-lg">{client.clientName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Client Type</p>
+                  <p className="font-semibold text-lg capitalize">{client.clientType}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Status</p>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                      client.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : client.status === "inactive"
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {client.status}
+                  </span>
+                </div>
+                {client.panNumber && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">PAN Number</p>
+                    <p className="font-semibold text-lg">{client.panNumber}</p>
+                  </div>
+                )}
+                {client.gstin && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">GSTIN</p>
+                    <p className="font-semibold text-lg">{client.gstin}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">KYC Status</p>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                      client.kycStatus === "verified"
+                        ? "bg-green-100 text-green-700"
+                        : client.kycStatus === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {client.kycStatus}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Application Details */}
         <Card className="border-0 shadow-sm">

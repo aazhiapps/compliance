@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { userRepository } from "../repositories/userRepository";
 import { applicationRepository } from "../repositories/applicationRepository";
 import { gstRepository } from "../repositories/gstRepository";
+import { clientRepository } from "../repositories/clientRepository";
 import { GSTClient } from "@shared/gst";
 import crypto from "crypto";
 import { UserDocumentsHierarchical } from "@shared/api";
@@ -411,6 +412,72 @@ export const handleGetAllDocuments: RequestHandler = async (_req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch documents",
+    });
+  }
+};
+
+/**
+ * Get all clients (admin only)
+ * GET /api/admin/clients
+ */
+export const handleGetAllClients: RequestHandler = async (_req, res) => {
+  try {
+    const clients = await clientRepository.findAll();
+    res.json({
+      success: true,
+      data: clients,
+      total: clients.length,
+    });
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch clients",
+    });
+  }
+};
+
+/**
+ * Get client by ID with all related data (admin only)
+ * GET /api/admin/clients/:id
+ */
+export const handleGetClientByIdAdmin: RequestHandler = async (req, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const client = await clientRepository.findById(id);
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: "Client not found",
+      });
+    }
+
+    // Get all applications for this client
+    const applications = await applicationRepository.findByClientId(id);
+
+    // Get user information
+    const user = await userRepository.findById(client.userId);
+
+    res.json({
+      success: true,
+      data: {
+        client,
+        applications,
+        user: user ? {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phone,
+        } : null,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching client details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch client details",
     });
   }
 };

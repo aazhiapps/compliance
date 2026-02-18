@@ -26,6 +26,8 @@ import {
   handleGetUserById,
   handleGetAdminStats,
   handleGetAllDocuments,
+  handleGetAllClients,
+  handleGetClientByIdAdmin,
 } from "./routes/admin";
 import {
   handleGetClients,
@@ -216,6 +218,20 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     handleGetAllDocuments,
+  );
+
+  // Admin Client Routes
+  app.get(
+    "/api/admin/clients",
+    authenticateToken,
+    requireAdmin,
+    handleGetAllClients,
+  );
+  app.get(
+    "/api/admin/clients/:id",
+    authenticateToken,
+    requireAdmin,
+    handleGetClientByIdAdmin,
   );
 
   // Audit Log Routes (admin only)

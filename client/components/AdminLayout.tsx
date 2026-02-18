@@ -47,6 +47,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       id: "users",
     },
     {
+      icon: <Users className="w-5 h-5" />,
+      label: "Clients",
+      href: "/admin/clients",
+      id: "clients",
+    },
+    {
       icon: <FileText className="w-5 h-5" />,
       label: "Applications",
       href: "/admin/applications",
