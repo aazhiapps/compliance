@@ -34,26 +34,26 @@ export default function Header() {
 
   return (
     <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 font-bold text-xl md:text-2xl text-primary"
+            className="flex items-center gap-2 font-bold text-lg md:text-xl text-primary"
           >
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary text-white rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-primary text-white rounded-lg flex items-center justify-center flex-shrink-0">
               ⚙️
             </div>
             <span>{language === "en" ? "ComplianCe" : "सम्पूर्ण"}</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="text-foreground hover:text-primary transition-colors font-medium text-sm"
+                className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap"
               >
                 {item.label}
               </a>
@@ -61,17 +61,17 @@ export default function Header() {
           </nav>
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-3">
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="p-2 hover:bg-muted rounded-lg transition-colors flex items-center gap-2 text-sm"
+              className="p-2 hover:bg-muted rounded-lg transition-colors flex items-center gap-1.5 text-sm"
               title={
                 language === "en" ? "Switch to Hindi" : "Switch to English"
               }
             >
               <Globe className="w-4 h-4" />
-              <span className="hidden md:inline">
+              <span className="hidden sm:inline">
                 {language === "en" ? "EN" : "HI"}
               </span>
             </button>
@@ -161,18 +161,18 @@ export default function Header() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
-                  className="px-4 py-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+                  className="px-3 py-2.5 text-foreground hover:bg-muted rounded-lg transition-colors font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </a>
               ))}
-              <div className="px-4 py-2 border-t border-border flex flex-col gap-2 pt-4">
+              <div className="px-3 py-2 border-t border-border flex flex-col gap-2 pt-4 mt-2">
                 {isAuthenticated && user ? (
                   <>
                     {user.role === "admin" ? (
