@@ -30,6 +30,10 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
       type: String,
       required: true,
     },
+    clientId: {
+      type: String,
+      index: true,
+    },
     serviceId: {
       type: Number,
       required: true,
@@ -41,7 +45,17 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
     },
     status: {
       type: String,
-      enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "submitted",
+        "under_review",
+        "query_raised",
+        "query_responded",
+        "approved",
+        "rejected",
+        "completed",
+        "monitoring",
+      ],
       default: "draft",
       required: true,
     },
@@ -95,6 +109,7 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
 
 // Create indexes for better query performance
 ApplicationSchema.index({ userId: 1, createdAt: -1 });
+ApplicationSchema.index({ clientId: 1, createdAt: -1 });
 ApplicationSchema.index({ serviceId: 1 });
 ApplicationSchema.index({ status: 1 });
 ApplicationSchema.index({ assignedStaff: 1 });

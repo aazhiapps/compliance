@@ -63,6 +63,17 @@ export const handleUpdateApplicationStatus: RequestHandler = async (
       });
     }
 
+    // Get current application state for audit
+    const currentApplication = await applicationRepository.findById(id);
+    if (!currentApplication) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    const oldStatus = currentApplication.status;
+
     const application = await applicationRepository.update(id, {
       status,
       ...(notes && { notes }),
@@ -74,6 +85,20 @@ export const handleUpdateApplicationStatus: RequestHandler = async (
         message: "Application not found",
       });
     }
+
+    // Log status change
+    const { auditLogService } = await import("../services/AuditLogService");
+    const { AuthRequest } = await import("../middleware/auth");
+    const adminUserId = (req as typeof AuthRequest).userId || "system";
+    
+    await auditLogService.logApplicationStatusChange(
+      id,
+      oldStatus,
+      status,
+      adminUserId,
+      notes,
+      req
+    );
 
     // Auto-enroll users for GST Filing when GST Registration is approved
     if (status === "approved" && application.serviceId === 1) {

@@ -412,12 +412,13 @@ export const handleCreateApplication: RequestHandler = async (req, res) => {
     });
   }
 
-  const { serviceId, serviceName } = req.body;
+  const { serviceId, serviceName, clientId } = req.body;
 
   const applicationId = `app_${Date.now()}`;
   const newApplication: Application = {
     id: applicationId,
     userId,
+    clientId, // Optional - can be linked to client
     serviceId,
     serviceName,
     status: "draft",

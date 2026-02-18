@@ -28,6 +28,21 @@ import {
   handleGetAllDocuments,
 } from "./routes/admin";
 import {
+  handleGetClients,
+  handleGetClientById,
+  handleGetClientWithServices,
+  handleCreateClient,
+  handleUpdateClient,
+  handleCheckClientExists,
+  handleGetClientDocuments,
+} from "./routes/clients";
+import {
+  handleGetAuditLogs,
+  handleGetEntityAuditLogs,
+  handleGetRecentAuditLogs,
+  handleGetAuditStats,
+} from "./routes/auditLogs";
+import {
   getStaffApplications,
   updateApplicationStatus,
   assignApplicationToStaff,
@@ -82,6 +97,7 @@ import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { requireStaff } from "./middleware/staff";
 import { validateRequest, schemas } from "./middleware/validation";
+import { validateStatusTransition } from "./middleware/statusTransition";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
 import { apiLimiter, authLimiter, fileLimiter } from "./middleware/rateLimiter";
@@ -148,6 +164,15 @@ export function createServer() {
   // Protected document routes
   app.get("/api/documents", authenticateToken, handleGetUserDocuments);
 
+  // Protected client routes
+  app.get("/api/clients/check", authenticateToken, handleCheckClientExists);
+  app.get("/api/clients", authenticateToken, handleGetClients);
+  app.post("/api/clients", authenticateToken, handleCreateClient);
+  app.get("/api/clients/:id", authenticateToken, handleGetClientById);
+  app.patch("/api/clients/:id", authenticateToken, handleUpdateClient);
+  app.get("/api/clients/:id/services", authenticateToken, handleGetClientWithServices);
+  app.get("/api/clients/:id/documents", authenticateToken, handleGetClientDocuments);
+
   // Admin routes (protected by admin role)
   app.get(
     "/api/admin/stats",
@@ -183,6 +208,7 @@ export function createServer() {
     "/api/admin/applications/:id",
     authenticateToken,
     requireAdmin,
+    validateStatusTransition,
     handleUpdateApplicationStatus,
   );
   app.get(
@@ -190,6 +216,32 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     handleGetAllDocuments,
+  );
+
+  // Audit Log Routes (admin only)
+  app.get(
+    "/api/admin/audit-logs",
+    authenticateToken,
+    requireAdmin,
+    handleGetAuditLogs,
+  );
+  app.get(
+    "/api/admin/audit-logs/recent",
+    authenticateToken,
+    requireAdmin,
+    handleGetRecentAuditLogs,
+  );
+  app.get(
+    "/api/admin/audit-logs/stats",
+    authenticateToken,
+    requireAdmin,
+    handleGetAuditStats,
+  );
+  app.get(
+    "/api/admin/audit-logs/:entityType/:entityId",
+    authenticateToken,
+    requireAdmin,
+    handleGetEntityAuditLogs,
   );
 
   // Service Management Routes (admin only)
@@ -234,6 +286,7 @@ export function createServer() {
     "/api/staff/applications/:applicationId",
     authenticateToken,
     requireStaff,
+    validateStatusTransition,
     updateApplicationStatus,
   );
   app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
