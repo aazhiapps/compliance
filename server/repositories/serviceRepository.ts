@@ -58,7 +58,7 @@ class ServiceRepository {
         ...updates,
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return service ? this.toService(service) : undefined;
   }

@@ -108,7 +108,7 @@ export class WebhookRepository {
    * Update webhook endpoint
    */
   async updateWebhookEndpoint(id: ObjectId, input: UpdateWebhookEndpointInput) {
-    return WebhookEndpointModel.findByIdAndUpdate(id, input, { new: true });
+    return WebhookEndpointModel.findByIdAndUpdate(id, input, { returnDocument: 'after' });
   }
 
   /**
@@ -135,7 +135,7 @@ export class WebhookRepository {
     if (triggeredAt) {
       update.lastTriggeredAt = triggeredAt;
     }
-    return WebhookEndpointModel.findByIdAndUpdate(id, update, { new: true });
+    return WebhookEndpointModel.findByIdAndUpdate(id, update, { returnDocument: 'after' });
   }
 
   /**
@@ -225,7 +225,7 @@ export class WebhookRepository {
     if (status === "delivered") {
       update.processedAt = new Date();
     }
-    return WebhookEventModel.findByIdAndUpdate(id, update, { new: true });
+    return WebhookEventModel.findByIdAndUpdate(id, update, { returnDocument: 'after' });
   }
 
   /**
@@ -344,7 +344,7 @@ export class WebhookRepository {
       respondedAt: new Date(),
       ...details,
     };
-    return WebhookDeliveryModel.findByIdAndUpdate(id, update, { new: true });
+    return WebhookDeliveryModel.findByIdAndUpdate(id, update, { returnDocument: 'after' });
   }
 
   /**

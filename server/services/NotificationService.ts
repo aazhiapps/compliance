@@ -299,7 +299,7 @@ class NotificationService {
           status: "read",
           readAt: new Date(),
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
 
       if (!notification) {

@@ -48,7 +48,7 @@ class ApplicationRepository {
     const app = await ApplicationModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return app ? this.toApplication(app) : undefined;
   }
@@ -66,7 +66,7 @@ class ApplicationRepository {
         $push: { documents: document },
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return app ? this.toApplication(app) : undefined;
   }
