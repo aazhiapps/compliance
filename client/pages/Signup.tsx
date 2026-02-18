@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isValidEmail, validatePasswordStrength } from "@/lib/utils";
+import FormInput from "@/components/FormInput";
 
 export default function Signup() {
   const [step, setStep] = useState(1);
