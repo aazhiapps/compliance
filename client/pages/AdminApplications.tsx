@@ -19,159 +19,176 @@ import {
   FileText,
   TrendingUp,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { Service } from "@shared/service";
+import { Application as ApplicationType, User } from "@shared/auth";
+import { useToast } from "@/hooks/use-toast";
 
-interface Application {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  service: string;
-  status: "draft" | "submitted" | "under_review" | "approved" | "rejected";
-  submittedDate: string;
-  amount: number;
-  paymentStatus: "pending" | "paid";
-  staffAssigned?: string;
+interface ApplicationWithUser extends ApplicationType {
+  userName?: string;
+  userEmail?: string;
 }
 
 export default function AdminApplications() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
   const [filterService, setFilterService] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
   const [services, setServices] = useState<Service[]>([]);
-  const [applications, setApplications] = useState<Application[]>([
-    {
-      id: "app_1",
-      userId: "user_1",
-      userName: "Demo User",
-      userEmail: "demo@example.com",
-      service: "GST Registration",
-      status: "approved",
-      submittedDate: "2024-02-01",
-      amount: 499,
-      paymentStatus: "paid",
-      staffAssigned: "Staff Member",
-    },
-    {
-      id: "app_2",
-      userId: "user_1",
-      userName: "Demo User",
-      userEmail: "demo@example.com",
-      service: "Company Registration",
-      status: "under_review",
-      submittedDate: "2024-02-04",
-      amount: 2999,
-      paymentStatus: "paid",
-      staffAssigned: "Sarah Johnson",
-    },
-    {
-      id: "app_3",
-      userId: "user_2",
-      userName: "Rajesh Kumar",
-      userEmail: "rajesh@example.com",
-      service: "PAN Registration",
-      status: "submitted",
-      submittedDate: "2024-02-05",
-      amount: 299,
-      paymentStatus: "pending",
-    },
-    {
-      id: "app_4",
-      userId: "user_3",
-      userName: "Priya Singh",
-      userEmail: "priya@example.com",
-      service: "Trademark Registration",
-      status: "draft",
-      submittedDate: "2024-02-06",
-      amount: 5999,
-      paymentStatus: "pending",
-    },
-    {
-      id: "app_5",
-      userId: "user_2",
-      userName: "Rajesh Kumar",
-      userEmail: "rajesh@example.com",
-      service: "Compliance Audit",
-      status: "under_review",
-      submittedDate: "2024-02-07",
-      amount: 3999,
-      paymentStatus: "paid",
-      staffAssigned: "Staff Member",
-    },
-  ]);
+  const [applications, setApplications] = useState<ApplicationWithUser[]>([]);
+  const [users, setUsers] = useState<Map<string, User>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch available services for the filter dropdown
+  // Fetch applications, users, and services
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch("/api/admin/services", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.services) {
-            setServices(data.services);
-            return;
-          }
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Fetch applications
+      const appsResponse = await fetch("/api/admin/applications", { headers });
+      const appsData = await appsResponse.json();
+
+      if (appsData.success && appsData.data) {
+        // Fetch users to get user details
+        const usersResponse = await fetch("/api/admin/users", { headers });
+        const usersData = await usersResponse.json();
+
+        if (usersData.success && usersData.data) {
+          // Create a map of userId to user for quick lookup
+          const userMap = new Map<string, User>();
+          usersData.data.forEach((user: User) => {
+            userMap.set(user.id, user);
+          });
+          setUsers(userMap);
+
+          // Enrich applications with user details
+          const enrichedApps: ApplicationWithUser[] = appsData.data.map(
+            (app: ApplicationType) => {
+              const user = userMap.get(app.userId);
+              return {
+                ...app,
+                userName: user ? `${user.firstName} ${user.lastName}` : "Unknown User",
+                userEmail: user?.email || "N/A",
+              };
+            }
+          );
+          setApplications(enrichedApps);
+        } else {
+          setApplications(appsData.data);
         }
-      } catch (error) {
-        console.error("Failed to fetch services:", error);
       }
 
-      // Fallback to deriving services from applications for demo/mock data
-      deriveServicesFromApplications();
-    };
-    fetchServices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only fetch services once on mount
+      // Fetch services
+      const servicesResponse = await fetch("/api/admin/services", { headers });
+      const servicesData = await servicesResponse.json();
 
-  // Helper to derive unique services from applications for demo mode
-  const deriveServicesFromApplications = () => {
-    const uniqueServices = Array.from(
-      new Set(applications.map((app) => app.service)),
-    ).map((serviceName) => ({
-      id: serviceName.toLowerCase().replace(/\s+/g, "-"),
-      name: serviceName,
-    })) as Service[];
-    setServices(uniqueServices);
+      if (servicesData.success && servicesData.services) {
+        setServices(servicesData.services);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load applications. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleBulkApprove = () => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        selectedApps.has(app.id)
-          ? { ...app, status: "approved" as const }
-          : app,
-      ),
-    );
-    setSelectedApps(new Set());
+  const handleBulkApprove = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Update each selected application
+      await Promise.all(
+        Array.from(selectedApps).map((appId) =>
+          fetch(`/api/admin/applications/${appId}`, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ status: "approved" }),
+          })
+        )
+      );
+
+      // Refresh data
+      await fetchData();
+      setSelectedApps(new Set());
+
+      toast({
+        title: "Success",
+        description: `${selectedApps.size} application(s) approved successfully.`,
+      });
+    } catch (error) {
+      console.error("Failed to approve applications:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve applications. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleBulkReject = () => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        selectedApps.has(app.id)
-          ? { ...app, status: "rejected" as const }
-          : app,
-      ),
-    );
-    setSelectedApps(new Set());
+  const handleBulkReject = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Update each selected application
+      await Promise.all(
+        Array.from(selectedApps).map((appId) =>
+          fetch(`/api/admin/applications/${appId}`, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ status: "rejected" }),
+          })
+        )
+      );
+
+      // Refresh data
+      await fetchData();
+      setSelectedApps(new Set());
+
+      toast({
+        title: "Success",
+        description: `${selectedApps.size} application(s) rejected.`,
+      });
+    } catch (error) {
+      console.error("Failed to reject applications:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reject applications. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredApps = applications.filter((app) => {
     const matchesSearch =
-      app.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.service.toLowerCase().includes(searchQuery.toLowerCase());
+      (app.userName?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (app.userEmail?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      app.serviceName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || app.status === filterStatus;
     const matchesService =
-      filterService === "all" || app.service === filterService;
+      filterService === "all" || app.serviceName === filterService;
     return matchesSearch && matchesStatus && matchesService;
   });
 
@@ -225,8 +242,8 @@ export default function AdminApplications() {
   const recentApps = applications
     .sort(
       (a, b) =>
-        new Date(b.submittedDate).getTime() -
-        new Date(a.submittedDate).getTime(),
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
     )
     .slice(0, 3);
 
@@ -243,8 +260,17 @@ export default function AdminApplications() {
           </p>
         </div>
 
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {isLoading ? (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-12 text-center">
+              <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading applications...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Key Metrics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -326,7 +352,7 @@ export default function AdminApplications() {
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <p className="font-medium text-foreground">
-                        {app.service}
+                        {app.serviceName}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {app.userName}
@@ -339,7 +365,7 @@ export default function AdminApplications() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                    <span className="text-sm font-medium">₹{app.amount}</span>
+                    <span className="text-sm font-medium">₹{app.paymentAmount}</span>
                     <Button
                       size="sm"
                       variant="outline"
@@ -390,8 +416,12 @@ export default function AdminApplications() {
                   <option value="draft">Draft</option>
                   <option value="submitted">Submitted</option>
                   <option value="under_review">Under Review</option>
+                  <option value="query_raised">Query Raised</option>
+                  <option value="query_responded">Query Responded</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
+                  <option value="completed">Completed</option>
+                  <option value="monitoring">Monitoring</option>
                 </select>
                 <Button variant="outline" className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
@@ -503,9 +533,9 @@ export default function AdminApplications() {
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <p className="font-medium">{app.service}</p>
+                        <p className="font-medium">{app.serviceName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(app.submittedDate).toLocaleDateString()}
+                          {new Date(app.createdAt).toLocaleDateString()}
                         </p>
                       </td>
                       <td className="py-3 px-4">
@@ -518,7 +548,7 @@ export default function AdminApplications() {
                           {app.status.replace(/_/g, " ")}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-medium">₹{app.amount}</td>
+                      <td className="py-3 px-4 font-medium">₹{app.paymentAmount}</td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -533,9 +563,9 @@ export default function AdminApplications() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {app.staffAssigned ? (
+                        {app.assignedStaffName ? (
                           <span className="text-sm font-medium">
-                            {app.staffAssigned}
+                            {app.assignedStaffName}
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground">
@@ -578,6 +608,8 @@ export default function AdminApplications() {
             </div>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </AdminLayout>
   );
