@@ -51,6 +51,7 @@ export const updateApplicationStatus: RequestHandler = async (req, res) => {
   try {
     const { applicationId } = req.params;
     const { status, internalNotes } = req.body;
+    const userId = (req as AuthRequest).userId!;
 
     const application = await applicationRepository.findById(
       applicationId as string,
@@ -62,6 +63,8 @@ export const updateApplicationStatus: RequestHandler = async (req, res) => {
         message: "Application not found",
       });
     }
+
+    const oldStatus = application.status;
 
     // Update application
     const updatedApplication = {
@@ -75,6 +78,19 @@ export const updateApplicationStatus: RequestHandler = async (req, res) => {
       applicationId as string,
       updatedApplication,
     );
+
+    // Log status change if status was updated
+    if (status && status !== oldStatus) {
+      const { auditLogService } = await import("../services/AuditLogService");
+      await auditLogService.logApplicationStatusChange(
+        applicationId as string,
+        oldStatus,
+        status,
+        userId,
+        internalNotes,
+        req
+      );
+    }
 
     return res.json({
       success: true,

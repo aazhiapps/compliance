@@ -91,6 +91,7 @@ import { authenticateToken } from "./middleware/auth";
 import { requireAdmin } from "./middleware/admin";
 import { requireStaff } from "./middleware/staff";
 import { validateRequest, schemas } from "./middleware/validation";
+import { validateStatusTransition } from "./middleware/statusTransition";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
 import { apiLimiter, authLimiter, fileLimiter } from "./middleware/rateLimiter";
@@ -201,6 +202,7 @@ export function createServer() {
     "/api/admin/applications/:id",
     authenticateToken,
     requireAdmin,
+    validateStatusTransition,
     handleUpdateApplicationStatus,
   );
   app.get(
@@ -252,6 +254,7 @@ export function createServer() {
     "/api/staff/applications/:applicationId",
     authenticateToken,
     requireStaff,
+    validateStatusTransition,
     updateApplicationStatus,
   );
   app.get("/api/staff/stats", authenticateToken, requireStaff, getStaffStats);
