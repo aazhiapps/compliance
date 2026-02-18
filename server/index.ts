@@ -91,7 +91,7 @@ import {
   handleGetReport,
   handleExportCSV,
   handleExportPDF,
-  handleGetClients,
+  handleGetReportClients,
   handleGetFinancialYears,
   handleGetExportLogs,
 } from "./routes/reports";
@@ -440,7 +440,7 @@ export function createServer() {
     "/api/reports/meta/clients",
     authenticateToken,
     requireAdmin,
-    handleGetClients,
+    handleGetReportClients,
   );
   app.get(
     "/api/reports/meta/financial-years",

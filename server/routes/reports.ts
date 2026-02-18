@@ -184,7 +184,7 @@ export const handleExportPDF: RequestHandler = async (req, res) => {
  * GET /api/reports/meta/clients
  * Get list of unique clients for filter dropdown
  */
-export const handleGetClients: RequestHandler = async (_req, res) => {
+export const handleGetReportClients: RequestHandler = async (_req, res) => {
   try {
     const clients = await reportRepository.getUniqueClients();
     res.json({
