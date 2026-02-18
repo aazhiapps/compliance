@@ -40,7 +40,7 @@ function expressPlugin(): Plugin {
       const { dbConnection } = await viteServer.ssrLoadModule("/server/config/database.ts");
       const { seedAllData } = await viteServer.ssrLoadModule("/server/utils/seedData.ts");
 
-      // Connect to MongoDB before starting the server
+      // Connect to MongoDB before starting the server (optional in dev)
       try {
         await dbConnection.connect();
 
@@ -51,7 +51,8 @@ function expressPlugin(): Plugin {
         }
       } catch (error) {
         console.error("Failed to initialize database:", error);
-        throw error;
+        console.log("⚠️  Continuing without database for UI development...");
+        // Don't throw error - allow server to start for UI work
       }
 
       const app = createServer();
