@@ -31,6 +31,16 @@ class ApplicationRepository {
   }
 
   /**
+   * Find all applications for a client
+   */
+  async findByClientId(clientId: string): Promise<Application[]> {
+    const apps = await ApplicationModel.find({ clientId }).sort({
+      createdAt: -1,
+    });
+    return apps.map((app) => this.toApplication(app));
+  }
+
+  /**
    * Create a new application
    */
   async create(application: Application): Promise<Application> {

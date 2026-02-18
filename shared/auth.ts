@@ -41,9 +41,19 @@ export interface LoginRequest {
 export interface Application {
   id: string;
   userId: string;
+  clientId?: string; // Reference to Client entity
   serviceId: number;
   serviceName: string;
-  status: "draft" | "submitted" | "under_review" | "approved" | "rejected";
+  status:
+    | "draft"
+    | "submitted"
+    | "under_review"
+    | "query_raised"
+    | "query_responded"
+    | "approved"
+    | "rejected"
+    | "completed"
+    | "monitoring";
   documents: Document[];
   createdAt: string;
   updatedAt: string;

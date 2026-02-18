@@ -28,6 +28,15 @@ import {
   handleGetAllDocuments,
 } from "./routes/admin";
 import {
+  handleGetClients,
+  handleGetClientById,
+  handleGetClientWithServices,
+  handleCreateClient,
+  handleUpdateClient,
+  handleCheckClientExists,
+  handleGetClientDocuments,
+} from "./routes/clients";
+import {
   getStaffApplications,
   updateApplicationStatus,
   assignApplicationToStaff,
@@ -147,6 +156,15 @@ export function createServer() {
 
   // Protected document routes
   app.get("/api/documents", authenticateToken, handleGetUserDocuments);
+
+  // Protected client routes
+  app.get("/api/clients/check", authenticateToken, handleCheckClientExists);
+  app.get("/api/clients", authenticateToken, handleGetClients);
+  app.post("/api/clients", authenticateToken, handleCreateClient);
+  app.get("/api/clients/:id", authenticateToken, handleGetClientById);
+  app.patch("/api/clients/:id", authenticateToken, handleUpdateClient);
+  app.get("/api/clients/:id/services", authenticateToken, handleGetClientWithServices);
+  app.get("/api/clients/:id/documents", authenticateToken, handleGetClientDocuments);
 
   // Admin routes (protected by admin role)
   app.get(
