@@ -37,6 +37,12 @@ import {
   handleGetClientDocuments,
 } from "./routes/clients";
 import {
+  handleGetAuditLogs,
+  handleGetEntityAuditLogs,
+  handleGetRecentAuditLogs,
+  handleGetAuditStats,
+} from "./routes/auditLogs";
+import {
   getStaffApplications,
   updateApplicationStatus,
   assignApplicationToStaff,
@@ -210,6 +216,32 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     handleGetAllDocuments,
+  );
+
+  // Audit Log Routes (admin only)
+  app.get(
+    "/api/admin/audit-logs",
+    authenticateToken,
+    requireAdmin,
+    handleGetAuditLogs,
+  );
+  app.get(
+    "/api/admin/audit-logs/recent",
+    authenticateToken,
+    requireAdmin,
+    handleGetRecentAuditLogs,
+  );
+  app.get(
+    "/api/admin/audit-logs/stats",
+    authenticateToken,
+    requireAdmin,
+    handleGetAuditStats,
+  );
+  app.get(
+    "/api/admin/audit-logs/:entityType/:entityId",
+    authenticateToken,
+    requireAdmin,
+    handleGetEntityAuditLogs,
   );
 
   // Service Management Routes (admin only)
