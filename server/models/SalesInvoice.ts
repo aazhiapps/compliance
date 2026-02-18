@@ -9,7 +9,6 @@ const SalesInvoiceSchema = new Schema<ISalesInvoiceDocument>(
     clientId: {
       type: String,
       required: true,
-      index: true,
     },
     invoiceNumber: {
       type: String,
@@ -61,12 +60,10 @@ const SalesInvoiceSchema = new Schema<ISalesInvoiceDocument>(
     month: {
       type: String,
       required: true,
-      index: true,
     },
     financialYear: {
       type: String,
       required: true,
-      index: true,
     },
     createdBy: {
       type: String,
@@ -94,7 +91,6 @@ const SalesInvoiceSchema = new Schema<ISalesInvoiceDocument>(
 
 // Create indexes for better query performance
 SalesInvoiceSchema.index({ clientId: 1, month: 1 });
-SalesInvoiceSchema.index({ month: 1 });
 SalesInvoiceSchema.index({ financialYear: 1 });
 SalesInvoiceSchema.index({ invoiceDate: -1 });
 

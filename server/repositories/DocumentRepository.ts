@@ -174,7 +174,7 @@ export class DocumentRepository {
       const document = await DocumentModel.findOneAndUpdate(
         { documentId },
         { ...data, updatedAt: new Date() },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
 
       if (!document) {
@@ -357,7 +357,7 @@ export class DocumentRepository {
           updatedBy: restoredBy,
           updatedAt: new Date(),
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
 
       if (!document) {

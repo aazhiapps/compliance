@@ -29,7 +29,6 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
     userId: {
       type: String,
       required: true,
-      index: true,
     },
     serviceId: {
       type: Number,
@@ -45,7 +44,6 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
       enum: ["draft", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
       required: true,
-      index: true,
     },
     documents: {
       type: [DocumentSchema],
@@ -53,7 +51,6 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
     },
     assignedStaff: {
       type: String,
-      index: true,
     },
     assignedStaffName: {
       type: String,
@@ -63,7 +60,6 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
       enum: ["pending", "paid", "refunded"],
       default: "pending",
       required: true,
-      index: true,
     },
     paymentAmount: {
       type: Number,
@@ -99,6 +95,7 @@ const ApplicationSchema = new Schema<IApplicationDocument>(
 
 // Create indexes for better query performance
 ApplicationSchema.index({ userId: 1, createdAt: -1 });
+ApplicationSchema.index({ serviceId: 1 });
 ApplicationSchema.index({ status: 1 });
 ApplicationSchema.index({ assignedStaff: 1 });
 ApplicationSchema.index({ paymentStatus: 1 });

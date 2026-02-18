@@ -131,7 +131,7 @@ export class FilingRepository {
         filingId,
         data,
         {
-          new: true,
+          returnDocument: 'after',
         },
       ).lean();
       if (!filing) {
@@ -159,7 +159,7 @@ export class FilingRepository {
           lockReason,
           workflowStatus: "locked",
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
       if (!filing) {
         throw new Error(`Filing not found: ${filingId}`);
@@ -186,7 +186,7 @@ export class FilingRepository {
           lockReason: null,
           workflowStatus: "draft",
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
       if (!filing) {
         throw new Error(`Filing not found: ${filingId}`);
@@ -254,7 +254,7 @@ export class FilingRepository {
       if (status === "completed") update.completedAt = new Date();
 
       const step = await FilingStepModel.findByIdAndUpdate(stepId, update, {
-        new: true,
+        returnDocument: 'after',
       }).lean();
       if (!step) {
         throw new Error(`Filing step not found: ${stepId}`);

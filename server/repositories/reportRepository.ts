@@ -89,7 +89,7 @@ class ReportRepository {
     updates: Partial<Report>,
   ): Promise<Report | undefined> {
     const report = await ReportModel.findByIdAndUpdate(id, updates, {
-      new: true,
+      returnDocument: 'after',
     });
     return report ? (report.toJSON() as Report) : undefined;
   }
@@ -104,7 +104,7 @@ class ReportRepository {
     const report = await ReportModel.findByIdAndUpdate(
       reportId,
       { $push: { exportLogs: log } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return report ? (report.toJSON() as Report) : undefined;
   }

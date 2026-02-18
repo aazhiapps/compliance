@@ -22,7 +22,6 @@ const ReportSchema = new Schema<IReportDocument>(
     clientId: {
       type: String,
       required: true,
-      index: true,
     },
     clientName: {
       type: String,
@@ -44,19 +43,16 @@ const ReportSchema = new Schema<IReportDocument>(
         "ROC Filing Summary",
       ],
       required: true,
-      index: true,
     },
     status: {
       type: String,
       enum: ["draft", "final", "filed"],
       default: "draft",
       required: true,
-      index: true,
     },
     preparedBy: {
       type: String,
       required: true,
-      index: true,
     },
     preparedByName: {
       type: String,

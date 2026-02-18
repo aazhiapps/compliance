@@ -10,7 +10,6 @@ const StaffAssignmentSchema = new Schema<IStaffAssignmentDocument>(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     staffName: {
       type: String,
@@ -48,9 +47,6 @@ const StaffAssignmentSchema = new Schema<IStaffAssignmentDocument>(
     },
   },
 );
-
-// Create indexes for better query performance
-StaffAssignmentSchema.index({ staffUserId: 1 });
 
 export const StaffAssignmentModel = mongoose.model<IStaffAssignmentDocument>(
   "StaffAssignment",

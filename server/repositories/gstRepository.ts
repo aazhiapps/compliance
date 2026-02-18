@@ -50,7 +50,7 @@ class GSTRepository {
     const result = await GSTClientModel.findOneAndUpdate(
       { _id: id },
       { ...clientData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
 
     return result.toJSON() as unknown as GSTClient;
@@ -102,7 +102,7 @@ class GSTRepository {
     const client = await GSTClientModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!client) return undefined;
     const json = client.toJSON();
@@ -142,7 +142,7 @@ class GSTRepository {
     const result = await PurchaseInvoiceModel.findOneAndUpdate(
       { _id: id },
       { ...invoiceData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
 
     return result.toJSON() as PurchaseInvoice;
@@ -191,7 +191,7 @@ class GSTRepository {
     const invoice = await PurchaseInvoiceModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return invoice ? (invoice.toJSON() as PurchaseInvoice) : undefined;
   }
@@ -225,7 +225,7 @@ class GSTRepository {
     const result = await SalesInvoiceModel.findOneAndUpdate(
       { _id: id },
       { ...invoiceData, updatedAt: new Date().toISOString() },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
 
     return result.toJSON() as SalesInvoice;
@@ -270,7 +270,7 @@ class GSTRepository {
     const invoice = await SalesInvoiceModel.findByIdAndUpdate(
       id,
       { ...updates, updatedAt: new Date().toISOString() },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return invoice ? (invoice.toJSON() as SalesInvoice) : undefined;
   }
@@ -299,7 +299,7 @@ class GSTRepository {
       const updated = await GSTReturnFilingModel.findByIdAndUpdate(
         existing._id,
         { ...filing, updatedAt: new Date().toISOString() },
-        { new: true },
+        { returnDocument: 'after' },
       );
       return updated!.toJSON() as GSTReturnFiling;
     } else {
@@ -408,7 +408,7 @@ class GSTRepository {
         deactivatedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return client ? (client.toJSON() as GSTClient) : undefined;
   }
@@ -424,7 +424,7 @@ class GSTRepository {
         $unset: { deactivatedAt: "" },
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return client ? (client.toJSON() as GSTClient) : undefined;
   }
@@ -453,7 +453,7 @@ class GSTRepository {
         lockedBy: userId,
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
@@ -472,7 +472,7 @@ class GSTRepository {
         $unset: { lockedAt: "", lockedBy: "" },
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return filing ? (filing.toJSON() as GSTReturnFiling) : undefined;
   }
@@ -512,7 +512,7 @@ class GSTRepository {
         $pull: { assignedStaff: staffUserId },
         updatedAt: new Date().toISOString(),
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     return client !== null;
   }
@@ -575,7 +575,7 @@ class GSTRepository {
     const assignment = await StaffAssignmentModel.findByIdAndUpdate(
       id,
       updates,
-      { new: true },
+      { returnDocument: 'after' },
     );
     return assignment ? (assignment.toJSON() as StaffAssignment) : undefined;
   }

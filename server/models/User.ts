@@ -79,8 +79,6 @@ const UserSchema = new Schema<IUserDocument>(
 );
 
 // Create indexes for better query performance
-UserSchema.index({ email: 1 });
-UserSchema.index({ role: 1 });
 UserSchema.index({ createdAt: -1 });
 
 export const UserModel = mongoose.model<IUserDocument>("User", UserSchema);

@@ -200,7 +200,7 @@ export class ITCReconciliationRepository {
               : discrepancy !== undefined && Math.abs(discrepancy) > 0.01,
           lastSyncedAt: data.lastSyncedAt || new Date(),
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
 
       logger.info("Updated reconciliation with GST data", {
@@ -235,7 +235,7 @@ export class ITCReconciliationRepository {
           needsReview: false,
           discrepancyReason: "reconciled",
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
 
       if (!updated) {
@@ -269,7 +269,7 @@ export class ITCReconciliationRepository {
           needsReview: true,
           updatedAt: new Date(),
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).lean();
 
       if (!updated) {

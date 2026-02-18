@@ -64,7 +64,7 @@ class PaymentRepository {
     updates: Partial<PaymentRecord>,
   ): Promise<PaymentRecord | undefined> {
     const payment = await PaymentModel.findByIdAndUpdate(id, updates, {
-      new: true,
+      returnDocument: 'after',
     });
     return payment ? this.toPaymentRecord(payment) : undefined;
   }

@@ -9,7 +9,6 @@ const PaymentSchema = new Schema<IPaymentDocument>(
     applicationId: {
       type: String,
       required: true,
-      index: true,
     },
     applicantName: {
       type: String,
@@ -18,7 +17,6 @@ const PaymentSchema = new Schema<IPaymentDocument>(
     applicantEmail: {
       type: String,
       required: true,
-      index: true,
     },
     service: {
       type: String,
@@ -33,7 +31,6 @@ const PaymentSchema = new Schema<IPaymentDocument>(
       enum: ["pending", "completed", "failed", "refunded"],
       default: "pending",
       required: true,
-      index: true,
     },
     method: {
       type: String,
@@ -44,7 +41,6 @@ const PaymentSchema = new Schema<IPaymentDocument>(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
@@ -76,7 +72,6 @@ const PaymentSchema = new Schema<IPaymentDocument>(
 PaymentSchema.index({ applicationId: 1 });
 PaymentSchema.index({ applicantEmail: 1 });
 PaymentSchema.index({ status: 1 });
-PaymentSchema.index({ transactionId: 1 });
 PaymentSchema.index({ date: -1 });
 
 export const PaymentModel = mongoose.model<IPaymentDocument>(
