@@ -8,10 +8,13 @@ import ITCReconciliationRepository from "../repositories/ITCReconciliationReposi
 import { GSTClientModel } from "../models/GSTClient";
 import { GSTReturnFilingModel } from "../models/GSTReturnFiling";
 import { PurchaseInvoiceModel } from "../models/PurchaseInvoice";
+import ComplianceEventService from "../services/ComplianceEventService"; // PHASE 1
+import RefreshTokenService from "../services/RefreshTokenService"; // PHASE 1
 
 /**
  * Background job handlers for GST compliance platform
  * Manages automated syncs, notifications, reminders, and cleanup
+ * PHASE 1: Enhanced with compliance monitoring jobs
  */
 
 /**
@@ -559,3 +562,127 @@ export async function handleWebhookRetry(job: Job): Promise<void> {
     await jobLog.save();
   }
 }
+
+/**
+ * PHASE 1: Compliance Event Detection Job Handler
+ * Detects overdue compliance events and updates status
+ */
+export async function handleComplianceEventDetection(job: Job): Promise<void> {
+  const jobLog = await JobLogModel.create({
+    jobName: "Compliance Event Detection",
+    jobType: "compliance_event_detection",
+    status: "running",
+    triggeredBy: "schedule",
+    progress: 0,
+  });
+
+  try {
+    const startTime = Date.now();
+
+    const overdueCount = await ComplianceEventService.detectOverdueEvents();
+
+    jobLog.status = "completed";
+    jobLog.processed = overdueCount;
+    jobLog.successful = overdueCount;
+    jobLog.duration = Date.now() - startTime;
+    jobLog.summary = {
+      overdueEventsDetected: overdueCount,
+    };
+    await jobLog.save();
+
+    logger.info("Compliance event detection completed:", { overdueCount });
+  } catch (error) {
+    jobLog.status = "failed";
+    jobLog.error = String(error);
+    jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
+    await jobLog.save();
+
+    logger.error("Compliance event detection job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+/**
+ * PHASE 1: Compliance Reminder Job Handler
+ * Sends reminders for upcoming and overdue compliance events
+ */
+export async function handleComplianceReminders(job: Job): Promise<void> {
+  const jobLog = await JobLogModel.create({
+    jobName: "Compliance Reminders",
+    jobType: "compliance_reminders",
+    status: "running",
+    triggeredBy: "schedule",
+    progress: 0,
+  });
+
+  try {
+    const startTime = Date.now();
+
+    const reminderCount = await ComplianceEventService.sendComplianceReminders();
+
+    jobLog.status = "completed";
+    jobLog.processed = reminderCount;
+    jobLog.successful = reminderCount;
+    jobLog.duration = Date.now() - startTime;
+    jobLog.summary = {
+      remindersSent: reminderCount,
+    };
+    await jobLog.save();
+
+    logger.info("Compliance reminders completed:", { reminderCount });
+  } catch (error) {
+    jobLog.status = "failed";
+    jobLog.error = String(error);
+    jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
+    await jobLog.save();
+
+    logger.error("Compliance reminders job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+/**
+ * PHASE 1: Token Cleanup Job Handler
+ * Cleans up expired refresh tokens
+ */
+export async function handleTokenCleanup(job: Job): Promise<void> {
+  const jobLog = await JobLogModel.create({
+    jobName: "Token Cleanup",
+    jobType: "token_cleanup",
+    status: "running",
+    triggeredBy: "schedule",
+    progress: 0,
+  });
+
+  try {
+    const startTime = Date.now();
+
+    const deletedCount = await RefreshTokenService.cleanupExpiredTokens();
+
+    jobLog.status = "completed";
+    jobLog.processed = deletedCount;
+    jobLog.successful = deletedCount;
+    jobLog.duration = Date.now() - startTime;
+    jobLog.summary = {
+      tokensDeleted: deletedCount,
+    };
+    await jobLog.save();
+
+    logger.info("Token cleanup completed:", { deletedCount });
+  } catch (error) {
+    jobLog.status = "failed";
+    jobLog.error = String(error);
+    jobLog.duration = Date.now() - Date.parse(jobLog.createdAt.toISOString());
+    await jobLog.save();
+
+    logger.error("Token cleanup job failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+

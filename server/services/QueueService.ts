@@ -13,7 +13,10 @@ export type JobType =
   | "compliance_check"
   | "report_generation"
   | "cleanup"
-  | "webhook_retry";
+  | "webhook_retry"
+  | "compliance_event_detection" // PHASE 1
+  | "compliance_reminders" // PHASE 1
+  | "token_cleanup"; // PHASE 1
 
 interface JobOptions {
   priority?: number;

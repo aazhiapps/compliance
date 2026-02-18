@@ -284,14 +284,30 @@ export const handleSignup: RequestHandler<
 
   await userRepository.create(newUser);
 
-  const token = generateToken(userId);
+  // PHASE 1: Generate token pair with refresh token
+  const ipAddress = req.ip || "unknown";
+  const userAgent = req.headers["user-agent"] || "unknown";
+  const RefreshTokenService = (await import("../services/RefreshTokenService")).default;
+
+  const tokenPair = await RefreshTokenService.generateTokenPair(
+    {
+      userId,
+      email: newUser.email,
+      role: newUser.role,
+    },
+    ipAddress,
+    userAgent
+  );
+
   const { password: _, ...userWithoutPassword } = newUser;
 
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
     message: "Account created successfully",
     user: userWithoutPassword,
-    token,
+    token: tokenPair.accessToken, // For backwards compatibility
+    refreshToken: tokenPair.refreshToken,
+    expiresIn: tokenPair.expiresIn,
   });
 };
 
@@ -322,14 +338,30 @@ export const handleLogin: RequestHandler<
     });
   }
 
-  const token = generateToken(user.id);
+  // PHASE 1: Generate token pair with refresh token
+  const ipAddress = req.ip || "unknown";
+  const userAgent = req.headers["user-agent"] || "unknown";
+  const RefreshTokenService = (await import("../services/RefreshTokenService")).default;
+
+  const tokenPair = await RefreshTokenService.generateTokenPair(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    ipAddress,
+    userAgent
+  );
+
   const { password: _, ...userWithoutPassword } = user;
 
   res.json({
     success: true,
     message: "Login successful",
     user: userWithoutPassword,
-    token,
+    token: tokenPair.accessToken, // For backwards compatibility
+    refreshToken: tokenPair.refreshToken,
+    expiresIn: tokenPair.expiresIn,
   });
 };
 
@@ -533,4 +565,127 @@ export const handleGetUserDocuments: RequestHandler = async (req, res) => {
     success: true,
     services,
   });
+};
+
+/**
+ * PHASE 1: Refresh Token Handler
+ * POST /api/auth/refresh
+ * Exchanges a refresh token for a new access token
+ */
+export const handleRefreshToken: RequestHandler = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: "Refresh token required",
+        errorCode: "AUTH_002",
+      });
+    }
+
+    const ipAddress = req.ip || "unknown";
+    const userAgent = req.headers["user-agent"] || "unknown";
+
+    const RefreshTokenService = (await import("../services/RefreshTokenService")).default;
+
+    // Rotate the refresh token and get new token pair
+    const tokenPair = await RefreshTokenService.rotateRefreshToken(
+      refreshToken,
+      ipAddress,
+      userAgent
+    );
+
+    if (!tokenPair) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: "Invalid or expired refresh token",
+        errorCode: "AUTH_002",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Token refreshed successfully",
+      data: tokenPair,
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Failed to refresh token",
+      errorCode: "SYS_003",
+    });
+  }
+};
+
+/**
+ * PHASE 1: Get Active Sessions Handler
+ * GET /api/auth/sessions
+ * Get all active sessions for the current user
+ */
+export const handleGetSessions: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+
+    if (!userId) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: "Authentication required",
+        errorCode: "AUTH_003",
+      });
+    }
+
+    const RefreshTokenService = (await import("../services/RefreshTokenService")).default;
+
+    const sessions = await RefreshTokenService.getUserActiveSessions(userId);
+
+    res.json({
+      success: true,
+      data: sessions,
+    });
+  } catch (error) {
+    console.error("Get sessions error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Failed to get sessions",
+      errorCode: "SYS_003",
+    });
+  }
+};
+
+/**
+ * PHASE 1: Revoke All Sessions Handler
+ * POST /api/auth/revoke-all-sessions
+ * Revoke all refresh tokens for the current user
+ */
+export const handleRevokeAllSessions: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req as AuthRequest).userId;
+
+    if (!userId) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: "Authentication required",
+        errorCode: "AUTH_003",
+      });
+    }
+
+    const RefreshTokenService = (await import("../services/RefreshTokenService")).default;
+
+    const revokedCount = await RefreshTokenService.revokeAllUserTokens(userId, "logout");
+
+    res.json({
+      success: true,
+      message: `${revokedCount} sessions revoked successfully`,
+      data: { revokedCount },
+    });
+  } catch (error) {
+    console.error("Revoke all sessions error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Failed to revoke sessions",
+      errorCode: "SYS_003",
+    });
+  }
 };
