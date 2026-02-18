@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { authenticateToken, AuthRequest } from "../middleware/auth";
 import { requireAdmin, requireStaff } from "../middleware/admin";
 import { requirePermission } from "../middleware/permission";
+import { apiLimiter } from "../middleware/rateLimiter";
 import { asyncHandler, sendSuccess, sendError, sendNotFound, sendPaginatedSuccess } from "../utils/apiResponse";
 import ComplianceEventService from "../services/ComplianceEventService";
 import { ComplianceEventModel } from "../models/ComplianceEvent";
@@ -12,6 +13,7 @@ const router = Router();
 /**
  * PHASE 1: Compliance Event Routes
  * Manages compliance monitoring and reminders
+ * All routes protected by rate limiting
  */
 
 /**
@@ -20,6 +22,7 @@ const router = Router();
  */
 router.get(
   "/",
+  apiLimiter,
   authenticateToken,
   requirePermission("compliance_event", "read"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -67,6 +70,7 @@ router.get(
  */
 router.get(
   "/:id",
+  apiLimiter,
   authenticateToken,
   requirePermission("compliance_event", "read"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -86,6 +90,7 @@ router.get(
  */
 router.get(
   "/client/:clientId",
+  apiLimiter,
   authenticateToken,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const { clientId } = req.params;
@@ -114,6 +119,7 @@ router.get(
  */
 router.post(
   "/",
+  apiLimiter,
   authenticateToken,
   requirePermission("compliance_event", "create"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -140,6 +146,7 @@ router.post(
  */
 router.post(
   "/recurring",
+  apiLimiter,
   authenticateToken,
   requireAdmin,
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -185,6 +192,7 @@ router.post(
  */
 router.patch(
   "/:id/complete",
+  apiLimiter,
   authenticateToken,
   requirePermission("compliance_event", "update"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -215,6 +223,7 @@ router.patch(
  */
 router.patch(
   "/:id/waive",
+  apiLimiter,
   authenticateToken,
   requireAdmin,
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -253,6 +262,7 @@ router.patch(
  */
 router.get(
   "/stats/summary",
+  apiLimiter,
   authenticateToken,
   requireStaff,
   asyncHandler(async (req: AuthRequest, res: Response) => {
