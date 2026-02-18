@@ -9,7 +9,6 @@ const GSTClientSchema = new Schema<IGSTClientDocument>(
     userId: {
       type: String,
       required: true,
-      index: true,
     },
     clientName: {
       type: String,
@@ -74,7 +73,6 @@ const GSTClientSchema = new Schema<IGSTClientDocument>(
       enum: ["active", "inactive"],
       default: "active",
       required: true,
-      index: true,
     },
     deactivatedAt: {
       type: String,
@@ -105,8 +103,6 @@ const GSTClientSchema = new Schema<IGSTClientDocument>(
 
 // Create indexes for better query performance
 GSTClientSchema.index({ userId: 1, status: 1 });
-GSTClientSchema.index({ gstin: 1 });
-GSTClientSchema.index({ status: 1 });
 GSTClientSchema.index({ assignedStaff: 1 });
 
 export const GSTClientModel = mongoose.model<IGSTClientDocument>(

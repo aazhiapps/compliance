@@ -9,12 +9,10 @@ const GSTReturnFilingSchema = new Schema<IGSTReturnFilingDocument>(
     clientId: {
       type: String,
       required: true,
-      index: true,
     },
     month: {
       type: String,
       required: true,
-      index: true,
     },
     financialYear: {
       type: String,
@@ -79,7 +77,6 @@ const GSTReturnFilingSchema = new Schema<IGSTReturnFilingDocument>(
       enum: ["pending", "filed", "late", "overdue"],
       default: "pending",
       required: true,
-      index: true,
     },
     isLocked: {
       type: Boolean,
@@ -132,7 +129,6 @@ const GSTReturnFilingSchema = new Schema<IGSTReturnFilingDocument>(
 GSTReturnFilingSchema.index({ clientId: 1, month: 1 }, { unique: true });
 GSTReturnFilingSchema.index({ clientId: 1, financialYear: 1 });
 GSTReturnFilingSchema.index({ filingStatus: 1 });
-GSTReturnFilingSchema.index({ month: 1 });
 
 export const GSTReturnFilingModel = mongoose.model<IGSTReturnFilingDocument>(
   "GSTReturnFiling",

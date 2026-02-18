@@ -34,7 +34,6 @@ const ServiceSchema = new Schema<IServiceDocument>(
     category: {
       type: String,
       required: true,
-      index: true,
     },
     documentsRequired: {
       type: [String],
@@ -45,7 +44,6 @@ const ServiceSchema = new Schema<IServiceDocument>(
       type: Boolean,
       default: true,
       required: true,
-      index: true,
     },
     applicationsCount: {
       type: Number,
