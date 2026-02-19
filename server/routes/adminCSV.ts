@@ -542,3 +542,81 @@ export const handleExportPayments: RequestHandler = async (_req, res) => {
     });
   }
 };
+
+/**
+ * Export GST sales invoices to CSV
+ * GET /api/admin/csv/gst/sales/export/:clientId
+ */
+export const handleExportGSTSalesInvoices: RequestHandler = async (req, res) => {
+  try {
+    const clientId = req.params.clientId;
+    const { gstRepository } = await import("../repositories/gstRepository");
+    const invoices = await gstRepository.findSalesInvoices(clientId);
+
+    const csvData = invoices.map((invoice) => ({
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: formatDate(invoice.invoiceDate),
+      customerName: invoice.customerName,
+      customerGSTIN: invoice.customerGSTIN || "",
+      taxableValue: invoice.taxableValue.toFixed(2),
+      cgst: invoice.cgst.toFixed(2),
+      sgst: invoice.sgst.toFixed(2),
+      igst: invoice.igst.toFixed(2),
+      totalAmount: invoice.totalAmount.toFixed(2),
+      placeOfSupply: invoice.placeOfSupply,
+      reverseCharge: formatBoolean(invoice.reverseCharge),
+      eInvoiceGenerated: formatBoolean(invoice.eInvoiceGenerated),
+    }));
+
+    const csv = exportToCSV(csvData);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="gst_sales_invoices.csv"');
+    res.send(csv);
+  } catch (error) {
+    console.error("Error exporting GST sales invoices:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export GST sales invoices",
+    });
+  }
+};
+
+/**
+ * Export GST purchase invoices to CSV
+ * GET /api/admin/csv/gst/purchases/export/:clientId
+ */
+export const handleExportGSTPurchaseInvoices: RequestHandler = async (req, res) => {
+  try {
+    const clientId = req.params.clientId;
+    const { gstRepository } = await import("../repositories/gstRepository");
+    const invoices = await gstRepository.findPurchaseInvoices(clientId);
+
+    const csvData = invoices.map((invoice) => ({
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: formatDate(invoice.invoiceDate),
+      supplierName: invoice.supplierName,
+      supplierGSTIN: invoice.supplierGSTIN,
+      taxableValue: invoice.taxableValue.toFixed(2),
+      cgst: invoice.cgst.toFixed(2),
+      sgst: invoice.sgst.toFixed(2),
+      igst: invoice.igst.toFixed(2),
+      totalAmount: invoice.totalAmount.toFixed(2),
+      placeOfSupply: invoice.placeOfSupply,
+      reverseCharge: formatBoolean(invoice.reverseCharge),
+      itcClaimed: formatBoolean(invoice.itcClaimed),
+    }));
+
+    const csv = exportToCSV(csvData);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="gst_purchase_invoices.csv"');
+    res.send(csv);
+  } catch (error) {
+    console.error("Error exporting GST purchase invoices:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export GST purchase invoices",
+    });
+  }
+};

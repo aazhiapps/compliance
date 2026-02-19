@@ -39,6 +39,8 @@ import {
   handleImportApplications,
   handleGetCSVTemplate,
   handleExportPayments,
+  handleExportGSTSalesInvoices,
+  handleExportGSTPurchaseInvoices,
   uploadCSV,
 } from "./routes/adminCSV";
 import {
@@ -319,6 +321,18 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     handleExportPayments,
+  );
+  app.get(
+    "/api/admin/csv/gst/sales/export/:clientId",
+    authenticateToken,
+    requireAdmin,
+    handleExportGSTSalesInvoices,
+  );
+  app.get(
+    "/api/admin/csv/gst/purchases/export/:clientId",
+    authenticateToken,
+    requireAdmin,
+    handleExportGSTPurchaseInvoices,
   );
 
   // Audit Log Routes (admin only)
