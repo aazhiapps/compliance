@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import type { StringValue } from "ms";
+import { isTokenBlacklisted } from "../services/TokenBlacklistService";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -18,6 +19,7 @@ const SECRET: string = JWT_SECRET;
  */
 export interface AuthRequest extends Express.Request {
   userId?: string;
+  token?: string;
 }
 
 /**
@@ -35,9 +37,18 @@ export const authenticateToken: RequestHandler = (req, res, next) => {
     });
   }
 
+  // Check if token is blacklisted (logged out)
+  if (isTokenBlacklisted(token)) {
+    return res.status(401).json({
+      success: false,
+      message: "Token has been revoked. Please login again.",
+    });
+  }
+
   try {
     const decoded = jwt.verify(token, SECRET) as { userId: string };
     (req as AuthRequest).userId = decoded.userId;
+    (req as AuthRequest).token = token; // Store token for potential blacklisting
     next();
   } catch (error) {
     return res.status(401).json({

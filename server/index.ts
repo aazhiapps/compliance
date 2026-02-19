@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { handleDemo } from "./routes/demo";
 import filingRoutes from "./routes/filings";
 import documentRoutes from "./routes/documents";
@@ -103,9 +104,27 @@ import { validateStatusTransition } from "./middleware/statusTransition";
 import { errorHandler } from "./middleware/errorHandler";
 import { requestLogger } from "./middleware/logging";
 import { apiLimiter, authLimiter, fileLimiter } from "./middleware/rateLimiter";
+import { sanitizeRequest } from "./middleware/sanitize";
 
 export function createServer() {
   const app = express();
+
+  // Security headers with helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Required for Vite dev
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "ws:", "wss:"], // Required for Vite HMR
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for development
+    }),
+  );
 
   // Global middleware
   app.use(
@@ -116,6 +135,10 @@ export function createServer() {
   );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  
+  // XSS protection - sanitize all inputs
+  app.use(sanitizeRequest);
+  
   app.use(requestLogger);
 
   // Apply rate limiting to all API routes

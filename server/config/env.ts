@@ -30,6 +30,21 @@ const envSchema = z.object({
 });
 
 /**
+ * List of weak/insecure JWT secrets that should never be used
+ */
+const INSECURE_SECRETS = [
+  "helloworld",
+  "secret",
+  "password",
+  "test",
+  "demo",
+  "12345",
+  "admin",
+  "jwt_secret",
+  "demo-secret-key",
+];
+
+/**
  * Validate and parse environment variables
  * @throws {Error} if validation fails
  */
@@ -37,14 +52,35 @@ export function validateEnv() {
   try {
     const env = envSchema.parse(process.env);
 
-    // Additional security check: prevent demo JWT_SECRET in production
-    if (
-      env.NODE_ENV === "production" &&
-      env.JWT_SECRET.includes("demo-secret-key")
-    ) {
-      throw new Error(
-        "Security Error: Demo JWT_SECRET cannot be used in production. " +
-          "Generate a secure secret with: openssl rand -base64 32",
+    // Additional security checks for JWT_SECRET
+    const jwtSecretLower = env.JWT_SECRET.toLowerCase();
+
+    // Check for insecure secrets
+    for (const insecureSecret of INSECURE_SECRETS) {
+      if (jwtSecretLower.includes(insecureSecret)) {
+        if (env.NODE_ENV === "production") {
+          throw new Error(
+            `SECURITY ERROR: Insecure JWT_SECRET detected in production. ` +
+              `The secret contains "${insecureSecret}" which is not allowed. ` +
+              `Generate a secure secret with: openssl rand -base64 48`,
+          );
+        } else {
+          console.warn(
+            `⚠️  WARNING: Insecure JWT_SECRET detected in ${env.NODE_ENV} mode. ` +
+              `The secret contains "${insecureSecret}". ` +
+              `This is acceptable for development but MUST be changed for production. ` +
+              `Generate a secure secret with: openssl rand -base64 48`,
+          );
+        }
+      }
+    }
+
+    // Warn if JWT_SECRET doesn't meet recommended entropy
+    if (env.JWT_SECRET.length < 48) {
+      console.warn(
+        `⚠️  JWT_SECRET is ${env.JWT_SECRET.length} characters. ` +
+          `For maximum security, consider using 48+ characters. ` +
+          `Generate with: openssl rand -base64 48`,
       );
     }
 
