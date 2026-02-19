@@ -29,6 +29,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Client } from "@shared/client";
 import { Application } from "@shared/auth";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BackButton } from "@/components/BackButton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useErrorHandler } from "@/utils/errorHandling";
 
 interface ClientDetailResponse {
   client: Client;
@@ -47,6 +51,7 @@ export default function AdminClientDetail() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   const [data, setData] = useState<ClientDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,15 +84,11 @@ export default function AdminClientDetail() {
     } catch (err) {
       console.error("Error fetching client details:", err);
       setError(err instanceof Error ? err.message : "Failed to load client");
-      toast({
-        title: "Error",
-        description: "Failed to load client details",
-        variant: "destructive",
-      });
+      handleError(err, "Fetching client details");
     } finally {
       setLoading(false);
     }
-  }, [id, token, toast]);
+  }, [id, token, handleError]);
 
   useEffect(() => {
     fetchClientDetails();
@@ -96,8 +97,9 @@ export default function AdminClientDetail() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="p-6 space-y-6">
+          <BackButton to="/admin/clients" label="Back to Clients" />
+          <LoadingSpinner size="lg" message="Loading client details..." />
         </div>
       </AdminLayout>
     );
@@ -194,26 +196,38 @@ export default function AdminClientDetail() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        {/* Header */}
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Clients", href: "/admin/clients" },
+            { label: data.data.client.businessName },
+          ]}
+        />
+
+        {/* Header with Back Button */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate("/admin/clients")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Clients
-          </Button>
+          <BackButton to="/admin/clients" label="Back to Clients" />
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-foreground">
+              {data.data.client.businessName}
+            </h1>
+            <p className="text-muted-foreground mt-1">Client Details & Information</p>
+          </div>
         </div>
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">{client.clientName}</h1>
-            <p className="text-muted-foreground capitalize">{client.clientType} Client</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{data.data.client.businessName}</h1>
+            <p className="text-muted-foreground capitalize">{data.data.client.businessType} Client</p>
           </div>
           <div className="flex gap-2">
-            <span className={`px-4 py-2 rounded-lg text-sm font-medium ${getStatusBadgeClasses(client.status)}`}>
-              {client.status}
+            <span className={`px-4 py-2 rounded-lg text-sm font-medium ${getStatusBadgeClasses(data.data.client.status)}`}>
+              {data.data.client.status}
             </span>
-            {client.riskLevel && (
-              <span className={`px-4 py-2 rounded-lg text-sm font-medium ${getRiskBadgeClasses(client.riskLevel)}`}>
-                Risk: {client.riskLevel}
+            {data.data.client.riskLevel && (
+              <span className={`px-4 py-2 rounded-lg text-sm font-medium ${getRiskBadgeClasses(data.data.client.riskLevel)}`}>
+                Risk: {data.data.client.riskLevel}
               </span>
             )}
           </div>
@@ -234,22 +248,22 @@ export default function AdminClientDetail() {
                 <Mail className="w-4 h-4 text-muted-foreground mt-1" />
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{client.email}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.email}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-muted-foreground mt-1" />
                 <div>
                   <p className="text-sm font-medium">Phone</p>
-                  <p className="text-sm text-muted-foreground">{client.phone}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.phone}</p>
                 </div>
               </div>
-              {client.alternatePhone && (
+              {data.client.alternatePhone && (
                 <div className="flex items-start gap-3">
                   <Phone className="w-4 h-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm font-medium">Alternate Phone</p>
-                    <p className="text-sm text-muted-foreground">{client.alternatePhone}</p>
+                    <p className="text-sm text-muted-foreground">{data.client.alternatePhone}</p>
                   </div>
                 </div>
               )}
@@ -258,7 +272,7 @@ export default function AdminClientDetail() {
                 <div>
                   <p className="text-sm font-medium">Address</p>
                   <p className="text-sm text-muted-foreground">
-                    {client.address}, {client.city}, {client.state} - {client.pincode}
+                    {data.client.address}, {data.client.city}, {data.client.state} - {data.client.pincode}
                   </p>
                 </div>
               </div>
@@ -274,35 +288,35 @@ export default function AdminClientDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {client.panNumber && (
+              {data.client.panNumber && (
                 <div>
                   <p className="text-sm font-medium">PAN Number</p>
-                  <p className="text-sm text-muted-foreground">{client.panNumber}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.panNumber}</p>
                 </div>
               )}
-              {client.gstin && (
+              {data.client.gstin && (
                 <div>
                   <p className="text-sm font-medium">GSTIN</p>
-                  <p className="text-sm text-muted-foreground">{client.gstin}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.gstin}</p>
                 </div>
               )}
-              {client.businessName && (
+              {data.client.businessName && (
                 <div>
                   <p className="text-sm font-medium">Business Name</p>
-                  <p className="text-sm text-muted-foreground">{client.businessName}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.businessName}</p>
                 </div>
               )}
-              {client.cin && (
+              {data.client.cin && (
                 <div>
                   <p className="text-sm font-medium">CIN</p>
-                  <p className="text-sm text-muted-foreground">{client.cin}</p>
+                  <p className="text-sm text-muted-foreground">{data.client.cin}</p>
                 </div>
               )}
-              {client.incorporationDate && (
+              {data.client.incorporationDate && (
                 <div>
                   <p className="text-sm font-medium">Incorporation Date</p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(client.incorporationDate).toLocaleDateString()}
+                    {new Date(data.client.incorporationDate).toLocaleDateString()}
                   </p>
                 </div>
               )}
@@ -310,14 +324,14 @@ export default function AdminClientDetail() {
                 <p className="text-sm font-medium">KYC Status</p>
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
-                    client.kycStatus === "verified"
+                    data.client.kycStatus === "verified"
                       ? "bg-green-100 text-green-700"
-                      : client.kycStatus === "pending"
+                      : data.client.kycStatus === "pending"
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {client.kycStatus}
+                  {data.client.kycStatus}
                 </span>
               </div>
             </CardContent>
@@ -354,7 +368,7 @@ export default function AdminClientDetail() {
         )}
 
         {/* Risk & Compliance Metrics */}
-        {(client.riskScore || client.missedComplianceCount !== undefined) && (
+        {(data.client.riskScore || data.client.missedComplianceCount !== undefined) && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -364,36 +378,36 @@ export default function AdminClientDetail() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {client.riskScore !== undefined && (
+                {data.client.riskScore !== undefined && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Risk Score</p>
-                    <p className="text-2xl font-bold">{client.riskScore}/100</p>
+                    <p className="text-2xl font-bold">{data.client.riskScore}/100</p>
                   </div>
                 )}
-                {client.missedComplianceCount !== undefined && (
+                {data.client.missedComplianceCount !== undefined && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Missed Compliance</p>
-                    <p className="text-2xl font-bold text-orange-600">{client.missedComplianceCount}</p>
+                    <p className="text-2xl font-bold text-orange-600">{data.client.missedComplianceCount}</p>
                   </div>
                 )}
-                {client.rejectedApplicationsCount !== undefined && (
+                {data.client.rejectedApplicationsCount !== undefined && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Rejected Apps</p>
-                    <p className="text-2xl font-bold text-red-600">{client.rejectedApplicationsCount}</p>
+                    <p className="text-2xl font-bold text-red-600">{data.client.rejectedApplicationsCount}</p>
                   </div>
                 )}
-                {client.pendingQueriesCount !== undefined && (
+                {data.client.pendingQueriesCount !== undefined && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Pending Queries</p>
-                    <p className="text-2xl font-bold text-yellow-600">{client.pendingQueriesCount}</p>
+                    <p className="text-2xl font-bold text-yellow-600">{data.client.pendingQueriesCount}</p>
                   </div>
                 )}
               </div>
-              {client.riskFactors && client.riskFactors.length > 0 && (
+              {data.client.riskFactors && data.client.riskFactors.length > 0 && (
                 <div className="mt-4">
                   <p className="text-sm font-medium mb-2">Risk Factors</p>
                   <div className="flex flex-wrap gap-2">
-                    {client.riskFactors.map((factor, idx) => (
+                    {data.client.riskFactors.map((factor, idx) => (
                       <span
                         key={idx}
                         className="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-700"
@@ -490,16 +504,16 @@ export default function AdminClientDetail() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Created At</p>
-                <p className="font-medium">{new Date(client.createdAt).toLocaleString()}</p>
+                <p className="font-medium">{new Date(data.client.createdAt).toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Last Updated</p>
-                <p className="font-medium">{new Date(client.updatedAt).toLocaleString()}</p>
+                <p className="font-medium">{new Date(data.client.updatedAt).toLocaleString()}</p>
               </div>
-              {client.lastRiskAssessment && (
+              {data.client.lastRiskAssessment && (
                 <div>
                   <p className="text-muted-foreground">Last Risk Assessment</p>
-                  <p className="font-medium">{new Date(client.lastRiskAssessment).toLocaleString()}</p>
+                  <p className="font-medium">{new Date(data.client.lastRiskAssessment).toLocaleString()}</p>
                 </div>
               )}
             </div>

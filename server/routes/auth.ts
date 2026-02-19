@@ -7,11 +7,13 @@ import {
   Application,
 } from "@shared/auth";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { generateToken } from "../middleware/auth";
 import { userRepository } from "../repositories/userRepository";
 import { applicationRepository } from "../repositories/applicationRepository";
 import { AUTH, HTTP_STATUS } from "../utils/constants";
 import { AuthRequest } from "../middleware/auth";
+import { blacklistToken } from "../services/TokenBlacklistService";
 
 /**
  * Seed demo users for development/testing
@@ -399,13 +401,38 @@ export const handleGetProfile: RequestHandler = async (req, res) => {
 
 /**
  * Handle user logout
- * Note: JWT is stateless, so this is just a confirmation
+ * Blacklists the current JWT token to prevent reuse
  */
-export const handleLogout: RequestHandler = (_req, res) => {
-  res.json({
-    success: true,
-    message: "Logged out successfully",
-  });
+export const handleLogout: RequestHandler = (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1];
+
+  if (token) {
+    try {
+      // Decode token to get expiration time
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      const expiresAt = decoded.exp ? decoded.exp * 1000 : undefined; // Convert to milliseconds
+
+      // Add token to blacklist
+      blacklistToken(token, expiresAt);
+
+      res.json({
+        success: true,
+        message: "Logged out successfully. Token has been revoked.",
+      });
+    } catch (error) {
+      // If token is invalid, still return success
+      res.json({
+        success: true,
+        message: "Logged out successfully.",
+      });
+    }
+  } else {
+    res.json({
+      success: true,
+      message: "Logged out successfully.",
+    });
+  }
 };
 
 /**

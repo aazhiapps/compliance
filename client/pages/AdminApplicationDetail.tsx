@@ -38,6 +38,10 @@ import { useToast } from "@/hooks/use-toast";
 import { RecordPaymentRequest } from "@shared/api";
 import { Application, User as UserType } from "@shared/auth";
 import { Client } from "@shared/client";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BackButton } from "@/components/BackButton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useErrorHandler } from "@/utils/errorHandling";
 
 // Helper interface to combine application and user data for display
 interface ApplicationWithUserDetails extends Application {
@@ -58,6 +62,7 @@ export default function AdminApplicationDetail() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   const [application, setApplication] =
     useState<ApplicationWithUserDetails | null>(null);
@@ -175,13 +180,9 @@ export default function AdminApplicationDetail() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">
-              Loading application details...
-            </p>
-          </div>
+        <div className="p-6 space-y-6">
+          <BackButton to="/admin/applications" label="Back to Applications" />
+          <LoadingSpinner size="lg" message="Loading application details..." />
         </div>
       </AdminLayout>
     );
@@ -190,17 +191,14 @@ export default function AdminApplicationDetail() {
   if (error || !application) {
     return (
       <AdminLayout>
-        <div className="p-6">
+        <div className="p-6 space-y-6">
+          <BackButton to="/admin/applications" label="Back to Applications" />
           <Card>
             <CardContent className="py-12 text-center">
               <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
               <p className="text-lg text-muted-foreground mb-4">
                 {error || "Application not found"}
               </p>
-              <Button onClick={() => navigate("/admin/applications")}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Applications
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -464,16 +462,18 @@ export default function AdminApplicationDetail() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Applications", href: "/admin/applications" },
+            { label: application.serviceName },
+          ]}
+        />
+
         {/* Header with Back Button */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/admin/applications")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
+          <BackButton to="/admin/applications" label="Back" />
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground">
               {application.serviceName}

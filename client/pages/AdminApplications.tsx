@@ -9,6 +9,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Search,
   Filter,
   MoreVertical,
@@ -20,11 +44,18 @@ import {
   TrendingUp,
   CheckCircle2,
   Loader2,
+  UserPlus,
+  Building2,
+  X,
+  Check,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { Service } from "@shared/service";
 import { Application as ApplicationType, User } from "@shared/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
+import { TableSkeleton } from "@/components/ui/skeleton";
+import { useErrorHandler } from "@/utils/errorHandling";
 
 interface ApplicationWithUser extends ApplicationType {
   userName?: string;
@@ -34,7 +65,11 @@ interface ApplicationWithUser extends ApplicationType {
 export default function AdminApplications() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
+  
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300); // Debounce search by 300ms
+  
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
   const [filterService, setFilterService] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
@@ -42,6 +77,12 @@ export default function AdminApplications() {
   const [applications, setApplications] = useState<ApplicationWithUser[]>([]);
   const [users, setUsers] = useState<Map<string, User>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Quick action states
+  const [quickActionApp, setQuickActionApp] = useState<ApplicationWithUser | null>(null);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Fetch applications, users, and services
   useEffect(() => {
@@ -97,15 +138,101 @@ export default function AdminApplications() {
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load applications. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, "Fetching applications");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Quick action handlers
+  const handleQuickApprove = async (app: ApplicationWithUser) => {
+    try {
+      setIsProcessing(true);
+      const token = localStorage.getItem("authToken");
+      
+      const response = await fetch(`/api/admin/applications/${app.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "approved" }),
+      });
+
+      if (!response.ok) throw new Error("Failed to approve application");
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || "Failed to approve");
+
+      toast({
+        title: "Success",
+        description: `Application for ${app.serviceName} approved successfully`,
+      });
+
+      await fetchData();
+    } catch (error) {
+      handleError(error, "Approving application");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleQuickReject = async () => {
+    if (!quickActionApp || !rejectReason.trim()) return;
+
+    try {
+      setIsProcessing(true);
+      const token = localStorage.getItem("authToken");
+      
+      const response = await fetch(`/api/admin/applications/${quickActionApp.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          status: "rejected",
+          notes: rejectReason 
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to reject application");
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || "Failed to reject");
+
+      toast({
+        title: "Success",
+        description: `Application for ${quickActionApp.serviceName} rejected`,
+      });
+
+      setShowRejectDialog(false);
+      setRejectReason("");
+      setQuickActionApp(null);
+      await fetchData();
+    } catch (error) {
+      handleError(error, "Rejecting application");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const openRejectDialog = (app: ApplicationWithUser) => {
+    setQuickActionApp(app);
+    setShowRejectDialog(true);
+  };
+
+  // Use debounced search for filtering
+  const filteredApps = applications.filter((app) => {
+    const matchesSearch =
+      (app.userName?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
+      (app.userEmail?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
+      app.serviceName.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesStatus = filterStatus === "all" || app.status === filterStatus;
+    const matchesService =
+      filterService === "all" || app.serviceName === filterService;
+    return matchesSearch && matchesStatus && matchesService;
+  });
 
   const handleBulkApprove = async () => {
     try {
@@ -181,17 +308,6 @@ export default function AdminApplications() {
     }
   };
 
-  const filteredApps = applications.filter((app) => {
-    const matchesSearch =
-      (app.userName?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (app.userEmail?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      app.serviceName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || app.status === filterStatus;
-    const matchesService =
-      filterService === "all" || app.serviceName === filterService;
-    return matchesSearch && matchesStatus && matchesService;
-  });
-
   const toggleAppSelect = (appId: string) => {
     const newSelected = new Set(selectedApps);
     if (newSelected.has(appId)) {
@@ -261,12 +377,28 @@ export default function AdminApplications() {
         </div>
 
         {isLoading ? (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-12 text-center">
-              <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading applications...</p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {/* Loading skeleton for metrics cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="border-0 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-8 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Loading skeleton for table */}
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
+                <TableSkeleton rows={8} columns={6} />
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <>
             {/* Key Metrics Cards */}
@@ -586,12 +718,59 @@ export default function AdminApplications() {
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <button
-                            className="p-2 hover:bg-gray-100 rounded transition-colors"
-                            title="More options"
-                          >
-                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                          </button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="p-2 h-auto"
+                                disabled={isProcessing}
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              {app.status !== "approved" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleQuickApprove(app)}
+                                  disabled={isProcessing}
+                                >
+                                  <Check className="w-4 h-4 mr-2" />
+                                  Approve
+                                </DropdownMenuItem>
+                              )}
+                              {app.status !== "rejected" && (
+                                <DropdownMenuItem
+                                  onClick={() => openRejectDialog(app)}
+                                  disabled={isProcessing}
+                                >
+                                  <X className="w-4 h-4 mr-2" />
+                                  Reject
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(`/admin/applications/${app.id}`)
+                                }
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              {app.clientId && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    navigate(`/admin/clients/${app.clientId}`)
+                                  }
+                                >
+                                  <Building2 className="w-4 h-4 mr-2" />
+                                  View Client
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </td>
                     </tr>
@@ -610,6 +789,56 @@ export default function AdminApplications() {
         </Card>
           </>
         )}
+
+        {/* Reject Dialog */}
+        <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reject Application</DialogTitle>
+              <DialogDescription>
+                Please provide a reason for rejecting this application. This will be shared with the applicant.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {quickActionApp && (
+                <div className="p-3 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">{quickActionApp.serviceName}</p>
+                  <p className="text-xs text-muted-foreground">{quickActionApp.userName}</p>
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium">Rejection Reason *</label>
+                <Textarea
+                  placeholder="Enter the reason for rejection..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setRejectReason("");
+                  setQuickActionApp(null);
+                }}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleQuickReject}
+                disabled={!rejectReason.trim() || isProcessing}
+              >
+                {isProcessing ? "Rejecting..." : "Reject Application"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
