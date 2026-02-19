@@ -29,6 +29,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Client } from "@shared/client";
 import { Application } from "@shared/auth";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BackButton } from "@/components/BackButton";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useErrorHandler } from "@/utils/errorHandling";
 
 interface ClientDetailResponse {
   client: Client;
@@ -47,6 +51,7 @@ export default function AdminClientDetail() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   const [data, setData] = useState<ClientDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,15 +84,11 @@ export default function AdminClientDetail() {
     } catch (err) {
       console.error("Error fetching client details:", err);
       setError(err instanceof Error ? err.message : "Failed to load client");
-      toast({
-        title: "Error",
-        description: "Failed to load client details",
-        variant: "destructive",
-      });
+      handleError(err, "Fetching client details");
     } finally {
       setLoading(false);
     }
-  }, [id, token, toast]);
+  }, [id, token, handleError]);
 
   useEffect(() => {
     fetchClientDetails();
@@ -96,8 +97,13 @@ export default function AdminClientDetail() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="p-6 space-y-6">
+          <BackButton to="/admin/clients" label="Back to Clients" />
+          <LoadingSpinner size="lg" message="Loading client details..." />
+        </div>
+      </AdminLayout>
+    );
+  }
         </div>
       </AdminLayout>
     );
@@ -194,10 +200,25 @@ export default function AdminClientDetail() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        {/* Header */}
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Clients", href: "/admin/clients" },
+            { label: data.client.businessName },
+          ]}
+        />
+
+        {/* Header with Back Button */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate("/admin/clients")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
+          <BackButton to="/admin/clients" label="Back to Clients" />
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-foreground">
+              {data.client.businessName}
+            </h1>
+            <p className="text-muted-foreground mt-1">Client Details & Information</p>
+          </div>
+        </div>
             Back to Clients
           </Button>
         </div>

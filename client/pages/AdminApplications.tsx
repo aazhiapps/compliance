@@ -25,6 +25,9 @@ import AdminLayout from "@/components/AdminLayout";
 import { Service } from "@shared/service";
 import { Application as ApplicationType, User } from "@shared/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
+import { TableSkeleton } from "@/components/ui/skeleton";
+import { useErrorHandler } from "@/utils/errorHandling";
 
 interface ApplicationWithUser extends ApplicationType {
   userName?: string;
@@ -34,7 +37,11 @@ interface ApplicationWithUser extends ApplicationType {
 export default function AdminApplications() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
+  
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300); // Debounce search by 300ms
+  
   const [filterStatus, setFilterStatus] = useState<"all" | string>("all");
   const [filterService, setFilterService] = useState<"all" | string>("all");
   const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
@@ -97,15 +104,23 @@ export default function AdminApplications() {
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load applications. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, "Fetching applications");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Use debounced search for filtering
+  const filteredApps = applications.filter((app) => {
+    const matchesSearch =
+      (app.userName?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
+      (app.userEmail?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
+      app.serviceName.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesStatus = filterStatus === "all" || app.status === filterStatus;
+    const matchesService =
+      filterService === "all" || app.serviceName === filterService;
+    return matchesSearch && matchesStatus && matchesService;
+  });
 
   const handleBulkApprove = async () => {
     try {
@@ -261,12 +276,28 @@ export default function AdminApplications() {
         </div>
 
         {isLoading ? (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-12 text-center">
-              <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading applications...</p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {/* Loading skeleton for metrics cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="border-0 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-8 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Loading skeleton for table */}
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
+                <TableSkeleton rows={8} columns={6} />
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <>
             {/* Key Metrics Cards */}
