@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import UserEditModal from "@/components/UserEditModal";
+import { CSVExportButton } from "@/components/CSVExportButton";
+import { CSVImportButton } from "@/components/CSVImportButton";
 import { User as ApiUser } from "@shared/auth";
 import type { UserForEdit } from "@/components/UserEditModal";
 
@@ -253,10 +255,25 @@ export default function AdminUsers() {
               Manage and approve customer accounts
             </p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Customer
-          </Button>
+          <div className="flex gap-2">
+            <CSVExportButton
+              endpoint="/api/admin/csv/users/export"
+              filename="users.csv"
+              label="Export"
+              variant="outline"
+            />
+            <CSVImportButton
+              endpoint="/api/admin/csv/users/import"
+              templateEndpoint="/api/admin/csv/template/users"
+              entityType="Users"
+              label="Import"
+              variant="outline"
+            />
+            <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Customer
+            </Button>
+          </div>
         </div>
 
         {/* Key Metrics Cards */}

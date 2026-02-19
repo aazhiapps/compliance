@@ -22,6 +22,8 @@ import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Client } from "@shared/client";
+import { CSVExportButton } from "@/components/CSVExportButton";
+import { CSVImportButton } from "@/components/CSVImportButton";
 
 export default function AdminClients() {
   const navigate = useNavigate();
@@ -126,11 +128,32 @@ export default function AdminClients() {
     <AdminLayout>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Client Management</h1>
-          <p className="text-muted-foreground">
-            Manage all client profiles and monitor their services
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Client Management</h1>
+            <p className="text-muted-foreground">
+              Manage all client profiles and monitor their services
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <CSVExportButton
+              endpoint="/api/admin/csv/clients/export"
+              filename="clients.csv"
+              label="Export"
+              variant="outline"
+            />
+            <CSVImportButton
+              endpoint="/api/admin/csv/clients/import"
+              templateEndpoint="/api/admin/csv/template/clients"
+              entityType="Clients"
+              label="Import"
+              variant="outline"
+              onImportSuccess={() => {
+                // Refresh clients list after successful import
+                window.location.reload();
+              }}
+            />
+          </div>
         </div>
 
         {/* Stats Grid */}
