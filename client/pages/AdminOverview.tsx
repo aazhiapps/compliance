@@ -21,6 +21,18 @@ import {
   File,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  LineChart,
+  Line,
+} from "recharts";
 
 interface AdminStats {
   totalUsers: number;
@@ -37,6 +49,41 @@ interface AdminStats {
     paymentAmount: number;
     createdAt: string;
   }>;
+}
+
+// Helper function to generate monthly data from recent applications
+function generateMonthlyData(applications: AdminStats["recentApplications"]) {
+  // Get last 6 months
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      month: date.toLocaleDateString("en-US", { month: "short" }),
+      applications: 0,
+      approved: 0,
+      pending: 0,
+    });
+  }
+
+  // Count applications by month
+  applications.forEach((app) => {
+    const appDate = new Date(app.createdAt);
+    const monthIndex = months.findIndex((m) => {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - months.indexOf(m)), 1);
+      return appDate.getMonth() === monthDate.getMonth() && appDate.getFullYear() === monthDate.getFullYear();
+    });
+    if (monthIndex >= 0) {
+      months[monthIndex].applications++;
+      if (app.status === "approved") {
+        months[monthIndex].approved++;
+      } else if (app.status === "under_review" || app.status === "submitted") {
+        months[monthIndex].pending++;
+      }
+    }
+  });
+
+  return months;
 }
 
 export default function AdminOverview() {
@@ -399,18 +446,67 @@ export default function AdminOverview() {
           </div>
         </div>
 
-        {/* Activity Chart Placeholder */}
+        {/* Activity Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Applications Over Time</CardTitle>
-            <CardDescription>Monthly application submissions</CardDescription>
+            <CardDescription>Monthly application submissions and approvals</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border border-border">
-              <p className="text-muted-foreground">
-                Chart visualization coming soon
-              </p>
-            </div>
+            {stats && stats.recentApplications.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={generateMonthlyData(stats.recentApplications)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#888888"
+                    fontSize={12}
+                  />
+                  <YAxis 
+                    stroke="#888888"
+                    fontSize={12}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="applications"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    name="Total Applications"
+                    dot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="approved"
+                    stroke="hsl(142.1 76.2% 36.3%)"
+                    strokeWidth={2}
+                    name="Approved"
+                    dot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="pending"
+                    stroke="hsl(47.9 95.8% 53.1%)"
+                    strokeWidth={2}
+                    name="Pending"
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border border-border">
+                <p className="text-muted-foreground">
+                  No data available for chart visualization
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
