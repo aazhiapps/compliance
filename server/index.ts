@@ -31,6 +31,19 @@ import {
   handleGetClientByIdAdmin,
 } from "./routes/admin";
 import {
+  handleExportUsers,
+  handleImportUsers,
+  handleExportClients,
+  handleImportClients,
+  handleExportApplications,
+  handleImportApplications,
+  handleGetCSVTemplate,
+  handleExportPayments,
+  handleExportGSTSalesInvoices,
+  handleExportGSTPurchaseInvoices,
+  uploadCSV,
+} from "./routes/adminCSV";
+import {
   handleGetClients,
   handleGetClientById,
   handleGetClientWithServices,
@@ -255,6 +268,71 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     handleGetClientByIdAdmin,
+  );
+
+  // Admin CSV Import/Export Routes
+  app.get(
+    "/api/admin/csv/users/export",
+    authenticateToken,
+    requireAdmin,
+    handleExportUsers,
+  );
+  app.post(
+    "/api/admin/csv/users/import",
+    authenticateToken,
+    requireAdmin,
+    uploadCSV,
+    handleImportUsers,
+  );
+  app.get(
+    "/api/admin/csv/clients/export",
+    authenticateToken,
+    requireAdmin,
+    handleExportClients,
+  );
+  app.post(
+    "/api/admin/csv/clients/import",
+    authenticateToken,
+    requireAdmin,
+    uploadCSV,
+    handleImportClients,
+  );
+  app.get(
+    "/api/admin/csv/applications/export",
+    authenticateToken,
+    requireAdmin,
+    handleExportApplications,
+  );
+  app.post(
+    "/api/admin/csv/applications/import",
+    authenticateToken,
+    requireAdmin,
+    uploadCSV,
+    handleImportApplications,
+  );
+  app.get(
+    "/api/admin/csv/template/:entityType",
+    authenticateToken,
+    requireAdmin,
+    handleGetCSVTemplate,
+  );
+  app.get(
+    "/api/admin/csv/payments/export",
+    authenticateToken,
+    requireAdmin,
+    handleExportPayments,
+  );
+  app.get(
+    "/api/admin/csv/gst/sales/export/:clientId",
+    authenticateToken,
+    requireAdmin,
+    handleExportGSTSalesInvoices,
+  );
+  app.get(
+    "/api/admin/csv/gst/purchases/export/:clientId",
+    authenticateToken,
+    requireAdmin,
+    handleExportGSTPurchaseInvoices,
   );
 
   // Audit Log Routes (admin only)

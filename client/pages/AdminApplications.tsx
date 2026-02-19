@@ -56,6 +56,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { useErrorHandler } from "@/utils/errorHandling";
+import { CSVExportButton } from "@/components/CSVExportButton";
+import { CSVImportButton } from "@/components/CSVImportButton";
 
 interface ApplicationWithUser extends ApplicationType {
   userName?: string;
@@ -367,13 +369,33 @@ export default function AdminApplications() {
     <AdminLayout>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Application Management
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Review and manage all service applications
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Application Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Review and manage all service applications
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <CSVExportButton
+              endpoint="/api/admin/csv/applications/export"
+              filename="applications.csv"
+              label="Export"
+              variant="outline"
+            />
+            <CSVImportButton
+              endpoint="/api/admin/csv/applications/import"
+              templateEndpoint="/api/admin/csv/template/applications"
+              entityType="Applications"
+              label="Import"
+              variant="outline"
+              onImportSuccess={() => {
+                fetchData();
+              }}
+            />
+          </div>
         </div>
 
         {isLoading ? (

@@ -30,6 +30,7 @@ import { PaymentRecord, RecordPaymentRequest } from "@shared/api";
 import { Application } from "@shared/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { CSVExportButton } from "@/components/CSVExportButton";
 
 export default function AdminPayments() {
   const { token } = useAuth();
@@ -229,13 +230,21 @@ export default function AdminPayments() {
               Track and manage all payments
             </p>
           </div>
-          <Button
-            onClick={() => setShowRecordDialog(true)}
-            className="bg-primary hover:bg-primary/90 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Record Payment
-          </Button>
+          <div className="flex gap-2">
+            <CSVExportButton
+              endpoint="/api/admin/csv/payments/export"
+              filename="payments.csv"
+              label="Export"
+              variant="outline"
+            />
+            <Button
+              onClick={() => setShowRecordDialog(true)}
+              className="bg-primary hover:bg-primary/90 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Record Payment
+            </Button>
+          </div>
         </div>
 
         {/* Key Metrics Cards */}
