@@ -6,38 +6,53 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import PlaceholderPage from "@/components/PlaceholderPage";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import ErrorBoundary from "./components/ErrorBoundary";
+
+// Immediate load for critical pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import ServiceDetail from "./pages/ServiceDetail";
-import Checkout from "./pages/Checkout";
-import Dashboard from "./pages/Dashboard";
-import MyDocuments from "./pages/MyDocuments";
-import AdminOverview from "./pages/AdminOverview";
-import AdminUsers from "./pages/AdminUsers";
-import AdminApplications from "./pages/AdminApplications";
-import AdminApplicationDetail from "./pages/AdminApplicationDetail";
-import AdminPayments from "./pages/AdminPayments";
-import AdminSettings from "./pages/AdminSettings";
-import AdminServices from "./pages/AdminServices";
-import AdminCompliance from "./pages/AdminCompliance";
-import AdminDocuments from "./pages/AdminDocuments";
-import AdminGST from "./pages/AdminGST";
-import AdminReports from "./pages/AdminReports";
-import AdminClients from "./pages/AdminClients";
-import AdminClientDetail from "./pages/AdminClientDetail";
-import StaffDashboard from "./pages/StaffDashboard";
-import UserGST from "./pages/UserGST";
-import GSTSummary from "./pages/GSTSummary";
-import ApplicationTracking from "./pages/ApplicationTracking";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import ErrorBoundary from "./components/ErrorBoundary";
+
+// Lazy load for less critical pages
+const ServiceDetail = lazy(() => import("./pages/ServiceDetail"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const MyDocuments = lazy(() => import("./pages/MyDocuments"));
+const ApplicationTracking = lazy(() => import("./pages/ApplicationTracking"));
+
+// Lazy load admin pages (heavy components)
+const AdminOverview = lazy(() => import("./pages/AdminOverview"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminApplications = lazy(() => import("./pages/AdminApplications"));
+const AdminApplicationDetail = lazy(() => import("./pages/AdminApplicationDetail"));
+const AdminPayments = lazy(() => import("./pages/AdminPayments"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
+const AdminServices = lazy(() => import("./pages/AdminServices"));
+const AdminCompliance = lazy(() => import("./pages/AdminCompliance"));
+const AdminDocuments = lazy(() => import("./pages/AdminDocuments"));
+const AdminGST = lazy(() => import("./pages/AdminGST"));
+const AdminReports = lazy(() => import("./pages/AdminReports"));
+const AdminClients = lazy(() => import("./pages/AdminClients"));
+const AdminClientDetail = lazy(() => import("./pages/AdminClientDetail"));
+
+// Lazy load staff pages
+const StaffDashboard = lazy(() => import("./pages/StaffDashboard"));
+
+// Lazy load GST pages
+const UserGST = lazy(() => import("./pages/UserGST"));
+const GSTSummary = lazy(() => import("./pages/GSTSummary"));
+
+// Lazy load info pages
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
 import {
   BookOpen,
   Users,
@@ -49,20 +64,50 @@ import {
 
 const queryClient = new QueryClient();
 
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <LoadingSpinner size="lg" message="Loading page..." />
+  </div>
+);
+
 const AppRoutes = () => (
   <Routes>
+    {/* Public routes - no lazy loading */}
     <Route path="/" element={<Index />} />
     <Route path="/login" element={<Login />} />
     <Route path="/signup" element={<Signup />} />
-    <Route path="/service/:id" element={<ServiceDetail />} />
-    <Route path="/checkout/:id" element={<Checkout />} />
+    
+    {/* Lazy loaded public routes */}
+    <Route path="/service/:id" element={
+      <Suspense fallback={<PageLoader />}>
+        <ServiceDetail />
+      </Suspense>
+    } />
+    <Route path="/checkout/:id" element={
+      <Suspense fallback={<PageLoader />}>
+        <Checkout />
+      </Suspense>
+    } />
+    <Route path="/about" element={
+      <Suspense fallback={<PageLoader />}>
+        <About />
+      </Suspense>
+    } />
+    <Route path="/contact" element={
+      <Suspense fallback={<PageLoader />}>
+        <Contact />
+      </Suspense>
+    } />
 
-    {/* Protected Routes */}
+    {/* Protected Routes - lazy loaded */}
     <Route
       path="/dashboard"
       element={
         <ProtectedRoute>
-          <Dashboard />
+          <Suspense fallback={<PageLoader />}>
+            <Dashboard />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -70,7 +115,9 @@ const AppRoutes = () => (
       path="/documents"
       element={
         <ProtectedRoute>
-          <MyDocuments />
+          <Suspense fallback={<PageLoader />}>
+            <MyDocuments />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -78,7 +125,9 @@ const AppRoutes = () => (
       path="/application/:id"
       element={
         <ProtectedRoute>
-          <ApplicationTracking />
+          <Suspense fallback={<PageLoader />}>
+            <ApplicationTracking />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -86,7 +135,9 @@ const AppRoutes = () => (
       path="/gst-filing"
       element={
         <ProtectedRoute>
-          <UserGST />
+          <Suspense fallback={<PageLoader />}>
+            <UserGST />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -94,15 +145,20 @@ const AppRoutes = () => (
       path="/gst-summary"
       element={
         <ProtectedRoute>
-          <GSTSummary />
+          <Suspense fallback={<PageLoader />}>
+            <GSTSummary />
+          </Suspense>
         </ProtectedRoute>
       }
     />
+    {/* Admin Routes - lazy loaded with suspense */}
     <Route
       path="/admin"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminOverview />
+          <Suspense fallback={<PageLoader />}>
+            <AdminOverview />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -110,7 +166,9 @@ const AppRoutes = () => (
       path="/admin/users"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminUsers />
+          <Suspense fallback={<PageLoader />}>
+            <AdminUsers />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -118,7 +176,9 @@ const AppRoutes = () => (
       path="/admin/applications"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminApplications />
+          <Suspense fallback={<PageLoader />}>
+            <AdminApplications />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -126,7 +186,9 @@ const AppRoutes = () => (
       path="/admin/applications/:id"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminApplicationDetail />
+          <Suspense fallback={<PageLoader />}>
+            <AdminApplicationDetail />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -134,7 +196,9 @@ const AppRoutes = () => (
       path="/admin/payments"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminPayments />
+          <Suspense fallback={<PageLoader />}>
+            <AdminPayments />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -142,7 +206,9 @@ const AppRoutes = () => (
       path="/admin/settings"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminSettings />
+          <Suspense fallback={<PageLoader />}>
+            <AdminSettings />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -150,7 +216,9 @@ const AppRoutes = () => (
       path="/admin/services"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminServices />
+          <Suspense fallback={<PageLoader />}>
+            <AdminServices />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -158,7 +226,9 @@ const AppRoutes = () => (
       path="/admin/compliance"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminCompliance />
+          <Suspense fallback={<PageLoader />}>
+            <AdminCompliance />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -166,7 +236,9 @@ const AppRoutes = () => (
       path="/admin/documents"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminDocuments />
+          <Suspense fallback={<PageLoader />}>
+            <AdminDocuments />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -174,7 +246,9 @@ const AppRoutes = () => (
       path="/admin/gst"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminGST />
+          <Suspense fallback={<PageLoader />}>
+            <AdminGST />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -182,7 +256,9 @@ const AppRoutes = () => (
       path="/admin/reports"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminReports />
+          <Suspense fallback={<PageLoader />}>
+            <AdminReports />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -190,7 +266,9 @@ const AppRoutes = () => (
       path="/admin/clients"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminClients />
+          <Suspense fallback={<PageLoader />}>
+            <AdminClients />
+          </Suspense>
         </ProtectedRoute>
       }
     />
@@ -198,24 +276,31 @@ const AppRoutes = () => (
       path="/admin/clients/:id"
       element={
         <ProtectedRoute requiredRole="admin">
-          <AdminClientDetail />
+          <Suspense fallback={<PageLoader />}>
+            <AdminClientDetail />
+          </Suspense>
         </ProtectedRoute>
       }
     />
 
-    {/* Staff Routes */}
+    {/* Staff Routes - lazy loaded */}
     <Route
       path="/staff"
       element={
         <ProtectedRoute requiredRole="staff">
-          <StaffDashboard />
+          <Suspense fallback={<PageLoader />}>
+            <StaffDashboard />
+          </Suspense>
         </ProtectedRoute>
       }
     />
 
-    {/* Content Pages */}
-    <Route path="/about" element={<About />} />
-    <Route path="/contact" element={<Contact />} />
+    {/* Catch-all route - lazy loaded */}
+    <Route path="*" element={
+      <Suspense fallback={<PageLoader />}>
+        <NotFound />
+      </Suspense>
+    } />
     <Route
       path="/blog"
       element={
@@ -267,7 +352,7 @@ const AppRoutes = () => (
       }
     />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-    <Route path="*" element={<NotFound />} />
+    {/* Catch-all route is already defined above with lazy loading */}
   </Routes>
 );
 
